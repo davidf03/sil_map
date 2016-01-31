@@ -58,17 +58,18 @@ textarea {
 
 body, .sidebar, .map {
     position: absolute;
+    margin: auto;
     top: 0;
+    left: 0;
     right: 0;
     bottom: 0;
-    left: 0;
-    margin: auto;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
     body {
+
     }
     .toggleSidebar {
-        z-index: 2;
+        z-index: 1;
         position: fixed;
 
         margin-left: 12px;
@@ -109,19 +110,51 @@ body, .sidebar, .map {
             .toggleSidebar .bar div {
                 height: 100%;
                 width: 100%;
-
                 background-color: #DCDCDC;
             }
 
     .sidebar {
-        z-index: 1;
-        right: 1000px;
+        /*z-index: 1;*/
         background-color: #232323;
+        color: #DCDCDC;
         visibility: visible;
+
+        padding: 48px 12px;
     }
+        .options {
+            height: 80px;
+        }
+            .options select {
+
+            }
+        .sidebar .main {
+            position: absolute;
+            margin: auto;
+            top: 128px;
+            left: 12px;
+            right: 12px;
+            bottom: 48px;
+
+            overflow: hidden;
+        }
+            .character {
+                height: 30px;
+                background-color: white;
+            }
+                /*.character .colour, .character .name, .character .controls {
+                    height: 10%;
+                }
+                    .character .colour {
+                        width: 30%;
+                    }
+                    .character .name {
+                        width: 60%;
+                    }
+                    .character .controls {
+
+                    }*/
     .map {
-        z-index: 0;
-        /*visibility: hidden;*/
+        /*z-index: 0;*/
     }
 
 
@@ -138,7 +171,7 @@ body, .sidebar, .map {
    Media Queries
    ========================================================================== */
 
-@media only screen and (min-width: 35em) {
+@media only screen and (min-width: 900px) {
 
 }
 
