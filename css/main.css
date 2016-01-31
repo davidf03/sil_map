@@ -56,9 +56,73 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+body, .sidebar, .map {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    overflow: hidden;
+}
+    body {
+    }
+    .toggleSidebar {
+        z-index: 2;
+        position: fixed;
 
+        margin-left: 12px;
+        margin-top: 12px;
+        width: 24px;
+        height: 24px;
 
+        background: none;
+        border: none;
+    }
+        .toggleSidebar .bar {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
 
+            position: absolute;
+            margin: auto;
+            left: 0;
+            right: 0;
+            background-color: #232323;
+            border: 0;
+            border-radius: 20%;
+
+            padding: 10%;
+        }
+            .toggleSidebar .bar:nth-child(1) {
+                top: 0;
+                bottom: 74%;
+            }
+            .toggleSidebar .bar:nth-child(2) {
+                top: 37%;
+                bottom: 37%;
+            }
+            .toggleSidebar .bar:nth-child(3) {
+                top: 74%;
+                bottom: 0;
+            }
+            .toggleSidebar .bar div {
+                height: 100%;
+                width: 100%;
+
+                background-color: #DCDCDC;
+            }
+
+    .sidebar {
+        z-index: 1;
+        right: 1000px;
+        background-color: #232323;
+        visibility: visible;
+    }
+    .map {
+        z-index: 0;
+        /*visibility: hidden;*/
+    }
 
 
 
