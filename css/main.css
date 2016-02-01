@@ -63,13 +63,12 @@ body, .sidebar, .map {
     left: 0;
     right: 0;
     bottom: 0;
-    /*overflow: hidden;*/
+    overflow: hidden;
 }
     body {
 
     }
     .toggleSidebar {
-        z-index: 1;
         position: fixed;
 
         margin-left: 12px;
@@ -93,7 +92,7 @@ body, .sidebar, .map {
             border: 0;
             border-radius: 20%;
 
-            padding: 10%;
+            padding: 12%;
         }
             .toggleSidebar .bar:nth-child(1) {
                 top: 0;
@@ -114,7 +113,6 @@ body, .sidebar, .map {
             }
 
     .sidebar {
-        /*z-index: 1;*/
         background-color: #232323;
         color: #DCDCDC;
         visibility: visible;
@@ -154,7 +152,8 @@ body, .sidebar, .map {
 
                     }*/
     .map {
-        /*z-index: 0;*/
+        background: url(../img/silmarillion_map.png) no-repeat;
+        /*visibility: visible;*/
     }
 
 

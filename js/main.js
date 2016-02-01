@@ -1,4 +1,4 @@
-document.onready = function(evt) {
+function init() {
 
 	var mapObj = document.querySelector('.map');
 	var sbarObj = document.querySelector('.sidebar');
@@ -38,6 +38,21 @@ document.onready = function(evt) {
 	function fixSidebar() {
 		sbarObj.style.right = window.innerWidth - 280 + "px";
 	}
-	
+
 	fixSidebar();
-};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
