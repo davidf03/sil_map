@@ -40,6 +40,22 @@ function init() {
 	}
 
 	fixSidebar();
+
+
+	var can = document.getElementById("canvas");
+	var ctx = can.getContext("2d");
+
+	ctx.strokeStyle = "#000000";
+	ctx.lineWidth = "3";
+
+	ctx.fillStyle = "rgba(255,0,0,1)";
+	ctx.beginPath();
+	ctx.drawEllipse(400, 250, 50, 0, Math.PI*2);
+	ctx.moveTo(440, 250);
+	ctx.drawEllipse(400, 250, 40, 0, Math.PI*2);
+	ctx.fill("evenodd");
+	ctx.closePath();
+	ctx.stroke();
 }
 
 
