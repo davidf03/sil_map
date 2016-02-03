@@ -1,73 +1,76 @@
-package sil_cas
-{
-	public class Detect
-	{
-		public static function isWithin(index:uint, lastIndex:uint, indexEnd:uint = 1, lastEnd:uint = 2, incl:Boolean = true): Boolean {
-			var span:Number,
-			bound:Number;
+		function Detect() {}
+
+		Detect.prototype.isWithin = function(index, lastIndex, indexEnd, lastEnd, incl) {
+			if (typeof(indexEnd)==='undefined') indexEnd = 1;
+			if (typeof(lastEnd)==='undefined') lastEnd = 2;
+			if (typeof(incl)==='undefined') incl = true;
+
+			var span,
+				bound;
 			switch (indexEnd) {
 				case 0: span = 0; break;
-				case 1: span = Main.instance.time[index][1][1]*Main.instance.bridge[Main.instance.time[index][0][0]].x; break;
-				case 2: span = Main.instance.time[index][1][1]; break;
+				case 1: span = timeDir[index][1][1]*bridge[timeDir[index][0][0]].x; break;
+				case 2: span = timeDir[index][1][1]; break;
 			}
 			switch (lastEnd) {
 				case 0: bound = 0; break;
-				case 1: bound = Main.instance.time[lastIndex][1][1]*Main.instance.bridge[Main.instance.time[lastIndex][0][0]].x; break;
-				case 2: bound = Main.instance.time[lastIndex][1][1]; break;
+				case 1: bound = timeDir[lastIndex][1][1]*bridge[timeDir[lastIndex][0][0]].x; break;
+				case 2: bound = timeDir[lastIndex][1][1]; break;
 			}
 			if (index > lastIndex) {
-				span += findInterval(index, false, lastIndex);
+				span += this.findInterval(index, false, lastIndex);
 			} else {
-				bound += findInterval(lastIndex, false, index);
+				bound += this.findInterval(lastIndex, false, index);
 			}
 			if (incl && span > bound || false == incl && span >= bound) {
 				return false;}
 			return true;
-		}
+		};
 		
-		public static function findInterval(index:uint, last:Boolean = true, lastIndex:uint = 0): uint {
+		Detect.prototype.findInterval = function(index, last, lastIndex) {
+			if (typeof(last)==='undefined') last = true;
+			if (typeof(lastIndex)==='undefined') lastIndex = 0;
+
 			if (last && index <= 0 || false == last && index <= lastIndex) {
 				return 0;
 			} else if (last) {
 				lastIndex = index - 1;
 			}
-			if (Main.instance.time[index][1].length < 3) {
-				logFromBase(index);}/*
-			if (Main.instance.time[lastIndex][1].length < 3) {
+			if (timeDir[index][1].length < 3) {
+				this.logFromBase(index);}/*
+			if (timeDir[lastIndex][1].length < 3) {
 				logFromBase(lastIndex);
 			}*/
-			return Main.instance.time[index][1][2] - Main.instance.time[lastIndex][1][2];
-		}
-		private static function logFromBase(index:uint): void {
+			return timeDir[index][1][2] - timeDir[lastIndex][1][2];
+		};
+		Detect.prototype.logFromBase = function(index) {
 			if (index > 0) {
-				if (Main.instance.time[index - 1][1].length < 3) {
-					logFromBase(index - 1);
+				if (timeDir[index - 1][1].length < 3) {
+					this.logFromBase(index - 1);
 				}
-				Main.instance.time[index][1].push(genFromLast(index) + Main.instance.time[index - 1][1][2]);
+				timeDir[index][1].push(this.genFromLast(index) + timeDir[index - 1][1][2]);
 			} else {
-				Main.instance.time[index][1].push(Main.instance.time[0][1][0]);
+				timeDir[index][1].push(timeDir[0][1][0]);
 			}
-		}
-		private static function genFromLast(index:uint): uint {
-			if (Main.instance.time[index][0][1] > 0) {
-				var fromNow:uint = Main.instance.time[index][1][0];
-				var i:int;
-				var lastIndex:uint = Main.instance.char[Main.instance.time[index][0][0]][Main.instance.time[index][0][1] - 1].s_i;
+		};
+		Detect.prototype.genFromLast = function(index) {
+			if (timeDir[index][0][1] > 0) {
+				var fromNow = timeDir[index][1][0];
+				var i;
+				var lastIndex = charDir[timeDir[index][0][0]][timeDir[index][0][1] - 1].s_i;
 				for (i = index - 1; i >= lastIndex; i--) {
-					if (fromNow >= Main.instance.time[lastIndex][1][1]) {
-						return Main.instance.time[index][1][0];
+					if (fromNow >= timeDir[lastIndex][1][1]) {
+						return timeDir[index][1][0];
 					} else if (i == lastIndex) {
-						return Main.instance.time[lastIndex][1][1] - (fromNow - Main.instance.time[index][1][0]);
+						return timeDir[lastIndex][1][1] - (fromNow - timeDir[index][1][0]);
 					}
-					if (Main.instance.time[i][1].length < 3 || Main.instance.time[lastIndex][1].length < 3) {
-						fromNow += genFromLast(i);
+					if (timeDir[i][1].length < 3 || timeDir[lastIndex][1].length < 3) {
+						fromNow += this.genFromLast(i);
 					} else  {
-						fromNow += Main.instance.time[i][1][2] - Main.instance.time[lastIndex][1][2];
+						fromNow += timeDir[i][1][2] - timeDir[lastIndex][1][2];
 						i = lastIndex + 1;
 					}
 				}
 			}
-			return Main.instance.time[index][1][0];
-		}
-	}
-}
+			return timeDir[index][1][0];
+		};

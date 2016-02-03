@@ -1,6 +1,6 @@
 function init() {
 
-	var mapObj = document.querySelector('.map');
+	// var mapObj = document.querySelector('.map');
 	var sbarObj = document.querySelector('.sidebar');
 
 	// toggle sidebar visibility on/off
@@ -32,17 +32,20 @@ function init() {
 	        object["on"+type] = callback;
 	    }
 	};
+	var fixSidebar = function() {
+		sbarObj.style.right = window.innerWidth - 280 + "px";
+	};
 
 	addEvent(window, "resize", fixSidebar);
-
-	function fixSidebar() {
-		sbarObj.style.right = window.innerWidth - 280 + "px";
-	}
-
 	fixSidebar();
 
+	var main = new Main();
 
-	var can = document.getElementById("canvas");
+	/*var david = new Person("David");
+	david.sayHi();*/
+
+
+	/*var can = document.getElementById("canvas");
 	var ctx = can.getContext("2d");
 
 	ctx.strokeStyle = "#000000";
@@ -55,7 +58,7 @@ function init() {
 	ctx.drawEllipse(400, 250, 40, 0, Math.PI*2);
 	ctx.fill("evenodd");
 	ctx.closePath();
-	ctx.stroke();
+	ctx.stroke();*/
 }
 
 
