@@ -1,20 +1,4 @@
-﻿package sil_cas
-{
-	import flash.display.Sprite;
-	import flash.events.*;
-	import flash.geom.Point;
-	import flash.globalization.Collator;
-	
-	import gs.com.greensock.TweenLite;
-	import gs.com.greensock.easing.Linear;
-	import gs.com.greensock.plugins.HexColorsPlugin;
-	
-	import sil_cas.Arc;
-
-	
-	public class Node extends Sprite
-	{
-		public var main: Sprite;
+﻿		public var main: Sprite;
 		public var test:Sprite;
 		private static var radius: uint = 6;
 		private static var stroke: Number = 0.3*radius;
@@ -293,20 +277,20 @@
 
 			
 			/* line overlays */
-			Main.instance.line[c_i][n_i].graphics.clear();
-			Main.instance.line[c_i][n_i].graphics.lineStyle(stroke, 0x000000, 0.2);
-			Main.instance.line[c_i][n_i].graphics.moveTo(n0t1.x + this.x, n0t1.y + this.y);
+			line[c_i][n_i].graphics.clear();
+			line[c_i][n_i].graphics.lineStyle(stroke, 0x000000, 0.2);
+			line[c_i][n_i].graphics.moveTo(n0t1.x + this.x, n0t1.y + this.y);
 			if (present) {
-				Main.instance.line[c_i][n_i].graphics.lineTo(n1t1.x + this.x, n1t1.y + this.y);
+				line[c_i][n_i].graphics.lineTo(n1t1.x + this.x, n1t1.y + this.y);
 			} else {
-				Main.instance.line[c_i][n_i].graphics.lineTo(n1t1.x - (n1t1.x - n0t1.x)*(1 - lastBridge) + this.x, n1t1.y - (n1t1.y - n0t1.y)*(1 - lastBridge) + this.y);}
+				line[c_i][n_i].graphics.lineTo(n1t1.x - (n1t1.x - n0t1.x)*(1 - lastBridge) + this.x, n1t1.y - (n1t1.y - n0t1.y)*(1 - lastBridge) + this.y);}
 			if ((isNaN(n1t2e.y) || isNaN(n1t2e.x) || isNaN(n0t2e.y) || isNaN(n0t2e.x)) == false) {
 				if (present) {
-					Main.instance.line[c_i][n_i].graphics.moveTo(n0t2e.x + this.x, n0t2e.y + this.y);
-					Main.instance.line[c_i][n_i].graphics.lineTo(n1t2e.x + this.x, n1t2e.y + this.y);
+					line[c_i][n_i].graphics.moveTo(n0t2e.x + this.x, n0t2e.y + this.y);
+					line[c_i][n_i].graphics.lineTo(n1t2e.x + this.x, n1t2e.y + this.y);
 				} else {
-					Main.instance.line[c_i][n_i].graphics.lineTo(n1t2.x - (n1t2.x - n0t2.x)*(1 - lastBridge) + this.x, n1t2.y - (n1t2.y - n0t2.y)*(1 - lastBridge) + this.y);
-					Main.instance.line[c_i][n_i].graphics.lineTo(n0t2e.x + this.x, n0t2e.y + this.y);}
+					line[c_i][n_i].graphics.lineTo(n1t2.x - (n1t2.x - n0t2.x)*(1 - lastBridge) + this.x, n1t2.y - (n1t2.y - n0t2.y)*(1 - lastBridge) + this.y);
+					line[c_i][n_i].graphics.lineTo(n0t2e.x + this.x, n0t2e.y + this.y);}
 			}
 		}
 
@@ -327,9 +311,9 @@
 			if (n_i == 0 || n_i == 1 && breaking) {
 				outermost = false;
 			} else {
-				for (i = hold_l_y + 1; i < Main.instance.locDir[hold_l_x].length; i++) {
-					if (isPresent(Main.instance.locDir[hold_l_x][i][0], Main.instance.locDir[hold_l_x][i][1], true)) {
-						if (Main.instance.anc[hold_l_x][i].x > 0) {
+				for (i = hold_l_y + 1; i < locDir[hold_l_x].length; i++) {
+					if (isPresent(locDir[hold_l_x][i][0], locDir[hold_l_x][i][1], true)) {
+						if (anc[hold_l_x][i].x > 0) {
 							outermost = false;}
 					} else {
 						break;}
@@ -340,25 +324,25 @@
 				//somewhat out of place here, but both run on every regen and have significant overlap in requirements
 				if (breaking && n_i >= 2) {
 					if (outermost) {
-						Main.instance.char[c_i][n_i].pathUnderArc.visible = true;
-						Main.instance.char[c_i][n_i].pathOverArc.visible = false;
+						charDir[c_i][n_i].pathUnderArc.visible = true;
+						charDir[c_i][n_i].pathOverArc.visible = false;
 					} else {
-						Main.instance.char[c_i][n_i].pathUnderArc.visible = false;
-						Main.instance.char[c_i][n_i].pathOverArc.visible = true;}
+						charDir[c_i][n_i].pathUnderArc.visible = false;
+						charDir[c_i][n_i].pathOverArc.visible = true;}
 				}
 				for (var i:uint = 0; i < hold_l_y; i++) {
-					if (Main.instance.anc[hold_l_x][i].x > 0) {
-						var oth_c:uint = Main.instance.locDir[hold_l_x][i][0];
-						var oth_n:uint = Main.instance.locDir[hold_l_x][i][1] + 1;
+					if (anc[hold_l_x][i].x > 0) {
+						var oth_c:uint = locDir[hold_l_x][i][0];
+						var oth_n:uint = locDir[hold_l_x][i][1] + 1;
 						//outbound breaks; outbound paths; inbound paths
-						if (oth_n < Main.instance.char[oth_c].length) {
-							if (breaking && Main.instance.char[oth_c][oth_n].s_i < s_i && false == Detect.isWithin(Main.instance.char[oth_c][oth_n].s_i, hold_s_i, 0, 2, false)) {
+						if (oth_n < charDir[oth_c].length) {
+							if (breaking && charDir[oth_c][oth_n].s_i < s_i && false == Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false)) {
 								drawPathCap(n0l, n0r - hold_anc*radius/2, oth_c, oth_n, breaking, true);}
-							if (outermost && Main.instance.char[oth_c][oth_n].s_i > hold_s_i && (breaking && Main.instance.char[oth_c][oth_n].s_i < s_i || breaking == false && Detect.isWithin(Main.instance.char[oth_c][oth_n].s_i, hold_s_i, 0, 2, false))) {
+							if (outermost && charDir[oth_c][oth_n].s_i > hold_s_i && (breaking && charDir[oth_c][oth_n].s_i < s_i || breaking == false && Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false))) {
 								drawPathCap(n0l, n0r, oth_c, oth_n, breaking, true);}
 						}
-						oth_n = Main.instance.locDir[hold_l_x][i][1];
-						if (outermost && oth_n > 0 && Main.instance.char[oth_c][oth_n].s_i > hold_s_i) {
+						oth_n = locDir[hold_l_x][i][1];
+						if (outermost && oth_n > 0 && charDir[oth_c][oth_n].s_i > hold_s_i) {
 							drawPathCap(n0l, n0r, oth_c, oth_n, breaking, false);}
 					}
 				}
@@ -366,19 +350,19 @@
 		}
 		private function drawPathCap(cen:Point, rad:Number, oth_c:uint, oth_n:uint, breaking:Boolean, outbound:Boolean): void {
 			if (outbound) {
-				var xPos:Number = cen.x + (Main.instance.char[oth_c][oth_n].x - Main.instance.char[oth_c][oth_n - 1].x),
-					yPos:Number = cen.y + (Main.instance.char[oth_c][oth_n].y - Main.instance.char[oth_c][oth_n - 1].y),
+				var xPos:Number = cen.x + (charDir[oth_c][oth_n].x - charDir[oth_c][oth_n - 1].x),
+					yPos:Number = cen.y + (charDir[oth_c][oth_n].y - charDir[oth_c][oth_n - 1].y),
 					xOffset:Number = xPos,
 					yOffset:Number = yPos;
 			} else {
-				xPos = cen.x + (Main.instance.char[oth_c][oth_n - 1].x - Main.instance.char[oth_c][oth_n].x);
-				yPos = cen.y + (Main.instance.char[oth_c][oth_n - 1].y - Main.instance.char[oth_c][oth_n].y);
+				xPos = cen.x + (charDir[oth_c][oth_n - 1].x - charDir[oth_c][oth_n].x);
+				yPos = cen.y + (charDir[oth_c][oth_n - 1].y - charDir[oth_c][oth_n].y);
 				xOffset = cen.x;
 				yOffset = cen.y;
 			}
 			
-			var p1:Point = new Point(Main.instance.char[oth_c][oth_n].n1t1.x + xOffset, Main.instance.char[oth_c][oth_n].n1t1.y + yOffset),
-				p2:Point = new Point(Main.instance.char[oth_c][oth_n].n0t1.x + xOffset, Main.instance.char[oth_c][oth_n].n0t1.y + yOffset);
+			var p1:Point = new Point(charDir[oth_c][oth_n].n1t1.x + xOffset, charDir[oth_c][oth_n].n1t1.y + yOffset),
+				p2:Point = new Point(charDir[oth_c][oth_n].n0t1.x + xOffset, charDir[oth_c][oth_n].n0t1.y + yOffset);
 			var t_int:Point = findIntercepts(p1, p2, cen, rad, new Point(xPos, yPos));
 			
 			var xTerm:Number = t_int.x - cen.x,
@@ -387,8 +371,8 @@
 			if (yTerm == 0) { yTerm = 0.1;}
 			var angle:Number = Math.atan2(yTerm, xTerm);
 			
-			p1 = new Point(Main.instance.char[oth_c][oth_n].n1t2.x + xOffset, Main.instance.char[oth_c][oth_n].n1t2.y + yOffset);
-			p2 = new Point(Main.instance.char[oth_c][oth_n].n0t2.x + xOffset, Main.instance.char[oth_c][oth_n].n0t2.y + yOffset);
+			p1 = new Point(charDir[oth_c][oth_n].n1t2.x + xOffset, charDir[oth_c][oth_n].n1t2.y + yOffset);
+			p2 = new Point(charDir[oth_c][oth_n].n0t2.x + xOffset, charDir[oth_c][oth_n].n0t2.y + yOffset);
 			t_int = findIntercepts(p1, p2, cen, rad, new Point(xPos, yPos));
 			
 			xTerm = t_int.x - cen.x;
@@ -410,34 +394,34 @@
 			if (held) {
 				var now:uint = lastNow;
 				if (hold_c == c_i) { var bridge:Number = lastBridge;}
-							  else { bridge = Main.instance.bridge[hold_c].x;}
+							  else { bridge = bridge[hold_c].x;}
 			} else {
-				now = Main.instance.now;
-				bridge = Main.instance.bridge[hold_c].x;
+				now = now;
+				bridge = bridge[hold_c].x;
 			}
-			if (hold_n < Main.instance.char[hold_c].length && now >= Main.instance.char[hold_c][hold_n].s_i && (1 <= bridge || 2 > path && (0 < bridge || 1 > path && 0 >= bridge)) || hold_n + 1 < Main.instance.char[hold_c].length && now >= Main.instance.char[hold_c][hold_n + 1].s_i) {
+			if (hold_n < charDir[hold_c].length && now >= charDir[hold_c][hold_n].s_i && (1 <= bridge || 2 > path && (0 < bridge || 1 > path && 0 >= bridge)) || hold_n + 1 < charDir[hold_c].length && now >= charDir[hold_c][hold_n + 1].s_i) {
 				return true;}
 			return false;
 		}
 		public function genNode(): void {
 			test.graphics.clear();
-			lastBridge = Main.instance.bridge[c_i].x;
-			lastNow = Main.instance.now;
+			lastBridge = bridge[c_i].x;
+			lastNow = now;
 			//getting oth data
 			var i:uint;
 			oth = 0;
 			arc_ce = 1;
 			for (i = 0; i < l_y; i++) {
-				if (isPresent(Main.instance.locDir[l_x][i][0], Main.instance.locDir[l_x][i][1], true)) {
-					oth += Main.instance.anc[l_x][i].x;
-					arc_ce -= arc_ce*0.35*Main.instance.anc[l_x][i].x;
+				if (isPresent(locDir[l_x][i][0], locDir[l_x][i][1], true)) {
+					oth += anc[l_x][i].x;
+					arc_ce -= arc_ce*0.35*anc[l_x][i].x;
 				}
 			}
 			arc_ce += (1 - arc_ce)*0.75;
-			anc_x1 = Main.instance.anc[l_x][l_y].x;
+			anc_x1 = anc[l_x][l_y].x;
 			oth += anc_x1;
 			if (n_i > 0) {
-				anc_x0 = Main.instance.anc[lastNode.l_x][lastNode.l_y].x;//Main.instance.char[c_i][n_i - 1].anc_x1;
+				anc_x0 = anc[lastNode.l_x][lastNode.l_y].x;//charDir[c_i][n_i - 1].anc_x1;
 			}
 			
 			if (anc_x1 > 0 && isPresent(c_i, n_i, true, 1)) {
@@ -448,7 +432,7 @@
 					genPath();
 					path.visible = true;
 				}
-				Main.instance.line[c_i][n_i].visible = true;
+				line[c_i][n_i].visible = true;
 				
 				//generating node
 				if (present) {
@@ -484,23 +468,23 @@
 			} else {
 				main.visible  = false;
 				if (n_i > 0) { path.visible = false;}
-				Main.instance.line[c_i][n_i].visible = false;
+				line[c_i][n_i].visible = false;
 			}
 		}
 		public function update(evt:Event): void {
 			genNode();
-			if (false == moving && (Main.instance.anc[l_x][l_y].x <= 0 || Main.instance.anc[l_x][l_y].x >= 1)) {
+			if (false == moving && (anc[l_x][l_y].x <= 0 || anc[l_x][l_y].x >= 1)) {
 				removeEventListener(Event.ENTER_FRAME, moveNext);
 				animating = 0;
 				for (var i:int = 0; i <= l_y; i++) {
-					if (Main.instance.anc[l_x][i].x < 1 && Main.instance.anc[l_x][i].x > 0) {
+					if (anc[l_x][i].x < 1 && anc[l_x][i].x > 0) {
 						animating = 3;
 						break;
 					}
 				}
 				if (animating == 0 && n_i > 0) {
 					for (i = 0; i <= lastNode.l_y; i++) {
-						if (Main.instance.anc[lastNode.l_x][i].x < 1 && Main.instance.anc[lastNode.l_x][i].x > 0) {
+						if (anc[lastNode.l_x][i].x < 1 && anc[lastNode.l_x][i].x > 0) {
 							animating = 2;
 							break;
 						}
@@ -509,9 +493,9 @@
 				/*if (animating == 0) {
 				var j:uint;
 				for (i = 0; i <= lastNode.l_y; i++) {
-				if (isPresent(false, Main.instance.locDir[lastNode.l_x][i][0], Main.instance.locDir[lastNode.l_x][i][1] + 1)) {
-				for (j = 0; j <= Main.instance.char[Main.instance.locDir[lastNode.l_x][i][0]][Main.instance.locDir[lastNode.l_x][i][1] + 1].l_y; j++) {
-				if (Main.instance.anc[Main.instance.char[Main.instance.locDir[lastNode.l_x][i][0]][Main.instance.locDir[lastNode.l_x][i][1] + 1].l_x][i].x < 1 && Main.instance.anc[Main.instance.char[Main.instance.locDir[lastNode.l_x][i][0]][Main.instance.locDir[lastNode.l_x][i][1] + 1].l_x][i].x > 0) {
+				if (isPresent(false, locDir[lastNode.l_x][i][0], locDir[lastNode.l_x][i][1] + 1)) {
+				for (j = 0; j <= charDir[locDir[lastNode.l_x][i][0]][locDir[lastNode.l_x][i][1] + 1].l_y; j++) {
+				if (anc[charDir[locDir[lastNode.l_x][i][0]][locDir[lastNode.l_x][i][1] + 1].l_x][i].x < 1 && anc[charDir[locDir[lastNode.l_x][i][0]][locDir[lastNode.l_x][i][1] + 1].l_x][i].x > 0) {
 				animating = 1;
 				break;
 				}
@@ -527,11 +511,11 @@
 				genPath();
 				break;
 				case 1:
-				//if (n_i + 1 >= Main.instance.char[c_i].length || Main.instance.now < Main.instance.char[c_i][n_i + 1].s_i || Main.instance.bridge[c_i].x <= 0 && (n_i + 2 >= Main.instance.char[c_i].length || Main.instance.now < Main.instance.char[c_i][n_i + 2].s_i)) {
+				//if (n_i + 1 >= charDir[c_i].length || now < charDir[c_i][n_i + 1].s_i || bridge[c_i].x <= 0 && (n_i + 2 >= charDir[c_i].length || now < charDir[c_i][n_i + 2].s_i)) {
 				if (false == isPresent(false, c_i, n_i + 1)) {
 				genPathCaps(false, new Point(0,0), this.getRadius());
 				} else {
-				Main.instance.char[c_i][n_i + 1].genPathCaps(true, new Point(this.x - Main.instance.char[c_i][n_i + 1].x, this.y - Main.instance.char[c_i][n_i + 1].y), this.getRadius());
+				charDir[c_i][n_i + 1].genPathCaps(true, new Point(this.x - charDir[c_i][n_i + 1].x, this.y - charDir[c_i][n_i + 1].y), this.getRadius());
 				}
 				break;
 				case 0:*/
@@ -542,35 +526,35 @@
 			}
 		}
 		private function endUpdate(): void {
-			if (Main.instance.anc[l_x][l_y].x <= 0) {
+			if (anc[l_x][l_y].x <= 0) {
 				main.visible = false;
 				if (n_i > 0) {
 					path.visible = false;}
-				Main.instance.line[c_i][n_i].visible = false;
-				for (var i:int = l_y + 1; i < Main.instance.locDir[l_x].length; i++) {
-					if (Main.instance.anc[l_x][i].x > 0) { break;}}
-				if (i >= Main.instance.locDir[l_x].length) {
+				line[c_i][n_i].visible = false;
+				for (var i:int = l_y + 1; i < locDir[l_x].length; i++) {
+					if (anc[l_x][i].x > 0) { break;}}
+				if (i >= locDir[l_x].length) {
 					for (i = l_y - 1; i >= 0; i--) {
-						if (Main.instance.anc[l_x][i].x > 0) {
-							var oth_c:uint = Main.instance.locDir[l_x][i][0];
-							var oth_n:uint = Main.instance.locDir[l_x][i][1] + 1;
+						if (anc[l_x][i].x > 0) {
+							var oth_c:uint = locDir[l_x][i][0];
+							var oth_n:uint = locDir[l_x][i][1] + 1;
 							if (isPresent(oth_c, oth_n, false, 1)) {
-								Main.instance.char[oth_c][oth_n].pathUnderArc.visible = true;
-								Main.instance.char[oth_c][oth_n].pathOverArc.visible = false;}
+								charDir[oth_c][oth_n].pathUnderArc.visible = true;
+								charDir[oth_c][oth_n].pathOverArc.visible = false;}
 							break;}
 					}
 				}
-			} else if (Main.instance.anc[l_x][l_y].x >= 1) {
-				Main.instance.timeCon[c_i].evalState();}
+			} else if (anc[l_x][l_y].x >= 1) {
+				timeCon[c_i].evalState();}
 			/* insurance (initially only per l_x, now also for l_x of next nodes in char sequences, due to abnormalities in path caps */ // what 'abnormalities'?
 			//this is desperate need of refinement, if only for sake of clarity
-			for (i = l_y; i < Main.instance.locDir[l_x].length; i++) {
-				if (Main.instance.anc[l_x][i].x > 0) {
-					oth_c = Main.instance.locDir[l_x][i][0];
-					oth_n = Main.instance.locDir[l_x][i][1];
-					Main.instance.char[oth_c][oth_n].genNode();
-					if (oth_n + 1 < Main.instance.char[oth_c].length) {
-						Main.instance.char[oth_c][oth_n + 1].genNode();}
+			for (i = l_y; i < locDir[l_x].length; i++) {
+				if (anc[l_x][i].x > 0) {
+					oth_c = locDir[l_x][i][0];
+					oth_n = locDir[l_x][i][1];
+					charDir[oth_c][oth_n].genNode();
+					if (oth_n + 1 < charDir[oth_c].length) {
+						charDir[oth_c][oth_n + 1].genNode();}
 				}
 			}
 			//break;
@@ -592,28 +576,28 @@
 		}
 		private function waitNext(target:uint, end:Boolean, caller:uint, rift:Boolean = false, inactive:Boolean = true): Function {
 			return function (evt:Event): void {
-				if (false == rift && Detect.isWithin(s_i, caller, 0, 1, true) || rift && Main.instance.riftBridge.x >= 1 || Main.instance.now > target && (false == end || isPresent(Main.instance.time[target][0][0], Main.instance.time[target][0][1]))) {
+				if (false == rift && Detect.isWithin(s_i, caller, 0, 1, true) || rift && riftBridge.x >= 1 || now > target && (false == end || isPresent(time[target][0][0], time[target][0][1]))) {
 					removeEventListener(Event.ENTER_FRAME, waitNextFunction);
-					Main.instance.now++;
-					Main.instance.bridge[c_i].x = 0;
+					now++;
+					bridge[c_i].x = 0;
 					initNext(target, end, caller, rift, inactive);
 				}
 			}
 		}
 		private function initNext(target:uint, end:Boolean, caller:uint, rift:Boolean, inactive:Boolean): void {
-			if (Main.instance.time[s_i][1][1] > 0) {
+			if (time[s_i][1][1] > 0) {
 				//determining animation interval
 				var marker:uint;
 				if (end) {
 					if (target == s_i) {
 						marker = 0;
-						var extent:uint = Main.instance.time[target][1][1];
+						var extent:uint = time[target][1][1];
 					} else if (Detect.isWithin(s_i, target, 2)) {
 						marker = 1;
-						extent = Main.instance.time[s_i][1][1];
+						extent = time[s_i][1][1];
 					} else {
-						if (target < s_i) { marker = 2; extent = Main.instance.time[target][1][1] - Detect.findInterval(s_i, false, target);}
-									 else { marker = 3; extent = Main.instance.time[target][1][1] + Detect.findInterval(target, false, s_i);}
+						if (target < s_i) { marker = 2; extent = time[target][1][1] - Detect.findInterval(s_i, false, target);}
+									 else { marker = 3; extent = time[target][1][1] + Detect.findInterval(target, false, s_i);}
 					}
 				} else {
 					if (target == s_i) {
@@ -621,7 +605,7 @@
 						extent = 0;
 					} else if (Detect.isWithin(s_i, target, 2, 0, true)) {
 						marker = 5;
-						extent = Main.instance.time[s_i][1][1];
+						extent = time[s_i][1][1];
 					} else {
 						if (target < s_i) { marker = 6; extent = 0;}
 									 else { marker = 7; extent = Detect.findInterval(target, false, s_i);}
@@ -631,21 +615,21 @@
 				if (extent == 0) {
 					waiting = false;
 				} else {
-					var compExtent:Number = extent/Main.instance.time[s_i][1][1];
+					var compExtent:Number = extent/time[s_i][1][1];
 					if (rift) {
-						if (false == inactive && Main.instance.bridge[c_i].x > compExtent) {
-							Main.instance.bridge[c_i].x = compExtent;}
+						if (false == inactive && bridge[c_i].x > compExtent) {
+							bridge[c_i].x = compExtent;}
 					} else {
 						//not insured; added this conditional to allow for more natural transitions into movement (i.e. those from point of initialization, 'unnaturally' halted)
-						if (inactive && c_i != Main.instance.time[caller][0][0]) {
-							Main.instance.bridge[c_i].x = (Main.instance.time[caller][1][1]*Main.instance.bridge[Main.instance.time[caller][0][0]].x - Detect.findInterval(s_i, false, caller))/Main.instance.time[s_i][1][1];}
-						if (Main.instance.bridge[c_i].x > compExtent) {
-							Main.instance.bridge[c_i].x = compExtent;}
+						if (inactive && c_i != time[caller][0][0]) {
+							bridge[c_i].x = (time[caller][1][1]*bridge[time[caller][0][0]].x - Detect.findInterval(s_i, false, caller))/time[s_i][1][1];}
+						if (bridge[c_i].x > compExtent) {
+							bridge[c_i].x = compExtent;}
 					}
-					var duration:Number = extent - Main.instance.bridge[c_i].x*Main.instance.time[s_i][1][1];
+					var duration:Number = extent - bridge[c_i].x*time[s_i][1][1];
 					if (0 > duration) {
 						duration = 0;}
-					TweenLite.to(Main.instance.bridge[c_i], Main.instance.movSpeed*duration, {x:compExtent, ease:Linear.easeNone});
+					TweenLite.to(bridge[c_i], movSpeed*duration, {x:compExtent, ease:Linear.easeNone});
 					//adding events to begin 'actual' animation
 					removeEventListener(Event.ENTER_FRAME, moveNextFunction);
 					moveNextFunction = moveNext(target, end);
@@ -659,14 +643,14 @@
 
 					//creating listeners for any node whose movement begins within this duration, regardless whether it is further nested; removes any previously assigned
 					var beforeRift:Boolean = true;
-					for (var i:uint = s_i + 1; i < Main.instance.time.length; i++) {
-						var oth_c:uint = Main.instance.time[i][0][0];
-						var oth_n:uint = Main.instance.time[i][0][1];
+					for (var i:uint = s_i + 1; i < time.length; i++) {
+						var oth_c:uint = time[i][0][0];
+						var oth_n:uint = time[i][0][1];
 						if (Detect.isWithin(i, s_i, 0) && (i <= target || false == end && Detect.findInterval(i, false, target) <= 0 || end && Detect.isWithin(i, target, 0))) {
-							if (Main.instance.time[i][1][1] > 0) {
+							if (time[i][1][1] > 0) {
 								beforeRift = false;}
-							if (false == (Main.instance.char[oth_c][oth_n].waiting || isPresent(oth_c, oth_n, false, 0)) && Detect.findInterval(i, false, s_i) > 0) {
-								Main.instance.char[oth_c][oth_n].movementNext(true, target, end, s_i);}
+							if (false == (charDir[oth_c][oth_n].waiting || isPresent(oth_c, oth_n, false, 0)) && Detect.findInterval(i, false, s_i) > 0) {
+								charDir[oth_c][oth_n].movementNext(true, target, end, s_i);}
 						} else {
 							var riftIndex:uint = i;
 							break;}
@@ -674,10 +658,10 @@
 	
 					if (beforeRift && riftIndex <= target) {
 						//determining if rift exists
-						for (i = 0; beforeRift && i < Main.instance.char.length; i++) {
-							for (var j:int = Main.instance.char[i].length - 1; j >= 0; j--) {
-								if (Main.instance.char[i][j].s_i < s_i) {
-									if (Detect.isWithin(riftIndex, Main.instance.char[i][j].s_i, 0)) {
+						for (i = 0; beforeRift && i < charDir.length; i++) {
+							for (var j:int = charDir[i].length - 1; j >= 0; j--) {
+								if (charDir[i][j].s_i < s_i) {
+									if (Detect.isWithin(riftIndex, charDir[i][j].s_i, 0)) {
 										beforeRift = false;}
 									break;}
 							}
@@ -685,13 +669,13 @@
 						if (beforeRift) {
 							//animating riftBridge
 							var interval:uint = Detect.findInterval(riftIndex, false, s_i);
-							if (0 >= Main.instance.riftBridge.x || 1 <= Main.instance.riftBridge.x) {
-								Main.instance.riftBridge.x = Main.instance.time[s_i][1][1]*Main.instance.bridge[c_i].x/interval;}
-							TweenLite.to(Main.instance.riftBridge, Main.instance.movSpeed*interval*(1 - Main.instance.riftBridge.x), {x:1, ease:Linear.easeNone});
+							if (0 >= riftBridge.x || 1 <= riftBridge.x) {
+								riftBridge.x = time[s_i][1][1]*bridge[c_i].x/interval;}
+							TweenLite.to(riftBridge, movSpeed*interval*(1 - riftBridge.x), {x:1, ease:Linear.easeNone});
 							//adding listeners to riftIndex
-							for (i = riftIndex; i < Main.instance.time.length; i++) {
+							for (i = riftIndex; i < time.length; i++) {
 								if (0 >= Detect.findInterval(i, false, riftIndex)) {
-									Main.instance.char[Main.instance.time[i][0][0]][Main.instance.time[i][0][1]].movementNext(true, target, end, s_i, true);
+									charDir[time[i][0][0]][time[i][0][1]].movementNext(true, target, end, s_i, true);
 								} else {
 									break;}
 							}
@@ -699,13 +683,13 @@
 					}
 				}
 			} else {
-				Main.instance.bridge[c_i].x = 1;}
+				bridge[c_i].x = 1;}
 		}
 		private function moveNext(target:uint, end:Boolean): Function {
 			return function (evt:Event): void {
-				if (isPresent(c_i, n_i) || Main.instance.now >= target && (false == end || Main.instance.bridge[Main.instance.time[target][0][0]].x >= 1)) {
+				if (isPresent(c_i, n_i) || now >= target && (false == end || bridge[time[target][0][0]].x >= 1)) {
 					movementNext(false);
-					Main.instance.timeCon[c_i].evalState();}
+					timeCon[c_i].evalState();}
 			}
 		}
 
@@ -726,7 +710,7 @@
 			
 			if (n_i > 0) {
 				path = new Sprite();
-				Main.instance.charCont.addChild(path);
+				charDirCont.addChild(path);
 				path.x = this.x;
 				path.y = this.y;
 				
@@ -747,12 +731,12 @@
 				path.addChild(pathUnderArc);
 				path.addChild(pathMain);
 				
-				lastNode = Main.instance.char[c_i][n_i - 1];
+				lastNode = charDir[c_i][n_i - 1];
 				var i:uint;
-				for (i = lastNode.l_y + 1; i < Main.instance.locDir[lastNode.l_x].length; i++) {
-					if (Main.instance.anc[lastNode.l_x][i].x > 0) { break;}
+				for (i = lastNode.l_y + 1; i < locDir[lastNode.l_x].length; i++) {
+					if (anc[lastNode.l_x][i].x > 0) { break;}
 				}
-				if (i == Main.instance.locDir[lastNode.l_x].length) {
+				if (i == locDir[lastNode.l_x].length) {
 					pathOverArc.visible = false;
 					pathUnderArc.visible = true;
 				} else {
@@ -765,7 +749,5 @@
 			moveNextFunction = moveNext(0, true);
 			
 			test = new Sprite();
-			Main.instance.test.addChild(test);
+			test.addChild(test);
 		}
-	}
-}

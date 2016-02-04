@@ -132,16 +132,19 @@ body, .sidebar {
         .sidebar .main {
             position: absolute;
             margin: auto;
-            top: 128px;
+            top: 200px;
             left: 12px;
             right: 12px;
             bottom: 48px;
 
             overflow: hidden;
         }
+            .colHead {
+                display: inline;
+            }
             .character {
                 height: 30px;
-                background-color: white;
+                background-color: #DCDCDC;
             }
                 /*.character .colour, .character .name, .character .controls {
                     height: 10%;
