@@ -90,6 +90,7 @@
 				return new Point(int_x2, int_y2);}
 		}
 		private function findTangentPoints(n0l:Point,n0r:Number,n1r:Number): void {
+			//math I won't even try to explain because I don't even understand it myself, but it determines where lines from circle to circle are to be drawn
 			var p:Point;
 			var px:Number;
 			var py:Number;
@@ -560,6 +561,11 @@
 			//break;
 		}
 
+		/* these are the continuous movement functions
+		movementNext is activated by other nodes, and it calls waitNext (waitNextFunction just passes parameters too)
+		waitNext calls initNext, which further propagates time's progress to other nodes
+		moveNext is not always called, depending on time's final resting place
+		*/
 		public function movementNext(begin:Boolean, target:uint = 0, end:Boolean = true, caller:uint = 0, rift:Boolean = false, inactive:Boolean = true): void {
 			removeEventListener(Event.ENTER_FRAME, waitNextFunction);
 			removeEventListener(Event.ENTER_FRAME, moveNextFunction);
@@ -641,7 +647,7 @@
 				
 					//rift and end == false?
 
-					//creating listeners for any node whose movement begins within this duration, regardless whether it is further nested; removes any previously assigned
+					//creating listeners for any node whose movement begins within the defined extent, regardless of whether it's further nested, and removes any previously assigned
 					var beforeRift:Boolean = true;
 					for (var i:uint = s_i + 1; i < time.length; i++) {
 						var oth_c:uint = time[i][0][0];
@@ -656,6 +662,7 @@
 							break;}
 					}
 	
+					// (a rift is discontinous collective movement, i.e. no overlap to successively chain movements - time would cease to exist but for the dedicated 'riftBridge')
 					if (beforeRift && riftIndex <= target) {
 						//determining if rift exists
 						for (i = 0; beforeRift && i < charDir.length; i++) {
@@ -672,7 +679,7 @@
 							if (0 >= riftBridge.x || 1 <= riftBridge.x) {
 								riftBridge.x = time[s_i][1][1]*bridge[c_i].x/interval;}
 							TweenLite.to(riftBridge, movSpeed*interval*(1 - riftBridge.x), {x:1, ease:Linear.easeNone});
-							//adding listeners to riftIndex
+							//adding listeners to riftIndex (and any other simultaneous indeces)
 							for (i = riftIndex; i < time.length; i++) {
 								if (0 >= Detect.findInterval(i, false, riftIndex)) {
 									charDir[time[i][0][0]][time[i][0][1]].movementNext(true, target, end, s_i, true);

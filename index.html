@@ -55,37 +55,35 @@
             <div class="bar"><div></div></div>
         </button>
 
-        <div class="sidebar">
+        <div class="sidebar" style="visibility: visible">
             <div class="charConsole">
+                <div class="heading"><h1>Display</h1></div><div class="heading"><h1>Options</h1></div>
                 <form class="options">
-                    <label for="visible">Characters shown:</label>
-                    <select name="visible" id="visible">
+                    <div><label for="visible">Show</label></div>
+                    <div><select name="visible" id="visible">
                         <option>All</option>
                         <option>Active</option>
-                    </select>
-                    <label for="superorder">Sorted by category:</label>
-                    <select name="superorder" id="superorder">
+                    </select></div>
+                    <div><label for="order">Sort type</label></div>
+                    <div><select name"order" id="order">
+                        <option>Alphabetical</option>
+                        <option>by Order of Appearance</option>
+                        <option>by Race</option>
+                    </select></div>
+                    <div><label for="superorder">Group type</label></div>
+                    <div><select name="superorder" id="superorder">
                         <option>None</option>
                         <option>Chapter</option>
-                        <!-- <option>Family</option> -->
-                    </select>
-                    <label for="order">Sorted by:</label>
-                    <select name"order" id="order">
-                        <option>Alphabetical Order</option>
-                        <option>Race</option>
-                        <option>Order of Appearance</option>
-                    </select>
+                        <option>Family</option>
+                    </select></div>
                 </form>
+                <div class="heading"><h1>Character</h1></div><div class="heading"><h1>Controls</h1></div>
                 <div class="main">
-                    <div class="headings">
-                        <div class="colHead">Character</div>
-                        <div class="colHead">Controls</div>
-                    </div>
-                    <div class="character">
-                        <!-- <div class="colour"></div>
+                    <!-- <div class="character">
+                        <div class="colour"></div>
                         <div class="name"></div>
-                        <div class="controls"></div> -->
-                    </div>
+                        <div class="controls"></div>
+                    </div> -->
                 </div>
             </div>
         </div>

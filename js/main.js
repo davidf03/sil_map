@@ -22,6 +22,7 @@ function init() {
 		}
 	};
 
+	//http://stackoverflow.com/a/3150139
 	var addEvent = function(object, type, callback) {
 	    if (object == null || typeof(object) == 'undefined') return;
 	    if (object.addEventListener) {
@@ -33,7 +34,7 @@ function init() {
 	    }
 	};
 	var fixSidebar = function() {
-		sbarObj.style.right = window.innerWidth - 280 + "px";
+		sbarObj.style.right = window.innerWidth/16 - 20 +"em";
 	};
 
 	addEvent(window, "resize", fixSidebar);
@@ -41,9 +42,9 @@ function init() {
 
 	var main = new Main();
 
-	var david = new Mon("Defed");
-	david.segeHal();
-	
+	/*var david = new Mon("Defed");
+	david.segeHal();*/
+
 
 	/*var can = document.getElementById("canvas");
 	var ctx = can.getContext("2d");
