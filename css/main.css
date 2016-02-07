@@ -138,83 +138,78 @@ body, .sidebar {
                 clear: right;
                 width: 12em;
             }
-            /* menu section headings */
-            .heading:nth-of-type(odd), .heading:nth-of-type(even) {
-                padding: 0.25em 0;
+        /* menu section headings */
+        .heading:nth-of-type(odd), .heading:nth-of-type(even) {
+            padding: 0.25em 0;
+        }
+            .heading:nth-of-type(odd) h1 {
+                margin: 0;
+                margin-right: 0.25em;
+                height: auto;
+                font-size: 1em;
             }
-                .heading:nth-of-type(odd) h1 {
-                    margin: 0;
-                    margin-right: 0.25em;
-                    height: auto;
-                    font-size: 1em;
-                }
-                .heading:nth-of-type(even) h1 {
-                    /*float: left;*/
-                    margin: 0;
-                    margin-left: 0.25em;
-                    width: auto;
-                    height: auto;
-                    font-size: 1em;
-                }
-            /* options section */
-            .options {
-                height: 4.5em;
-                clear: both;
-                margin-bottom: 0.4em;
+            .heading:nth-of-type(even) h1 {
+                /*float: left;*/
+                margin: 0;
+                margin-left: 0.25em;
+                width: auto;
+                height: auto;
+                font-size: 1em;
             }
-                .options > div {
-                    -webkit-box-sizing: border-box;
-                    -moz-box-sizing: border-box;
-                    box-sizing: border-box;
-                    border-width: 0.15em 0;
-                    border-style: solid;
+        /* options section */
+        .options {
+            height: 4.5em;
+            clear: both;
+            margin-bottom: 0.4em;
+        }
+            .options > div {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                border-width: 0.15em 0;
+                border-style: solid;
+            }
+                .options > div > * {
+                    font-size: 0.875em;
+                    /*line-height: 1.35em;*/
                 }
-                    .options > div > * {
-                        font-size: 0.875em;
-                        /*line-height: 1.35em;*/
-                    }
-                    .options > :nth-child(odd) {
-                        padding-right: 0.2em;
+                .options > :nth-child(odd) {
+                    padding-right: 0.2em;
 
-                        border-color: #DCDCDC;
-                        /*background-color: black;*/
+                    border-color: #DCDCDC;
+                    /*background-color: black;*/
+                }
+                    .options > :nth-child(1) {
+                        border-bottom-width: 0;
                     }
-                        .options > :nth-child(1) {
-                            border-bottom-width: 0;
-                        }
-                        .options > :nth-child(5) {
-                            border-top-width: 0;
-                        }
-                    .options > :nth-child(even) {
-                        /*padding-left: 0.2em;*/
-                        /*padding: 0.05em;*/
+                    .options > :nth-child(5) {
+                        border-top-width: 0;
+                    }
+                .options > :nth-child(even) {
+                    /*padding-left: 0.2em;*/
+                    /*padding: 0.05em;*/
 
+                    border: none;
+                    /*border-color: #DCDCDC;*/
+                    background-color: #DCDCDC;
+                    color: #232323;
+                }
+                    .options > :nth-child(even) > * {
+                        /*background-color: #DCDCDC;*/
+                        width: 100%;
+                        height: 95%;
                         border: none;
-                        /*border-color: #DCDCDC;*/
-                        background-color: #DCDCDC;
-                        color: #232323;
+                        /*border-radius: none;*/
                     }
-                        .options > :nth-child(even) > * {
-                            /*background-color: #DCDCDC;*/
-                            width: 100%;
-                            height: 95%;
-                            border: none;
-                            /*border-radius: none;*/
-                        }
-                        .options > :nth-child(2) {
-                            padding-bottom: 0;
-                        }
-                        .options > :nth-child(6) {
-                            padding-top: 0;
-                        }
+                    .options > :nth-child(2) {
+                        padding-bottom: 0;
+                    }
+                    .options > :nth-child(6) {
+                        padding-top: 0;
+                    }
         /* character section */
         .sidebar .main {
-            /*position: absolute;*/
-            /*margin: auto;*/
-            /*top: 8em;*/
-            /*bottom: 0;*/
-
-            overflow: hidden;
+            /*overflow: hidden;*/
         }
             .character {
                 height: 2em;
