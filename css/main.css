@@ -122,76 +122,57 @@ body, .sidebar {
 
         padding: 3em 0;
     }
-        .heading:nth-of-type(odd) {
-            float: left;
-            clear: left;
+        /* menu section headings */
+        .heading:nth-of-type(odd), .heading:nth-of-type(even) {
             padding: 0.25em 0;
-            width: 8em;
             height: 1.5em;
-            /*font-size: 0.7em;*/
-            /*margin: 0 auto;*/
-            /*margin-left: 0.5em;*/
         }
-            .heading:nth-of-type(odd) h1 {
+            .heading:nth-of-type(odd) {
+                float: left;
+                clear: left;
+                width: 8em;
+            }
+                .heading:nth-of-type(odd) h1 {
+                    float: right;
+                    margin: 0;
+                    margin-right: 0.25em;
+                    width: auto;
+                    height: auto;
+                    font-size: 1em;
+                }
+            .heading:nth-of-type(even) {
                 float: right;
-                margin: 0;
-                margin-right: 0.25em;
-                height: auto;
-                width: auto;
-                font-size: 1em;
+                clear: right;
+                width: 12em;
             }
-        .heading:nth-of-type(even) {
-            /*margin-left: 0;*/
-            float: right;
-            clear: right;
-            padding: 0.25em 0;
-            width: 12em;
-            height: 1.5em;
-            /*background-color: white;*/
-            /*margin: 0 auto;*/
-            /*margin-left: 0.5em;*/
-        }
-            .heading:nth-of-type(even) h1 {
-                /*float: left;*/
-                margin: 0;
-                margin-left: 0.25em;
-                height: auto;
-                width: auto;
-                font-size: 1em;
-            }
+                .heading:nth-of-type(even) h1 {
+                    /*float: left;*/
+                    margin: 0;
+                    margin-left: 0.25em;
+                    width: auto;
+                    height: auto;
+                    font-size: 1em;
+                }
+        /* options section */
         .options {
             height: 4.5em;
             clear: both;
-            /*margin-top: 3em;*/
-            /*overflow:hidden;*/
-            margin-bottom: 0.5em;
+            margin-bottom: 0.4em;
         }
-            /*.options > *:nth-child(odd) {
-                float: left;
-                clear: left;
-                font-size: 0.875em;
-            }
-            .options > *:nth-child(even) {
-                float: left;
-                clear:right;
-                font-size: 0.875em;
-            }*/
-            .options > * {
-                /*position: absolute;*/
-                /*margin: auto;*/
+            .options > div {
                 height: 1.5em;
 
-                border-width: 0.15em 0;
-                border-style: solid;
                 -webkit-box-sizing: border-box;
                 -moz-box-sizing: border-box;
                 box-sizing: border-box;
+                border-width: 0.15em 0;
+                border-style: solid;
             }
-                .options > * > * {
+                .options > div > * {
                     font-size: 0.875em;
                     /*line-height: 1.35em;*/
                 }
-            .options :nth-child(odd) {
+            .options > :nth-child(odd) {
                 float: left;
                 clear: left;
                 width: 8em;
@@ -200,17 +181,17 @@ body, .sidebar {
                 border-color: #DCDCDC;
                 /*background-color: black;*/
             }
-                .options :nth-child(odd) > * {
+                .options > :nth-child(odd) > * {
                     float: right;
                     width: auto;
                 }
-                .options :nth-child(1) {
+                .options > :nth-child(1) {
                     border-bottom-width: 0;
                 }
-                .options :nth-child(5) {
+                .options > :nth-child(5) {
                     border-top-width: 0;
                 }
-            .options :nth-child(even) {
+            .options > :nth-child(even) {
                 /*padding-left: 0.2em;*/
                 /*padding: 0.05em;*/
                 float: right;
@@ -222,26 +203,20 @@ body, .sidebar {
                 background-color: #DCDCDC;
                 color: #232323;
             }
-                .options :nth-child(even) > *{
+                .options > :nth-child(even) > * {
                     /*background-color: #DCDCDC;*/
                     width: 100%;
                     height: 95%;
+                    border: none;
+                    /*border-radius: none;*/
                 }
-                .options :nth-child(2) {
+                .options > :nth-child(2) {
                     padding-bottom: 0;
                 }
-                .options :nth-child(6) {
+                .options > :nth-child(6) {
                     padding-top: 0;
                 }
-            .options :nth-child(1), .options :nth-child(2) {
-                top: 3em;
-            }
-            .options :nth-child(3), .options :nth-child(4) {
-                top: 4.5em;
-            }
-            .options :nth-child(5), .options :nth-child(6) {
-                top: 6em;
-            }
+        /* character section */
         .sidebar .main {
             /*position: absolute;*/
             /*margin: auto;*/

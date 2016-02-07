@@ -3,7 +3,7 @@ function init() {
 	// var mapObj = document.querySelector('.map');
 	var sbarObj = document.querySelector('.sidebar');
 
-	// toggle sidebar visibility on/off
+	// toggle sidebar visibility
 	document.querySelector('.toggleSidebar').onclick = function(evt) {
 		if (sbarObj.style.visibility === "visible") {
 			sbarObj.style.visibility = "hidden";
