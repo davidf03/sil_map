@@ -34,7 +34,7 @@ function init() {
 	    }
 	};
 	var fixSidebar = function() {
-		sbarObj.style.right = window.innerWidth/16 - 20 +"em";
+		sbarObj.style.right = window.innerWidth/window.getComputedStyle(document.querySelector('html'), null).getPropertyValue('font-size').match(/^[^A-Za-z]*/) - 20 +"em";
 	};
 
 	addEvent(window, "resize", fixSidebar);

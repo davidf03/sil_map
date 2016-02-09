@@ -391,16 +391,16 @@
 			}
 		}
 
-		private function isPresent(hold_c:uint, hold_n:uint, held:Boolean = false, path:uint = 2):Boolean {
+		private function isPresent(hold_c:uint, hold_n:uint, held:Boolean = false, indexEnd:uint = 2):Boolean {
 			if (held) {
-				var now:uint = lastNow;
-				if (hold_c == c_i) { var bridge:Number = lastBridge;}
-							  else { bridge = bridge[hold_c].x;}
+				var hold_now:uint = lastNow;
+				if (hold_c == c_i) { var hold_bridge:Number = lastBridge;}
+							  else { hold_bridge = bridge[hold_c].x;}
 			} else {
-				now = now;
-				bridge = bridge[hold_c].x;
+				hold_now = now;
+				hold_bridge = bridge[hold_c].x;
 			}
-			if (hold_n < charDir[hold_c].length && now >= charDir[hold_c][hold_n].s_i && (1 <= bridge || 2 > path && (0 < bridge || 1 > path && 0 >= bridge)) || hold_n + 1 < charDir[hold_c].length && now >= charDir[hold_c][hold_n + 1].s_i) {
+			if (hold_n < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n].s_i && (1 <= hold_bridge || 2 > indexEnd && (0 < hold_bridge || 1 > indexEnd && 0 >= hold_bridge)) || hold_n + 1 < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n + 1].s_i) {
 				return true;}
 			return false;
 		}
@@ -649,23 +649,27 @@
 
 					//creating listeners for any node whose movement begins within the defined extent, regardless of whether it's further nested, and removes any previously assigned
 					var beforeRift:Boolean = true;
+					var riftIndex:uint;
 					for (var i:uint = s_i + 1; i < time.length; i++) {
 						var oth_c:uint = time[i][0][0];
 						var oth_n:uint = time[i][0][1];
+						//this conditional checks if 'i' can be chained by our movement
 						if (Detect.isWithin(i, s_i, 0) && (i <= target || false == end && Detect.findInterval(i, false, target) <= 0 || end && Detect.isWithin(i, target, 0))) {
-							if (time[i][1][1] > 0) {
+							if (beforeRift && time[i][1][1] > 0) {
 								beforeRift = false;}
 							if (false == (charDir[oth_c][oth_n].waiting || isPresent(oth_c, oth_n, false, 0)) && Detect.findInterval(i, false, s_i) > 0) {
 								charDir[oth_c][oth_n].movementNext(true, target, end, s_i);}
+						//and, if not, marks a candidate riftIndex and breaks
 						} else {
-							var riftIndex:uint = i;
+							riftIndex = i;
 							break;}
 					}
 	
 					// (a rift is discontinous collective movement, i.e. no overlap to successively chain movements - time would cease to exist but for the dedicated 'riftBridge')
 					if (beforeRift && riftIndex <= target) {
-						//determining if rift exists
+						//confirming existence of apparent rift
 						for (i = 0; beforeRift && i < charDir.length; i++) {
+							//determining if any other already active character path spans the rift
 							for (var j:int = charDir[i].length - 1; j >= 0; j--) {
 								if (charDir[i][j].s_i < s_i) {
 									if (Detect.isWithin(riftIndex, charDir[i][j].s_i, 0)) {
@@ -673,6 +677,7 @@
 									break;}
 							}
 						}
+						//true rift
 						if (beforeRift) {
 							//animating riftBridge
 							var interval:uint = Detect.findInterval(riftIndex, false, s_i);

@@ -90,10 +90,10 @@ body, .sidebar {
             left: 0;
             right: 0;
             background-color: #232323;
+
+            padding: 8%;
             border: 0;
             border-radius: 20%;
-
-            padding: 12%;
         }
             .toggleSidebar .bar:nth-child(1) {
                 top: 0;
@@ -111,6 +111,7 @@ body, .sidebar {
                 height: 100%;
                 width: 100%;
                 background-color: #DCDCDC;
+                border-radius: 20%;
             }
     .sidebar {
         z-index: 1;
@@ -140,27 +141,26 @@ body, .sidebar {
             }
         /* menu section headings */
         .heading:nth-of-type(odd), .heading:nth-of-type(even) {
-            padding: 0.25em 0;
+            /*padding: 0.25em 0;*/
         }
-            .heading:nth-of-type(odd) h1 {
+            .heading:nth-of-type(odd) h1, .heading:nth-of-type(even) h1 {
                 margin: 0;
-                margin-right: 0.25em;
                 height: auto;
                 font-size: 1em;
+            }
+            .heading:nth-of-type(odd) h1 {
+                margin-right: 0.25em;
             }
             .heading:nth-of-type(even) h1 {
                 /*float: left;*/
-                margin: 0;
                 margin-left: 0.25em;
                 width: auto;
-                height: auto;
-                font-size: 1em;
             }
         /* options section */
         .options {
-            height: 4.5em;
             clear: both;
             margin-bottom: 0.4em;
+            overflow: hidden;
         }
             .options > div {
                 -webkit-box-sizing: border-box;
@@ -234,13 +234,6 @@ body, .sidebar {
         /*visibility: visible;*/
         position: absolute;
     }
-
-
-
-
-
-
-
 
 
 
