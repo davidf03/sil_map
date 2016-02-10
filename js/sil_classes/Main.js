@@ -53,7 +53,7 @@ Main.prototype.genLocDir = function() {
 				term.push([ j, toPresent - timeDir[j][1][1] ]);
 			}
 		}
-		//ordering array charDironologically
+		//ordering array chronologically
 		for (j = 0; j < term.length; j++) {
 			hold = j;
 			for (k = j + 1; k < term.length; k++) {
