@@ -70,7 +70,7 @@ Main.prototype.genLocDir = function() {
 			loc = timeDir[term[j][0]][2][0];
 			keyed = false;
 			for (k = 0; k < locDirKey.length; k++) {
-				if (loc === locDirKey[k]) {
+				if (JSON.stringify(loc) === JSON.stringify(locDirKey[k])) {
 					key = k;
 					keyed = true;
 					break;
@@ -86,20 +86,20 @@ Main.prototype.genLocDir = function() {
 			// anc[key].push(new Point(1,0));
 			locDir[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], term[j][0]]);
 			
-			/*charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
-			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;*/
+			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
+			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;
 		}
 		
 		//adding path of current index, registering if movement is instantaneous (consolidate with above?)
 		// line[c_i].push(new Sprite());
 		// lineCont.addChild(line[c_i][n_i]);
 		loc = timeDir[i][2][0];
-		charDir[c_i].push({c_i:c_i, n_i:n_i, s_i:i});//new Node(c_i, n_i, cols[startColour][c_i], loc, i));
+		charDir[c_i].push(new Node(c_i, n_i, cols[startColour][c_i], loc, i));
 		if (timeDir[i][1][1] == 0) {
 			drawSequence.push([c_i, n_i]);
 			keyed = false;
 			for (k = 0; k < locDirKey.length; k++) {
-				if (loc === locDirKey[k]) {
+				if (JSON.stringify(loc) === JSON.stringify(locDirKey[k])) {
 					key = k;
 					keyed = true;
 					break;
@@ -115,8 +115,8 @@ Main.prototype.genLocDir = function() {
 			// anc[key].push(new Point(1,0));
 			locDir[key].push([c_i, n_i, i]);
 			
-			/*charDir[c_i][n_i].l_x = key;
-			charDir[c_i][n_i].l_y = locDir[key].length - 1;*/
+			charDir[c_i][n_i].l_x = key;
+			charDir[c_i][n_i].l_y = locDir[key].length - 1;
 		}
 	}
 	for (i = 0; i < hit.length; i++)
@@ -152,7 +152,7 @@ Main.prototype.genLocDir = function() {
 		loc = timeDir[term[i][0]][2][0];
 		keyed = false;
 		for (j = 0; j < locDirKey.length; j++) {
-			if (loc === locDirKey[j]) {
+			if (JSON.stringify(loc) === JSON.stringify(locDirKey[j])) {
 				key = j;
 				keyed = true;
 				break;
@@ -168,8 +168,8 @@ Main.prototype.genLocDir = function() {
 		// anc[key].push(new Point(1,0));
 		locDir[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], term[i][0]]);
 		
-		/*charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
-		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;*/
+		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
+		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;
 	}
 	for (i = 0; i + 1 < timeDir.length; i++) {
 		/*if (timeDir[i][1][1] > 0)
@@ -203,7 +203,7 @@ Main.prototype.genSequence = function(paths, moves) {
 		timeDir.push(new Array());
 		timeDir[timeDir.length - 1].push([i]);
 		timeDir[timeDir.length - 1].push([0, 0]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*points.length)]);
+		timeDir[timeDir.length - 1].push([points[Math.floor(Math.random()*points.length)]]);
 	}
 	
 	var c_i;
@@ -223,19 +223,19 @@ Main.prototype.randHex = function(charIndex) {
 	}
 	var viable = false, ni;
 	while (true) {
-		ni = Math.floor(Math.random()*points.length);
-		if (ni !== timeDir[i][2][0]) break;
+		ni = points[Math.floor(Math.random()*points.length)];
+		if (JSON.stringify(ni) !== JSON.stringify(timeDir[i][2][0])) break;
 	}
 	return ni;
 }
 Main.prototype.genHex = function() {
 	points = new Array();
-	points.push([100, 300]);
-	points.push([200, 114]);
-	points.push([400, 114]);
-	points.push([500, 300]);
-	points.push([400, 486]);
-	points.push([200, 486]);
+	points.push({x: 100, y: 300});
+	points.push({x: 200, y: 114});
+	points.push({x: 400, y: 114});
+	points.push({x: 500, y: 300});
+	points.push({x: 400, y: 486});
+	points.push({x: 200, y: 486});
 	
 	/*var coordVis = ;
 	addChild(coordVis);

@@ -42,6 +42,8 @@ function init() {
 
 	var main = new Main();
 
+	// console.log(JSON.stringify({x: 100, y: 200}) === JSON.stringify({x: 100, y: 200}));
+
 	/*var david = new Mon("Defed");
 	david.segeHal();*/
 
