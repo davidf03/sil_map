@@ -160,7 +160,8 @@
 				this.n0t1 = t1;
 				this.n1t1 = t3;}
 		}
-		Node.prototype.genPath = function() {
+		Node.prototype.genPath = function(active) {
+			this.lastBridge = bridge[this.c_i].x;
 			var n0l = {x:this.lastNode.x - this.loc.x, y:this.lastNode.y - this.loc.y};
 			var n0r = this.lastNode.getRadius();
 			var n1r = this.getRadius();
@@ -388,71 +389,65 @@
 				return true;}
 			return false;
 		}
-		Node.prototype.genNode = function() {
-			this.lastBridge = bridge[this.c_i].x;
-			this.lastNow = now;
-			//getting oth data
-			var i;
-			this.oth = 0;
-			this.arc_ce = 1;
-			for (i = 0; i < this.l_y; i++) {
-				if (isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], true)) {
-					this.oth += anc[this.l_x][i].x;
-					this.arc_ce -= this.arc_ce*0.35*anc[this.l_x][i].x;
-				}
-			}
-			this.arc_ce += (1 - this.arc_ce)*0.75;
-			this.anc_x1 = anc[this.l_x][this.l_y].x;
-			this.oth += this.anc_x1;
-			if (this.n_i > 0) {
-				this.anc_x0 = anc[this.lastNode.l_x][this.lastNode.l_y].x;//charDir[this.c_i][this.n_i - 1].anc_x1;
-			}
+		Node.prototype.genNode = function(active) {
+			main.graphics.clear();
+			main.graphics.beginFill(this.col);
+			main.graphics.drawCircle(0,0,(this.oth + 1)*this.radius);
+			main.graphics.lineStyle(stroke, 0x000000);
+			main.graphics.drawCircle(0,0,(this.oth + 1 - this.anc_x1)*this.radius);
+			main.graphics.endFill();
 			
-			if (this.anc_x1 > 0 && isPresent(this.c_i, this.n_i, true, 1)) {
-				if (isPresent(this.c_i, this.n_i, true)) { this.present = true;}
-										  else { this.present = false;}
-				//generating path
-				if (this.n_i > 0) {
-					genPath();
-					path.visible = true;
-				}
-				line[this.c_i][this.n_i].visible = true;
-				
-				//generating node
-				if (this.present) {
-					main.graphics.clear();
-					main.graphics.beginFill(this.col);
-					main.graphics.drawCircle(0,0,(this.oth + 1)*this.radius);
-					main.graphics.lineStyle(stroke, 0x000000);
-					main.graphics.drawCircle(0,0,(this.oth + 1 - this.anc_x1)*this.radius);
-					main.graphics.endFill();
+			//drawing arc
+			main.graphics.lineStyle(stroke, 0x000000);
+			if (this.n_i > 0) {
+				if (false == isPresent(this.c_i, this.n_i + 1, true, 1)) {
+					var angle = Math.atan2(this.n1t1.y, this.n1t1.x);
+					var angle2 = Math.atan2(this.n1t2e.y, this.n1t2e.x);
+					Arc.draw(main, 0, 0, (this.oth + 1)*this.radius, Math.PI + Math.abs(Math.abs(angle - angle2) - Math.PI), angle);
 					
-					//drawing arc
-					main.graphics.lineStyle(stroke, 0x000000);
-					if (this.n_i > 0) {
-						if (false == isPresent(this.c_i, this.n_i + 1, true, 1)) {
-							var angle = Math.atan2(this.n1t1.y, this.n1t1.x);
-							var angle2 = Math.atan2(this.n1t2e.y, this.n1t2e.x);
-							Arc.draw(main, 0, 0, (this.oth + 1)*this.radius, Math.PI + Math.abs(Math.abs(angle - angle2) - Math.PI), angle);
-							
-							var offset = Point.polar(this.getRadius()/4*this.arc_ce, angle - Math.PI/2);
-							main.graphics.moveTo(this.n1t1.x, this.n1t1.y);
-							main.graphics.lineTo(this.n1t1.x + offset.x, this.n1t1.y + offset.y);
-							//generating outer path caps (those coincidental with outer arc) here while no pathBreak of next exists to do so
-							genPathCaps(false, {x:0, y:0}, this.getRadius());
-						}
-					} else {
-						main.graphics.lineStyle(stroke, 0x000000);
-						main.graphics.drawCircle(0, 0, (this.oth + 1)*this.radius);
-					}
-					main.visible = true;
-				} else {
-					main.visible  = false;
+					var offset = Point.polar(this.getRadius()/4*this.arc_ce, angle - Math.PI/2);
+					main.graphics.moveTo(this.n1t1.x, this.n1t1.y);
+					main.graphics.lineTo(this.n1t1.x + offset.x, this.n1t1.y + offset.y);
+					//generating outer path caps (those coincidental with outer arc) here while no pathBreak of next exists to do so
+					genPathCaps(false, {x:0, y:0}, this.getRadius());
 				}
 			} else {
-				main.visible  = false;
-				if (this.n_i > 0) { path.visible = false;}
-				line[this.c_i][this.n_i].visible = false;
+				main.graphics.lineStyle(stroke, 0x000000);
+				main.graphics.drawCircle(0, 0, (this.oth + 1)*this.radius);
+			}
+		}
+		Node.prototype.generate = function(channel, active) {
+			if (0 < anc[this.c_i].x) {
+				if (typeof(active)==='undefined') active = false;
+
+				this.lastNow = now;
+				if (channel && active) {
+					//getting oth data
+					this.oth = 0;
+					this.arc_ce = 1;
+					for (var i = 0; i < this.l_y; i++) {
+						if (isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], true)) {
+							this.oth += anc[this.l_x][i].x;
+							this.arc_ce -= this.arc_ce*0.35*anc[locDir[this.l_x][i][0]].x;
+						}
+					}
+					this.arc_ce += (1 - this.arc_ce)*0.75;
+					this.anc_x1 = anc[this.l_x][this.l_y].x;
+					this.oth += this.anc_x1;
+					if (this.n_i > 0) {
+						this.anc_x0 = anc[this.lastNode.l_x][this.lastNode.l_y].x;//charDir[this.c_i][this.n_i - 1].anc_x1;
+					}
+				}
+				
+				//this could be refactored with a trinary return from isPresent
+				if (isPresent(this.c_i, this.n_i, true, 1)) {
+					if (isPresent(this.c_i, this.n_i, true)) { this.present = true;}
+														else { this.present = false;}
+					if (this.n_i > 0) {
+						if (active) calcPath();
+						genPath(active);}
+					if (channel && this.present) genNode(active);
+				}
 			}
 		}
 		Node.prototype.update = function(evt) {

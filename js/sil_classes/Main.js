@@ -10,6 +10,7 @@
 
 function Main() {
 	Detect = new Detect();
+	drawSequence = new Array();
 	this.genLocDir();
 	console.log(timeDir);
 	console.log(charDir);
@@ -66,7 +67,6 @@ Main.prototype.genLocDir = function() {
 		}
 		//registering
 		for (j = 0; j < term.length; j++) {
-			drawSequence.push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1] ]);
 			loc = timeDir[term[j][0]][2][0];
 			keyed = false;
 			for (k = 0; k < locDirKey.length; k++) {
@@ -80,11 +80,13 @@ Main.prototype.genLocDir = function() {
 				key = locDirKey.length;
 				locDirKey.push(loc);
 				locDir.push(new Array());
+				drawSequence.push(new Array());
 				// anc.push(new Array());
 			}
 			
 			// anc[key].push(new Point(1,0));
 			locDir[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], term[j][0]]);
+			drawSequence[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], true]);
 			
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;
@@ -95,25 +97,29 @@ Main.prototype.genLocDir = function() {
 		// lineCont.addChild(line[c_i][n_i]);
 		loc = timeDir[i][2][0];
 		charDir[c_i].push(new Node(c_i, n_i, cols[startColour][c_i], loc, i));
+
+		//determining key for entry of new Node into drawSequence
+		keyed = false;
+		for (k = 0; k < locDirKey.length; k++) {
+			if (JSON.stringify(loc) === JSON.stringify(locDirKey[k])) {
+				key = k;
+				keyed = true;
+				break;
+			}
+		}
+		if (false === keyed) {
+			key = locDirKey.length;
+			locDirKey.push(loc);
+			locDir.push(new Array());
+			drawSequence.push(new Array());
+			// anc.push(new Array());
+		}
+		drawSequence[key].push([c_i, n_i, false]);
+
 		if (timeDir[i][1][1] == 0) {
-			drawSequence.push([c_i, n_i]);
-			keyed = false;
-			for (k = 0; k < locDirKey.length; k++) {
-				if (JSON.stringify(loc) === JSON.stringify(locDirKey[k])) {
-					key = k;
-					keyed = true;
-					break;
-				}
-			}
-			if (false === keyed) {
-				key = locDirKey.length;
-				locDirKey.push(loc);
-				locDir.push(new Array());
-				// anc.push(new Array());
-			}
-			
 			// anc[key].push(new Point(1,0));
 			locDir[key].push([c_i, n_i, i]);
+			drawSequence[key].push([c_i, n_i, true]);
 			
 			charDir[c_i][n_i].l_x = key;
 			charDir[c_i][n_i].l_y = locDir[key].length - 1;
@@ -148,7 +154,6 @@ Main.prototype.genLocDir = function() {
 		term[hold] = store;
 	}
 	for (i = 0; i < term.length; i++) {
-		drawSequence.push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1]]);
 		loc = timeDir[term[i][0]][2][0];
 		keyed = false;
 		for (j = 0; j < locDirKey.length; j++) {
@@ -162,11 +167,13 @@ Main.prototype.genLocDir = function() {
 			key = locDirKey.length;
 			locDirKey.push(loc);
 			locDir.push(new Array());
+			drawSequence.push(new Array());
 			// anc.push(new Array());
 		}
 		
 		// anc[key].push(new Point(1,0));
 		locDir[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], term[i][0]]);
+		drawSequence[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1]], true);
 		
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;
