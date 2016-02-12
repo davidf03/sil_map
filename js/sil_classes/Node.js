@@ -161,7 +161,7 @@
 				this.n0t1 = t1;
 				this.n1t1 = t3;}
 		}
-		Node.prototype.genPath = function(active) {
+		Node.prototype.genPath = function(channel, active) {
 			this.lastBridge = bridge[this.c_i].x;
 			var n0l = {x:this.lastNode.x - this.loc.x, y:this.lastNode.y - this.loc.y};
 			var n0r = this.lastNode.getRadius();
@@ -421,7 +421,7 @@
 			}
 		}
 		Node.prototype.generate = function(channel, recalculate) {
-			if (0 < anc[this.c_i].x) {
+			if (0 < anc[this.c_i].x && frozenNow <= s_i) {
 
 				if (recalculate==='undefined') recalculate = 1;
 
@@ -461,17 +461,18 @@
 						this.present = false;
 
 					if (channel)
-						if (this.present) genNode(active);
-					else if (this.n_i > 0) {
-						if (1 === recalculate && false === active && false === channel) {
-							for (var i = this.lastNode.l_y - 1; i >= 0; i--) {
-								if (0 !== anc[locDir[this.lastNode.l_x][i][0]].i) {
-									active = true;
-									break;}
+						if (this.n_i > 0) {
+							if (1 === recalculate && false === active && false === channel) {
+								for (var i = this.lastNode.l_y - 1; i >= 0; i--) {
+									if (0 !== anc[locDir[this.lastNode.l_x][i][0]].i) {
+										active = true;
+										break;}
+								}
 							}
+							genPath(channel, active);
 						}
-						genPath(active);
-					}
+					else if (this.present)
+						genNode(active);
 				}
 			}
 		}

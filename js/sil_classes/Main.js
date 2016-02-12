@@ -56,10 +56,11 @@ Main.prototype.redraw = function() {
 	}
 	//loop for path underlay; not only does this create the line underlay, it
 	//also sequenced in such a way as to
+	//the parameter 3 passed to generate is one of four channels, generating not the node, nor one of two sides but the whole path
 	frozenNow = now;
-	for (var i = 0; i <= frozenNow; i++) {
-		charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(false);
-	}
+	// for (var i = 0; i <= frozenNow; i++) {
+	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
+	// }
 	//loop through drawSequence
 	iLen = drawSequence.length;
 	var jLen;
@@ -67,9 +68,10 @@ Main.prototype.redraw = function() {
 		jLen = drawSequence[i].length;
 		for (var j = 0; j < jLen; j++) {
 			if (drawSequence[i][j][2])
-				char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(true);
+				// char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
+				true;
 			else
-				char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(false, 0);
+				char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
 		}
 	}
 }
@@ -141,7 +143,7 @@ Main.prototype.genLocDir = function() {
 			}
 
 			locDir[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], term[j][0]]);
-			drawSequence[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], true]);
+			drawSequence[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0]);
 
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;
@@ -170,12 +172,12 @@ Main.prototype.genLocDir = function() {
 		}
 		//adding reference to path both to start and to end (initial nodes have no path)
 		if (n_i > 0) {
-			drawSequence[charDir[c_i][n_i - 1].l_x].push([c_i, n_i, false]);
-			drawSequence[key].push([c_i, n_i, false]);}
+			drawSequence[charDir[c_i][n_i - 1].l_x].push([c_i, n_i, 1]);
+			drawSequence[key].push([c_i, n_i, 2]);}
 
 		if (timeDir[i][1][1] == 0) {
 			locDir[key].push([c_i, n_i, i]);
-			drawSequence[key].push([c_i, n_i, true]);
+			drawSequence[key].push([c_i, n_i, 0]);
 
 			charDir[c_i][n_i].l_x = key;
 			charDir[c_i][n_i].l_y = locDir[key].length - 1;
@@ -227,7 +229,7 @@ Main.prototype.genLocDir = function() {
 		}
 
 		locDir[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], term[i][0]]);
-		drawSequence[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1]], true);
+		drawSequence[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1]], 0);
 
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;
