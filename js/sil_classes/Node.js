@@ -2,42 +2,43 @@
 		var oth;
 		var loc;
 		var col;
-		
+
 		var lastNode;
 		var n0t1, n0t2, n0t2e,
 			n1t1, n1t2, n1t2e;
+		var pathCaps;
 
 		var arc_ce;
-					
+
 		var c_i, n_i, s_i, l_x, l_y;
-					
+
 		var animating;
 		var anc_x0, anc_x1,
-			lastBridge, lastNow,
+			lastBridge,
 			present,
 			moving = false, waiting = false;
 		var waitNextFunction;
 		var moveNextFunction;
-		
+
 		// var testUint = 0;
-					
+
 		//var aniNode0,
 		//	aniNode1;
-	
-		
+
+
 		/*public static function get c_i() { return this.c_i;}
 		public static function get n_i() { return this.n_i;}
 		public static function get s_i() { return this.s_i;}
 		public static function get l_x() { return this.l_x;}
 		public static function get l_y() { return this.l_y;}*/
-		
+
 		/*function n0t1() { return this.n0t1;}
 		function n1t1() { return this.n1t1;}
 		function n0t2() { return this.n0t2;}
 		function n0t2e() { return this.n0t2e;}
 		function n1t2() { return this.n1t2;}
 		function n1t2e() { return this.n1t2e;}*/
-		
+
 		Node.prototype.getRadius = function() { return (this.oth + 1)*this.radius;}
 		Node.prototype.getloc = function() { return this.loc;}
 		Node.prototype.recolour = function(newCol) { this.col = newCol; this.genNode();}
@@ -52,14 +53,14 @@
 			var int_b = 2*(slope*(int_lb - c_loc.y) - c_loc.x);
 			var int_c = c_loc.x*c_loc.x + (int_lb - c_loc.y)*(int_lb - c_loc.y) - c_rad*c_rad;
 			var int_sqrt = Math.sqrt(int_b*int_b - 4*int_a*int_c);
-			
+
 			denTerm = 2*int_a;
 			if (denTerm == 0) { denTerm = 0.1;}
 			var int_x1 = (-int_b + int_sqrt)/denTerm;
 			var int_x2 = (-int_b - int_sqrt)/denTerm;
 			var int_y1 = Math.sqrt(c_rad*c_rad - (int_x1 - c_loc.x)*(int_x1 - c_loc.x)) + c_loc.y;
 			var int_y2 = Math.sqrt(c_rad*c_rad - (int_x2 - c_loc.x)*(int_x2 - c_loc.x)) + c_loc.y;
-			
+
 			if (Math.floor(int_y1) != Math.floor(slope*int_x1 + int_lb)) {
 				int_y1 -= 2*(int_y1 - c_loc.y);}
 			if (Math.floor(int_y2) != Math.floor(slope*int_x2 + int_lb)) {
@@ -89,12 +90,12 @@
 				py /= n0r - n1r;
 				p = {x:px, y:py};
 			}
-			
+
 			var t1,
 				t2,
 				t3,
 				t4;
-			
+
 			var denTerm = (p.x - n0l.x) * (p.x - n0l.x);
 			denTerm += (p.y - n0l.y) * (p.y - n0l.y);
 			if (denTerm == 0) { denTerm = 0.1;}
@@ -102,7 +103,7 @@
 			numRight = numRight + (p.y - n0l.y) * (p.y - n0l.y);
 			numRight = numRight - n0r * n0r;
 			numRight = Math.sqrt(numRight);
-			
+
 			var xNumRight = n0r * (p.y - n0l.y);
 			xNumRight = xNumRight * numRight;
 			var x0 = n0r * n0r * (p.x - n0l.x);
@@ -112,7 +113,7 @@
 			var x2 = x0 - xNumRight;
 			x2 = x2 / denTerm;
 			x2 = x2 + n0l.x;
-			
+
 			var yNumRight = n0r * (p.x - n0l.x);
 			yNumRight = yNumRight * numRight;
 			var y0 = n0r * n0r * (p.y - n0l.y);
@@ -122,10 +123,10 @@
 			var y2 = y0 - yNumRight;
 			y2 = y2 / denTerm;
 			y2 = y2 + n0l.y;
-			
+
 			t1 = {x:x1, y:y2};
 			t2 = {x:x2, y:y1};
-			
+
 			denTerm = p.x * p.x;
 			denTerm += p.y * p.y;
 			if (denTerm == 0) { denTerm = 0.1;}
@@ -133,7 +134,7 @@
 			numRight = numRight + p.y * p.y;
 			numRight = numRight - n1r * n1r;
 			numRight = Math.sqrt(numRight);
-			
+
 			xNumRight = n1r * p.y;
 			xNumRight = xNumRight * numRight;
 			x0 = n1r * n1r * p.x;
@@ -141,7 +142,7 @@
 			x1 = x1 / denTerm;
 			x2 = x0 - xNumRight;
 			x2 = x2 / denTerm;
-			
+
 			yNumRight = n1r * p.x;
 			yNumRight = yNumRight * numRight;
 			y0 = n1r * n1r * p.y;
@@ -149,10 +150,10 @@
 			y1 = y1 / denTerm;
 			y2 = y0 - yNumRight;
 			y2 = y2 / denTerm;
-			
+
 			t3 = {x:x1, y:y2};
 			t4 = {x:x2, y:y1};
-			
+
 			if (n1r > n0r) {
 				this.n0t1 = t2;
 				this.n1t1 = t4;
@@ -165,31 +166,33 @@
 			var n0l = {x:this.lastNode.x - this.loc.x, y:this.lastNode.y - this.loc.y};
 			var n0r = this.lastNode.getRadius();
 			var n1r = this.getRadius();
-			
+
 			var angle;
 			var angle2;
 			var offset;
-			
-			if (n0r == n1r) {
-				var xTerm = n0l.x,
-					yTerm = n0l.y;
-				if (xTerm == 0) { xTerm = 0.1;}
-				if (yTerm == 0) { yTerm = 0.1;}
 
-				angle = -Math.atan2(-xTerm, -yTerm);
-				offset = Point.polar(n1r, angle);
-				this.n0t1 = {x:n0l.x + offset.x, y:n0l.y + offset.y};
-				this.n1t1 = offset;
-			} else {
-				findTangentPoints(n0l, n0r, n1r);}
-			
-			angle = (-Math.atan2(this.n0t1.x, this.n0t1.y));
-			offset = Point.polar(n0r - (this.lastNode.oth + 1 - this.anc_x0)*this.radius, angle);
-			this.n0t2 = {x:this.n0t1.x + offset.x, y:this.n0t1.y + offset.y};
-			this.n1t2 = {x:this.n1t1.x + offset.x, y:this.n1t1.y + offset.y};
-			
-			this.n0t2e = findIntercepts(this.n0t2, this.n1t2, n0l, n0r, {x:0, y:0});
-			this.n1t2e = findIntercepts(this.n0t2, this.n1t2, {x:0, y:0}, n1r, n0l);
+			if (active) {
+				if (n0r == n1r) {
+					var xTerm = n0l.x,
+						yTerm = n0l.y;
+					if (xTerm == 0) { xTerm = 0.1;}
+					if (yTerm == 0) { yTerm = 0.1;}
+
+					angle = -Math.atan2(-xTerm, -yTerm);
+					offset = Point.polar(n1r, angle);
+					this.n0t1 = {x:n0l.x + offset.x, y:n0l.y + offset.y};
+					this.n1t1 = offset;
+				} else {
+					findTangentPoints(n0l, n0r, n1r);}
+
+				angle = (-Math.atan2(this.n0t1.x, this.n0t1.y));
+				offset = Point.polar(n0r - (this.lastNode.oth + 1 - this.anc_x0)*this.radius, angle);
+				this.n0t2 = {x:this.n0t1.x + offset.x, y:this.n0t1.y + offset.y};
+				this.n1t2 = {x:this.n1t1.x + offset.x, y:this.n1t1.y + offset.y};
+
+				this.n0t2e = findIntercepts(this.n0t2, this.n1t2, n0l, n0r, {x:0, y:0});
+				this.n1t2e = findIntercepts(this.n0t2, this.n1t2, {x:0, y:0}, n1r, n0l);
+			}
 
 
 			//drawing
@@ -197,36 +200,37 @@
 			   pathUnderArc	contains the graphic for circular arcs around pathBreak of outermost nodes; whereas
 			   pathOverArc	contains a circle, for those inset (i.e. not outermost), due to graphical 'irregularity' at gaps
 			   pathMain		contains the path itself, and all are contained within the object path*/
-			
+
 			/* Anchoring path to previous node */
 			pathBreak.graphics.clear();
 			pathBreak.graphics.beginFill(this.col);
 			pathBreak.graphics.drawCircle(n0l.x, n0l.y, n0r - this.anc_x0*this.radius/2);
 			pathBreak.graphics.drawCircle(n0l.x, n0l.y, n0r);
 			pathBreak.graphics.endFill();
-			
+
 			pathUnderArc.graphics.clear();
 			pathUnderArc.graphics.lineStyle(stroke, 0x000000);
 			if (this.n_i > 1) {
 				angle = Math.atan2(this.lastNode.n1t1.y,this.lastNode.n1t1.x);
 				angle2 = Math.atan2(this.lastNode.n1t2e.y,this.lastNode.n1t2e.x);
 				Arc.draw(pathUnderArc, n0l.x, n0l.y, n0r, Math.PI + Math.abs(Math.abs(angle - angle2) - Math.PI), angle);
-				
+
 				offset = Point.polar(n0r/4*this.lastNode.arc_ce, angle - Math.PI/2);
 				pathUnderArc.graphics.moveTo(this.lastNode.n1t1.x + n0l.x, this.lastNode.n1t1.y + n0l.y);
 				pathUnderArc.graphics.lineTo(this.lastNode.n1t1.x + n0l.x + offset.x, this.lastNode.n1t1.y + n0l.y + offset.y);
 			} else {
 				pathUnderArc.graphics.drawCircle(n0l.x, n0l.y, n0r);}
-			
+
 			pathOverArc.graphics.clear();
 			pathOverArc.graphics.lineStyle(stroke, 0x000000);
 			pathOverArc.graphics.drawCircle(n0l.x, n0l.y, n0r);
-			
+
 			/* Capping to anchor paths of nodes interior */
 			pathBreak.graphics.lineStyle(stroke, 0x000000);
+			//activity could be monitored here to minimize calls to findIntercepts within
 			genPathCaps(true, n0l, n0r);
-			
-			
+
+
 			/* the path itself */
 			pathMain.graphics.clear();
 			pathMain.graphics.beginFill(this.col);
@@ -259,9 +263,9 @@
 			}
 			pathMain.graphics.endFill();
 
-			
+
 			/* line overlays */
-			line[this.c_i][this.n_i].graphics.clear();
+			/*line[this.c_i][this.n_i].graphics.clear();
 			line[this.c_i][this.n_i].graphics.lineStyle(stroke, 0x000000, 0.2);
 			line[this.c_i][this.n_i].graphics.moveTo(this.n0t1.x + this.loc.x, this.n0t1.y + this.loc.y);
 			if (this.present) {
@@ -275,7 +279,7 @@
 				} else {
 					line[this.c_i][this.n_i].graphics.lineTo(this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge) + this.loc.x, this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge) + this.loc.y);
 					line[this.c_i][this.n_i].graphics.lineTo(this.n0t2e.x + this.loc.x, this.n0t2e.y + this.loc.y);}
-			}
+			}*/
 		}
 
 		Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
@@ -290,7 +294,7 @@
 				hold_s_i = this.s_i;
 				hold_anc = this.anc_x1;
 			}
-			
+
 			var outermost = true;
 			if (this.n_i == 0 || this.n_i == 1 && breaking) {
 				outermost = false;
@@ -303,7 +307,7 @@
 						break;}
 				}
 			}
-			
+
 			if (breaking || outermost) {
 				//somewhat out of place here, but both run on every regen and have significant overlap in requirements
 				if (breaking && this.n_i >= 2) {
@@ -344,27 +348,27 @@
 				xOffset = cen.x;
 				yOffset = cen.y;
 			}
-			
+
 			var p1 = {x:charDir[oth_c][oth_n].n1t1.x + xOffset, y:charDir[oth_c][oth_n].n1t1.y + yOffset},
 				p2 = {x:charDir[oth_c][oth_n].n0t1.x + xOffset, y:charDir[oth_c][oth_n].n0t1.y + yOffset};
 			var t_int = findIntercepts(p1, p2, cen, rad, {x:xPos, y:yPos});
-			
+
 			var xTerm = t_int.x - cen.x,
 				yTerm = t_int.y - cen.y;
 			if (xTerm == 0) { xTerm = 0.1;}
 			if (yTerm == 0) { yTerm = 0.1;}
 			var angle = Math.atan2(yTerm, xTerm);
-			
+
 			p1 = {x:charDir[oth_c][oth_n].n1t2.x + xOffset, y:charDir[oth_c][oth_n].n1t2.y + yOffset};
 			p2 = {x:charDir[oth_c][oth_n].n0t2.x + xOffset, y:charDir[oth_c][oth_n].n0t2.y + yOffset};
 			t_int = findIntercepts(p1, p2, cen, rad, {x:xPos, y:yPos});
-			
+
 			xTerm = t_int.x - cen.x;
 			yTerm = t_int.y - cen.y;
 			if (xTerm == 0) { xTerm = 0.1;}
 			if (yTerm == 0) { yTerm = 0.1;}
 			var angle2 = Math.atan2(yTerm, xTerm);
-			
+
 			if (breaking) {
 				if (outbound) { Arc.draw(pathBreak, cen.x, cen.y, rad, Math.PI - Math.abs(Math.abs(angle - angle2) - Math.PI), angle);}
 						 else { Arc.draw(pathBreak, cen.x, cen.y, rad, Math.PI - Math.abs(Math.abs(angle - angle2) - Math.PI), angle2);}
@@ -378,7 +382,7 @@
 			if (typeof(held)==='undefined') held = false;
 			if (typeof(indexEnd)==='undefined') indexEnd = 2;
 			if (held) {
-				var hold_now = this.lastNow;
+				var hold_now = frozenNow;
 				if (hold_c == this.c_i) { var hold_bridge = this.lastBridge;}
 							  else { hold_bridge = bridge[hold_c].x;}
 			} else {
@@ -396,7 +400,7 @@
 			main.graphics.lineStyle(stroke, 0x000000);
 			main.graphics.drawCircle(0,0,(this.oth + 1 - this.anc_x1)*this.radius);
 			main.graphics.endFill();
-			
+
 			//drawing arc
 			main.graphics.lineStyle(stroke, 0x000000);
 			if (this.n_i > 0) {
@@ -404,7 +408,7 @@
 					var angle = Math.atan2(this.n1t1.y, this.n1t1.x);
 					var angle2 = Math.atan2(this.n1t2e.y, this.n1t2e.x);
 					Arc.draw(main, 0, 0, (this.oth + 1)*this.radius, Math.PI + Math.abs(Math.abs(angle - angle2) - Math.PI), angle);
-					
+
 					var offset = Point.polar(this.getRadius()/4*this.arc_ce, angle - Math.PI/2);
 					main.graphics.moveTo(this.n1t1.x, this.n1t1.y);
 					main.graphics.lineTo(this.n1t1.x + offset.x, this.n1t1.y + offset.y);
@@ -416,37 +420,58 @@
 				main.graphics.drawCircle(0, 0, (this.oth + 1)*this.radius);
 			}
 		}
-		Node.prototype.generate = function(channel, active) {
+		Node.prototype.generate = function(channel, recalculate) {
 			if (0 < anc[this.c_i].x) {
-				if (typeof(active)==='undefined') active = false;
 
-				this.lastNow = now;
-				if (channel && active) {
+				if (recalculate==='undefined') recalculate = 1;
+
+				if (2 <= recalculate)
+					var active = true;
+				else if (1 <= recalculate) {
+					active = false;
+					for (var i = this.l_y; i >= 0; i--) {
+						if (0 !== anc[locDir[this.l_x][i][0]].i) {
+							active = true;
+							break;}
+					}
+				}
+
+				if (active) {
 					//getting oth data
 					this.oth = 0;
 					this.arc_ce = 1;
+
 					for (var i = 0; i < this.l_y; i++) {
 						if (isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], true)) {
-							this.oth += anc[this.l_x][i].x;
+							this.oth += anc[locDir[this.l_x][i][0]].x;
 							this.arc_ce -= this.arc_ce*0.35*anc[locDir[this.l_x][i][0]].x;
-						}
+						} else {
+							break;}
 					}
 					this.arc_ce += (1 - this.arc_ce)*0.75;
-					this.anc_x1 = anc[this.l_x][this.l_y].x;
+					this.anc_x1 = this.anc_x0 = anc[this.c_i].x;
 					this.oth += this.anc_x1;
-					if (this.n_i > 0) {
-						this.anc_x0 = anc[this.lastNode.l_x][this.lastNode.l_y].x;//charDir[this.c_i][this.n_i - 1].anc_x1;
-					}
 				}
-				
+
 				//this could be refactored with a trinary return from isPresent
 				if (isPresent(this.c_i, this.n_i, true, 1)) {
-					if (isPresent(this.c_i, this.n_i, true)) { this.present = true;}
-														else { this.present = false;}
-					if (this.n_i > 0) {
-						if (active) calcPath();
-						genPath(active);}
-					if (channel && this.present) genNode(active);
+					if (isPresent(this.c_i, this.n_i, true))
+						this.present = true;
+					else
+						this.present = false;
+
+					if (channel)
+						if (this.present) genNode(active);
+					else if (this.n_i > 0) {
+						if (1 === recalculate && false === active && false === channel) {
+							for (var i = this.lastNode.l_y - 1; i >= 0; i--) {
+								if (0 !== anc[locDir[this.lastNode.l_x][i][0]].i) {
+									active = true;
+									break;}
+							}
+						}
+						genPath(active);
+					}
 				}
 			}
 		}
@@ -629,7 +654,7 @@
 					addEventListener(Event.ENTER_FRAME, this.moveNextFunction);
 					removeEventListener(Event.ENTER_FRAME, update);
 					addEventListener(Event.ENTER_FRAME, update);
-				
+
 					//rift and end == false?
 
 					//creating listeners for any node whose movement begins within the defined extent, regardless of whether it's further nested, and removes any previously assigned
@@ -649,7 +674,7 @@
 							riftIndex = i;
 							break;}
 					}
-	
+
 					// (a rift is discontinous collective movement, i.e. no overlap to successively chain movements - time would cease to exist but for the dedicated 'riftBridge')
 					if (beforeRift && riftIndex <= target) {
 						//confirming existence of apparent rift
@@ -696,7 +721,7 @@
 			this.s_i = timeIndex;
 			this.col = colour;
 			this.loc = location;
-						
+
 			if (this.n_i > 0) {
 				this.n0t1 = {x:0, y:0};
 				this.n0t2 = {x:0, y:0};
@@ -704,6 +729,7 @@
 				this.n1t1 = {x:0, y:0};
 				this.n1t2 = {x:0, y:0};
 				this.n1t2e = {x:0, y:0};
+				pathCaps = new Array();
 
 				this.lastNode = charDir[this.c_i][this.n_i - 1];
 
@@ -719,10 +745,7 @@
 					pathUnderArc.visible = false;
 				}*/
 			}
-			
+
 			this.waitNextFunction = this.waitNext(0, true, 0);
 			this.moveNextFunction = this.moveNext(0, true);
 		}
-
-
-
