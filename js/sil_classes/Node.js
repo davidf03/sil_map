@@ -393,23 +393,9 @@ Node.prototype.isPresent = function(hold_c, hold_n, held, indexEnd) {
 	if (hold_n < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n].s_i && (1 <= hold_bridge || 2 > indexEnd && (0 < hold_bridge || 1 > indexEnd && 0 >= hold_bridge)) || hold_n + 1 < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n + 1].s_i) {
 		return true;
 	}
-	// if (hold_n < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n].s_i && (1 <= hold_bridge || 2 > indexEnd && (0 < hold_bridge || 1 > indexEnd && 0 >= hold_bridge)) || hold_n + 1 < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n + 1].s_i) {
-	console.log('not present');
 	return false;
 }
 Node.prototype.genNode = function(active) {
-	// ctx.strokeStyle = "#000000";
-	// ctx.lineWidth = "3";
-	//
-	// ctx.fillStyle = "rgba(0,255,0,1)";
-	// ctx.beginPath();
-	// ctx.arc(400, 250, 50, 0, Math.PI*2);
-	// ctx.moveTo(440, 250);
-	// ctx.arc(400, 250, 40, 0, Math.PI*2);
-	// ctx.fill("evenodd");
-	// ctx.closePath();
-	// ctx.stroke();
-
 	var can = document.getElementById('canvas');
 	var ctx = can.getContext('2d');
 
@@ -417,8 +403,6 @@ Node.prototype.genNode = function(active) {
 	ctx.fillStyle = '#339966';
 	ctx.strokeStyle = '#000000'
 	ctx.lineWidth = stroke;
-	// console.log(this.loc.x+", "+this.loc.y);
-	// console.log(this.oth+", "+this.anc_x1+", "+this.radius);
 	ctx.arc(this.loc.x, this.loc.y, (this.oth + 1 - this.anc_x1)*this.radius, 0, Math.PI*2);
 	ctx.stroke();
 	ctx.arc(this.loc.x, this.loc.y, (this.oth + 1)*this.radius, 0, Math.PI*2)
@@ -448,8 +432,8 @@ Node.prototype.genNode = function(active) {
 	// }
 }
 Node.prototype.generate = function(channel, recalculate) {
-	// console.log(anc[this.c_i].x)
-	// if (0 < anc[this.c_i].x && frozenNow >= s_i) {
+
+	if (0 < anc[this.c_i].x && frozenNow >= this.s_i) {
 
 		if (recalculate==='undefined') recalculate = 1;
 
@@ -508,7 +492,7 @@ Node.prototype.generate = function(channel, recalculate) {
 				this.genNode(active);
 			}
 		}
-	// }
+	}
 }
 Node.prototype.update = function(evt) {
 	genNode();

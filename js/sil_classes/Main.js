@@ -1,28 +1,15 @@
-// private var coordVis:Sprite;
-
-// public var anc:Array;
-// public var bridge:Array;
-// public var riftBridge:Point;
-
 // public var path:Array; //?
 // public var line:Array;
-
 
 function Main() {
 	Detect = new Detect();
 	this.genLocDir();
-	// console.log("time:");
-	// console.log(timeDir);
-	// console.log("char:");
-	// console.log(charDir);
-	// console.log("loc:");
-	// console.log(locDir);
-	// console.log("draw:");
-	// console.log(drawSequence);
-	// console.log("anc:");
-	// console.log(anc);
-	// console.log("bridge:");
-	// console.log(bridge);
+	console.log(timeDir);
+	console.log(charDir);
+	console.log(locDir);
+	console.log(drawSequence);
+	console.log(anc);
+	console.log(bridge);
 }
 
 Main.prototype.redraw = function() {
@@ -62,6 +49,7 @@ Main.prototype.redraw = function() {
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
 	frozenNow = now;
+	now = timeDir.length - 1;
 	// for (var i = 0; i <= frozenNow; i++) {
 	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
 	// }
@@ -83,7 +71,6 @@ Main.prototype.redraw = function() {
 Main.prototype.genLocDir = function() {
 	this.genSequence(5, Math.floor(Math.random()*5) + 16);
 	now = timeDir.length - 1;
-	console.log(timeDir.length)
 
 	locDir = new Array();
 	var locDirKey = new Array();
@@ -306,15 +293,6 @@ Main.prototype.genHex = function() {
 	points.push({x: 500, y: 300});
 	points.push({x: 400, y: 486});
 	points.push({x: 200, y: 486});
-
-	/*var coordVis = ;
-	addChild(coordVis);
-	coordVis.graphics.beginFill(0xDFDFDF);
-	var i:uint;
-	for (i = 0; i < points.length; i++) {
-		coordVis.graphics.drawCircle(points[i].x, points[i].y, 3);
-	}
-	coordVis.graphics.endFill();*/
 }
 Main.prototype.visLoc = function() {
 	for (var i = 0; i < points.length; i++) {
@@ -324,7 +302,6 @@ Main.prototype.visLoc = function() {
 		ctx.fillStyle = '#CDCDCD';
 		ctx.arc(points[i].x, points[i].y, 4, 0, Math.PI*2)
 		ctx.fill();
-		// ctx.stroke;
 		ctx.closePath();
 	}
 }
