@@ -11,18 +11,18 @@
 function Main() {
 	Detect = new Detect();
 	this.genLocDir();
-	console.log("time:");
-	console.log(timeDir);
-	console.log("char:");
-	console.log(charDir);
-	console.log("loc:");
-	console.log(locDir);
-	console.log("draw:");
-	console.log(drawSequence);
-	console.log("anc:");
-	console.log(anc);
-	console.log("bridge:");
-	console.log(bridge);
+	// console.log("time:");
+	// console.log(timeDir);
+	// console.log("char:");
+	// console.log(charDir);
+	// console.log("loc:");
+	// console.log(locDir);
+	// console.log("draw:");
+	// console.log(drawSequence);
+	// console.log("anc:");
+	// console.log(anc);
+	// console.log("bridge:");
+	// console.log(bridge);
 }
 
 Main.prototype.redraw = function() {
@@ -57,6 +57,10 @@ Main.prototype.redraw = function() {
 	//loop for path underlay; not only does this create the line underlay, it
 	//also sequenced in such a way as to
 	//the parameter 3 passed to generate is one of four channels, generating not the node, nor one of two sides but the whole path
+	var can = document.getElementById('canvas');
+	var ctx = can.getContext('2d');
+	ctx.clearRect(0,0,can.width,can.height);
+	this.visLoc();
 	frozenNow = now;
 	// for (var i = 0; i <= frozenNow; i++) {
 	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
@@ -67,11 +71,11 @@ Main.prototype.redraw = function() {
 	for (var i = 0; i < iLen; i++) {
 		jLen = drawSequence[i].length;
 		for (var j = 0; j < jLen; j++) {
-			if (drawSequence[i][j][2])
+			// if (drawSequence[i][j][2])
 				// char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
-				true;
-			else
-				char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
+				// true;
+			// else
+			charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
 		}
 	}
 }
@@ -79,6 +83,7 @@ Main.prototype.redraw = function() {
 Main.prototype.genLocDir = function() {
 	this.genSequence(5, Math.floor(Math.random()*5) + 16);
 	now = timeDir.length - 1;
+	console.log(timeDir.length)
 
 	locDir = new Array();
 	var locDirKey = new Array();
@@ -143,7 +148,7 @@ Main.prototype.genLocDir = function() {
 			}
 
 			locDir[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], term[j][0]]);
-			drawSequence[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0]);
+			drawSequence[key].push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0 ]);
 
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;
@@ -229,7 +234,7 @@ Main.prototype.genLocDir = function() {
 		}
 
 		locDir[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], term[i][0]]);
-		drawSequence[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1]], 0);
+		drawSequence[key].push([ timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], 0 ]);
 
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;
@@ -242,7 +247,8 @@ Main.prototype.genLocDir = function() {
 			break;
 		}
 	}
-	redraw();
+	now = timeDir.length - 1;
+	this.redraw();
 }
 Main.prototype.genSequence = function(paths, moves) {
 	/*path = new Array();
@@ -309,4 +315,16 @@ Main.prototype.genHex = function() {
 		coordVis.graphics.drawCircle(points[i].x, points[i].y, 3);
 	}
 	coordVis.graphics.endFill();*/
+}
+Main.prototype.visLoc = function() {
+	for (var i = 0; i < points.length; i++) {
+		var can = document.getElementById('canvas');
+		var ctx = can.getContext('2d');
+		ctx.beginPath();
+		ctx.fillStyle = '#CDCDCD';
+		ctx.arc(points[i].x, points[i].y, 4, 0, Math.PI*2)
+		ctx.fill();
+		// ctx.stroke;
+		ctx.closePath();
+	}
 }

@@ -16,7 +16,9 @@
             var timeDir;
             var charDir;
             var locDir;
+
             var points;
+
             var anc;
             var bridge;
             var riftBridge;
@@ -45,6 +47,9 @@
                 ,[{hex:0x17263B},{hex:0xF9D2BD},{hex:0x8D2A14},{hex:0xC45234},{hex:0x35332F}]
                 ,[{hex:0x14DB14},{hex:0xF71B14},{hex:0xB61BE0},{hex:0x1DEEF5},{hex:0xDED014}]];
                 [{hex:0x00FF7F},{hex:0x007FFF},{hex:0x7F00FF},{hex:0xFF0000},{hex:0xFF7F00},{hex:0xFFFF00}*/];
+
+            var can;
+            var ctx;
         </script>
         <script type="text/javascript" src="js/sil_classes/Main.js"></script>
         <script type="text/javascript" src="js/sil_classes/Detect.js"></script>
@@ -53,7 +58,7 @@
     </head>
     <body onload="init()">
 
-        <button class="toggleSidebar">
+        <!-- <button class="toggleSidebar">
             <div class="bar"><div></div></div>
             <div class="bar"><div></div></div>
             <div class="bar"><div></div></div>
@@ -86,16 +91,16 @@
                 </form>
                 <div class="heading"><h1>Character</h1></div>
                 <div class="heading"><h1>Controls</h1></div>
-                <div class="main">
+                <div class="main"> -->
                     <!-- <div class="character">
                         <div class="number"></div>
                         <div class="colour"></div>
                         <div class="name"></div>
                         <div class="controls"></div>
                     </div> -->
-                </div>
+                <!-- </div>
             </div>
-        </div>
+        </div> -->
 
         <canvas id="canvas" class="map" width="700" height="700">
             Canvas not supported!
@@ -103,6 +108,8 @@
 
         <!--script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script-->
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+        <script>
+        </script>
         <script type="text/javascript" src="js/main.js"></script>
 
     </body>
