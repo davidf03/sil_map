@@ -66,7 +66,7 @@ Detect.prototype.genFromLast = function(index) {
 			}
 			if (timeDir[i][1].length < 3 || timeDir[lastIndex][1].length < 3) {
 				fromNow += this.genFromLast(i);
-			} else  {
+			} else {
 				fromNow += timeDir[i][1][2] - timeDir[lastIndex][1][2];
 				i = lastIndex + 1;
 			}

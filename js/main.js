@@ -47,6 +47,34 @@ function init() {
 
 	var main = new Main();
 
+	// ctx.fillStyle = '#00FF00';
+	// ctx.beginPath();
+	// ctx.moveTo(100, 100);
+	// ctx.lineTo(200, 100);
+	// ctx.lineTo(200, 200);
+	// ctx.arc(100, 200, 100, 0, -0.5*Math.PI, true);
+	// // ctx.arc(loc[this.lastNode.l_i].x + offset.x, loc[this.lastNode.l_i].y + offset.y, 2, 0, Math.PI*2);
+	// ctx.closePath();
+	// ctx.fill();
+
 	/*var david = new Mon("Defed");
 	david.segeHal();*/
+
+	// ctx.strokeStyle = '#000000';
+	// ctx.lineWidth = 5;
+	// ctx.beginPath();
+	// ctx.moveTo(0, 0);
+	// ctx.lineTo(100, 10);
+	// // ctx.lineWidth = 0;
+	// // ctx.lineTo(100, 100);
+	// ctx.closePath();
+	// ctx.stroke();
+	// // ctx.strokeStyle = '#000000';
+	// // ctx.lineWidth = 5;
+	// ctx.beginPath();
+	// ctx.moveTo(100, 100);
+	// ctx.lineWidth = 5;
+	// ctx.lineTo(50, 100);
+	// ctx.closePath();
+	// ctx.stroke();
 }

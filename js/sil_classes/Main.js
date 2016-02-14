@@ -59,11 +59,11 @@ Main.prototype.redraw = function() {
 	for (var i = 0; i < iLen; i++) {
 		jLen = drawSequence[i].length;
 		for (var j = 0; j < jLen; j++) {
-			// if (drawSequence[i][j][2])
+			if (drawSequence[i][j][2])
 				// char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
-				// true;
-			// else
-			charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
+				true;
+			else
+				charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
 		}
 	}
 }
@@ -79,8 +79,7 @@ Main.prototype.genLocDir = function() {
 	var i, j, k,
 		keyed, key;
 
-	var loc;
-	var c_i, n_i;
+	var c_i, n_i, l_i;
 
 	var toPresent;
 	var hit = new Array();
@@ -118,10 +117,10 @@ Main.prototype.genLocDir = function() {
 		}
 		//registering
 		for (j = 0; j < term.length; j++) {
-			loc = timeDir[term[j][0]][2][0];
+			l_i = timeDir[term[j][0]][2][0];
 			keyed = false;
 			for (k = 0; k < locDirKey.length; k++) {
-				if (JSON.stringify(loc) === JSON.stringify(locDirKey[k])) {
+				if (l_i === locDirKey[k]) {
 					key = k;
 					keyed = true;
 					break;
@@ -129,7 +128,7 @@ Main.prototype.genLocDir = function() {
 			}
 			if (false === keyed) {
 				key = locDirKey.length;
-				locDirKey.push(loc);
+				locDirKey.push(l_i);
 				locDir.push(new Array());
 				drawSequence.push(new Array());
 			}
@@ -144,13 +143,13 @@ Main.prototype.genLocDir = function() {
 		//adding path of current index, registering if movement is instantaneous (consolidate with above?)
 		// line[c_i].push(new Sprite());
 		// lineCont.addChild(line[c_i][n_i]);
-		loc = timeDir[i][2][0];
-		charDir[c_i].push(new Node(c_i, n_i, cols[startColour][c_i], loc, i));
+		l_i = timeDir[i][2][0];
+		charDir[c_i].push(new Node(c_i, n_i, cols[startColour][c_i], l_i, i));
 
 		//determining key for entry of new Node into drawSequence
 		keyed = false;
 		for (k = 0; k < locDirKey.length; k++) {
-			if (JSON.stringify(loc) === JSON.stringify(locDirKey[k])) {
+			if (l_i === locDirKey[k]) {
 				key = k;
 				keyed = true;
 				break;
@@ -158,7 +157,7 @@ Main.prototype.genLocDir = function() {
 		}
 		if (false === keyed) {
 			key = locDirKey.length;
-			locDirKey.push(loc);
+			locDirKey.push(l_i);
 			locDir.push(new Array());
 			drawSequence.push(new Array());
 		}
@@ -204,10 +203,10 @@ Main.prototype.genLocDir = function() {
 		term[hold] = store;
 	}
 	for (i = 0; i < term.length; i++) {
-		loc = timeDir[term[i][0]][2][0];
+		l_i = timeDir[term[i][0]][2][0];
 		keyed = false;
 		for (j = 0; j < locDirKey.length; j++) {
-			if (JSON.stringify(loc) === JSON.stringify(locDirKey[j])) {
+			if (l_i === locDirKey[j]) {
 				key = j;
 				keyed = true;
 				break;
@@ -215,7 +214,7 @@ Main.prototype.genLocDir = function() {
 		}
 		if (false === keyed) {
 			key = locDirKey.length;
-			locDirKey.push(loc);
+			locDirKey.push(l_i);
 			locDir.push(new Array());
 			drawSequence.push(new Array());
 		}
@@ -254,23 +253,28 @@ Main.prototype.genSequence = function(paths, moves) {
 		bridge.push({x:1, i:0, f:1});
 		anc.push({x:1, i:0, f:1});
 	}
-	riftBridge = {x:1, inc:0};
+	riftBridge = {x:1, i:0, f:1};
 
 	for (var i = 0; i < paths; i++) {
 		timeDir.push(new Array());
 		timeDir[timeDir.length - 1].push([i]);
 		timeDir[timeDir.length - 1].push([0, 0]);
-		timeDir[timeDir.length - 1].push([points[Math.floor(Math.random()*points.length)]]);
+		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
 	}
 
-	var c_i;
-	for (var i = 0; i < moves; i++) {
-		c_i = Math.floor(Math.random()*paths);
-		timeDir.push(new Array());
-		timeDir[timeDir.length - 1].push([c_i]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
-		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
-	}
+	// var c_i;
+	// for (var i = 0; i < moves; i++) {
+	// 	c_i = Math.floor(Math.random()*paths);
+	// 	timeDir.push(new Array());
+	// 	timeDir[timeDir.length - 1].push([c_i]);
+	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
+	// 	timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
+	// }
+
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([this.randHex(0)]);
 }
 Main.prototype.randHex = function(charIndex) {
 	var i;
@@ -280,27 +284,27 @@ Main.prototype.randHex = function(charIndex) {
 	}
 	var viable = false, ni;
 	while (true) {
-		ni = points[Math.floor(Math.random()*points.length)];
-		if (JSON.stringify(ni) !== JSON.stringify(timeDir[i][2][0])) break;
+		ni = Math.floor(Math.random()*loc.length);
+		if (ni !== timeDir[i][2][0]) break;
 	}
 	return ni;
 }
 Main.prototype.genHex = function() {
-	points = new Array();
-	points.push({x: 100, y: 300});
-	points.push({x: 200, y: 114});
-	points.push({x: 400, y: 114});
-	points.push({x: 500, y: 300});
-	points.push({x: 400, y: 486});
-	points.push({x: 200, y: 486});
+	loc = new Array();
+	loc.push(new Point(100, 300));
+	loc.push(new Point(200, 114));
+	loc.push(new Point(400, 114));
+	loc.push(new Point(500, 300));
+	loc.push(new Point(400, 486));
+	loc.push(new Point(200, 486));
 }
 Main.prototype.visLoc = function() {
-	for (var i = 0; i < points.length; i++) {
+	for (var i = 0; i < loc.length; i++) {
 		var can = document.getElementById('canvas');
 		var ctx = can.getContext('2d');
 		ctx.beginPath();
 		ctx.fillStyle = '#CDCDCD';
-		ctx.arc(points[i].x, points[i].y, 4, 0, Math.PI*2)
+		ctx.arc(loc[i].x, loc[i].y, 4, 0, Math.PI*2)
 		ctx.fill();
 		ctx.closePath();
 	}
