@@ -8,6 +8,7 @@ function Main() {
 	console.log(charDir);
 	console.log(locDir);
 	console.log(drawSequence);
+	console.log(testSequence);
 	console.log(anc);
 	console.log(bridge);
 }
@@ -54,17 +55,21 @@ Main.prototype.redraw = function() {
 	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
 	// }
 	//loop through drawSequence
-	iLen = drawSequence.length;
-	var jLen;
+	// iLen = drawSequence.length;
+	// var jLen;
+	// for (var i = 0; i < iLen; i++) {
+	// 	jLen = drawSequence[i].length;
+	// 	for (var j = 0; j < jLen; j++) {
+	// 		if (drawSequence[i][j][2])
+	// 			char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
+	// 		else
+	// 			charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
+	// 	}
+	// }
+	//testSequence
+	iLen = testSequence.length;
 	for (var i = 0; i < iLen; i++) {
-		jLen = drawSequence[i].length;
-		for (var j = 0; j < jLen; j++) {
-			if (drawSequence[i][j][2])
-				// char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
-				true;
-			else
-				charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
-		}
+		charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
 	}
 }
 
@@ -75,6 +80,7 @@ Main.prototype.genLocDir = function() {
 	locDir = new Array();
 	var locDirKey = new Array();
 	drawSequence = new Array();
+	testSequence = new Array();
 
 	var i, j, k,
 		keyed, key;
@@ -135,6 +141,7 @@ Main.prototype.genLocDir = function() {
 
 			locDir[key].push([timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], term[j][0]]);
 			drawSequence[key].push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0 ]);
+			testSequence.push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0 ]);
 
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;
@@ -164,11 +171,14 @@ Main.prototype.genLocDir = function() {
 		//adding reference to path both to start and to end (initial nodes have no path)
 		if (n_i > 0) {
 			drawSequence[charDir[c_i][n_i - 1].l_x].push([c_i, n_i, 1]);
-			drawSequence[key].push([c_i, n_i, 2]);}
+			drawSequence[key].push([c_i, n_i, 2]);
+			testSequence.push([c_i, n_i, 3]);
+		}
 
 		if (timeDir[i][1][1] == 0) {
 			locDir[key].push([c_i, n_i, i]);
 			drawSequence[key].push([c_i, n_i, 0]);
+			testSequence.push([c_i, n_i, 0]);
 
 			charDir[c_i][n_i].l_x = key;
 			charDir[c_i][n_i].l_y = locDir[key].length - 1;
@@ -221,6 +231,7 @@ Main.prototype.genLocDir = function() {
 
 		locDir[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], term[i][0]]);
 		drawSequence[key].push([ timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], 0 ]);
+		testSequence.push([ timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], 0 ]);
 
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;
@@ -262,19 +273,19 @@ Main.prototype.genSequence = function(paths, moves) {
 		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
 	}
 
-	// var c_i;
-	// for (var i = 0; i < moves; i++) {
-	// 	c_i = Math.floor(Math.random()*paths);
-	// 	timeDir.push(new Array());
-	// 	timeDir[timeDir.length - 1].push([c_i]);
-	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
-	// 	timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
-	// }
+	var c_i;
+	for (var i = 0; i < moves; i++) {
+		c_i = Math.floor(Math.random()*paths);
+		timeDir.push(new Array());
+		timeDir[timeDir.length - 1].push([c_i]);
+		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
+		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
+	}
 
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([this.randHex(0)]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([this.randHex(0)]);
 }
 Main.prototype.randHex = function(charIndex) {
 	var i;
