@@ -477,9 +477,7 @@ Node.prototype.genNode = function(active) {
 	}
 }
 Node.prototype.generate = function(channel, recalculate) {
-
 	if (0 < anc[this.c_i].x && frozenNow >= this.s_i) {
-
 		if (recalculate==='undefined') recalculate = 1;
 
 		this.lastNow = now;

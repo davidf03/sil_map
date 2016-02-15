@@ -7,18 +7,28 @@ function Main() {
 	console.log(timeDir);
 	console.log(charDir);
 	console.log(locDir);
-	console.log(drawSequence);
+	// console.log(drawSequence);
 	console.log(testSequence);
 	console.log(anc);
 	console.log(bridge);
 }
 
+Main.prototype.prepareAnim = function() {
+	if (1 === anc[0].x || 0 < anc[0].i)
+		anc[0].i = -fps/1000*anc[0].x*visSpeed;
+	else
+		anc[0].i = fps/1000*(1 - anc[0].x)*visSpeed;
+	// anc[0].f = 1/visEase;
+	requestAnimFrame(this.redraw.bind(this));
+}
 Main.prototype.redraw = function() {
+	var active = false;
 	var iLen = anc.length;
 	for (var i = 0; i < iLen; i++) {
 		if (0 !== anc[i].i) {
 			anc[i].x += anc[i].i;
 			anc[i].i *= anc[i].f;
+			active = true;
 		}
 		if (1 <= anc[i].x) {
 			anc[i].x = 1;
@@ -33,6 +43,7 @@ Main.prototype.redraw = function() {
 		if (0 !== bridge[i].i) {
 			bridge[i].x += bridge[i].i;
 			bridge[i].i *= bridge[i].f;
+			active = true;
 		}
 		if (1 <= bridge[i].x) {
 			bridge[i].x = 1;
@@ -71,6 +82,7 @@ Main.prototype.redraw = function() {
 	for (var i = 0; i < iLen; i++) {
 		charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
 	}
+	if (active) requestAnimFrame(this.redraw.bind(this));
 }
 
 Main.prototype.genLocDir = function() {
@@ -245,7 +257,7 @@ Main.prototype.genLocDir = function() {
 		}
 	}
 	now = timeDir.length - 1;
-	this.redraw();
+	// this.redraw();
 }
 Main.prototype.genSequence = function(paths, moves) {
 	/*path = new Array();

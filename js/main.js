@@ -2,6 +2,7 @@ function init() {
 
 	var can = document.getElementById("canvas");
 	var ctx = can.getContext("2d");
+	var fps = 60;
 
 	// var mapObj = document.querySelector('.map');
 	var sbarObj = document.querySelector('.sidebar');
@@ -24,7 +25,7 @@ function init() {
 			}
 		}
 	}
-	document.querySelector('.toggleSidebar').onclick = function(evt) { toggleSidebar();};
+	// document.querySelector('.toggleSidebar').onclick = function(evt) { toggleSidebar();};
 	toggleSidebar();
 
 	//http://stackoverflow.com/a/3150139
@@ -46,6 +47,18 @@ function init() {
 	fixSidebar();
 
 	var main = new Main();
+
+	document.querySelector('.toggleSidebar').onclick = function(evt) {
+		main.prepareAnim();
+	};
+
+	window.requestAnimFrame = (function(callback) {
+		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+		function(callback) {
+			window.setTimeout(callback, 1000 / fps);
+		};
+	})();
+
 
 	// ctx.fillStyle = '#00FF00';
 	// ctx.beginPath();

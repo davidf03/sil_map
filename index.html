@@ -28,7 +28,10 @@
             var now = 0;
             var frozenNow;
             var movSpeed = 0.1;
-            var visSpeed = 0.12;
+            var visSpeed = 100;
+            var visEase = 2;
+            var fps = 0.8;
+            var active = false;
 
             var drawSequence;
             var testSequence;
@@ -66,6 +69,8 @@
             <div class="bar"><div></div></div>
             <div class="bar"><div></div></div>
         </button>
+
+        <button class="test" style="width:100px; height:100px; float:right; background-color:red;"></button>
 
         <div class="sidebar" style="visibility: visible">
             <div class="charConsole">
