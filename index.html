@@ -7,6 +7,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="css/normalize.min.css">
         <link rel="stylesheet" href="css/main.css">
 
@@ -28,10 +29,10 @@
             var now = 0;
             var frozenNow;
             var movSpeed = 0.1;
-            var visSpeed = 100;
+            var visSpeed = 5;
             var visEase = 2;
-            var fps = 0.8;
-            var active = false;
+            var fps = 60;
+            var idle = true;
 
             var drawSequence;
             var testSequence;
@@ -70,8 +71,6 @@
             <div class="bar"><div></div></div>
         </button>
 
-        <button class="test" style="width:100px; height:100px; float:right; background-color:red;"></button>
-
         <div class="sidebar" style="visibility: visible">
             <div class="charConsole">
                 <div class="heading"><h1>Display</h1></div>
@@ -100,12 +99,6 @@
                 <div class="heading"><h1>Character</h1></div>
                 <div class="heading"><h1>Controls</h1></div>
                 <div class="main">
-                    <!-- <div class="character">
-                        <div class="number"></div>
-                        <div class="colour"></div>
-                        <div class="name"></div>
-                        <div class="controls"></div>
-                    </div> -->
                 </div>
             </div>
         </div>

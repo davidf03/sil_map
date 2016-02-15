@@ -12,14 +12,58 @@ function Main() {
 	console.log(anc);
 	console.log(bridge);
 }
+Main.prototype.genCharObj = function() {
+	var template =
+		"<div class='number'></div>" +
+		"<div class='colour'></div>" +
+		"<div class='name'></div>" +
+		"<div class='controls'>" +
+			"<button class='i-prev icon-alone'>" +
+				"<span class='fa fa-step-backward'></span>" +
+				"<span class='screen-reader-text'>RSS</span>" +
+			"</button>" +
+			"<button class='c-prev icon-alone'>" +
+				"<span class='fa fa-play fa-rotate-180'></span>" +
+				"<span class='screen-reader-text'>RSS</span>" +
+			"</button>" +
+			"<button class='toggle icon-alone'>" +
+				"<span class='fa fa-circle'></span>" +
+				"<span class='screen-reader-text'>RSS</span>" +
+			"</button>" +
+			"<button class='c-next icon-alone'>" +
+				"<span class='fa fa-play'></span>" +
+				"<span class='screen-reader-text'>RSS</span>" +
+			"</button>" +
+			"<button class='i-next icon-alone'>" +
+				"<span class='fa fa-step-forward'></span>" +
+				"<span class='screen-reader-text'>RSS</span>" +
+			"</button>" +
+		"</div>";
 
-Main.prototype.prepareAnim = function() {
-	if (1 === anc[0].x || 0 < anc[0].i)
-		anc[0].i = -fps/1000*anc[0].x*visSpeed;
+	var charConsole = document.querySelector('.charConsole .main');
+	for (var i = 0; i < charDir.length; i++) {
+		var char = document.createElement('div');
+		char.className = 'char';
+		char.dataset.index = i;
+		char.innerHTML = template;
+		charConsole.appendChild(char);
+
+		char.querySelector('.toggle').onclick = function(e) {
+			main.toggleChar(this.parentNode.parentNode.dataset.index);
+		};
+	}
+}
+
+Main.prototype.toggleChar = function(charIndex) {
+	if (1 === anc[charIndex].x || 0 < anc[charIndex].i)
+		anc[charIndex].i = -fps/1000*anc[charIndex].x*visSpeed;
 	else
-		anc[0].i = fps/1000*(1 - anc[0].x)*visSpeed;
+		anc[charIndex].i = fps/1000*(1 - anc[charIndex].x)*visSpeed;
 	// anc[0].f = 1/visEase;
-	requestAnimFrame(this.redraw.bind(this));
+	if (idle) {
+		requestAnimFrame(this.redraw.bind(this));
+		idle = false;
+	}
 }
 Main.prototype.redraw = function() {
 	var active = false;
@@ -53,15 +97,25 @@ Main.prototype.redraw = function() {
 			bridge[i].i = 0;
 		}
 	}
-	//loop for path underlay; not only does this create the line underlay, it
-	//also sequenced in such a way as to
-	//the parameter 3 passed to generate is one of four channels, generating not the node, nor one of two sides but the whole path
+
 	var can = document.getElementById('canvas');
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
 	frozenNow = now;
 	now = timeDir.length - 1;
+
+	//testSequence
+	iLen = testSequence.length;
+	for (var i = 0; i < iLen; i++) {
+		charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
+	}
+	if (active) requestAnimFrame(this.redraw.bind(this));
+	else idle = true;
+
+	//loop for path underlay; not only does this create the line underlay, it
+	//also sequenced in such a way as to
+	//the parameter 3 passed to generate is one of four channels, generating not the node, nor one of two sides but the whole path
 	// for (var i = 0; i <= frozenNow; i++) {
 	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
 	// }
@@ -77,12 +131,6 @@ Main.prototype.redraw = function() {
 	// 			charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
 	// 	}
 	// }
-	//testSequence
-	iLen = testSequence.length;
-	for (var i = 0; i < iLen; i++) {
-		charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
-	}
-	if (active) requestAnimFrame(this.redraw.bind(this));
 }
 
 Main.prototype.genLocDir = function() {
@@ -257,7 +305,7 @@ Main.prototype.genLocDir = function() {
 		}
 	}
 	now = timeDir.length - 1;
-	// this.redraw();
+	this.redraw();
 }
 Main.prototype.genSequence = function(paths, moves) {
 	/*path = new Array();

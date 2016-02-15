@@ -1,8 +1,10 @@
+var main = new Main();
+
 function init() {
+	main.genCharObj();
 
 	var can = document.getElementById("canvas");
 	var ctx = can.getContext("2d");
-	var fps = 60;
 
 	// var mapObj = document.querySelector('.map');
 	var sbarObj = document.querySelector('.sidebar');
@@ -25,8 +27,8 @@ function init() {
 			}
 		}
 	}
-	// document.querySelector('.toggleSidebar').onclick = function(evt) { toggleSidebar();};
-	toggleSidebar();
+	document.querySelector('.toggleSidebar').onclick = function(evt) { toggleSidebar();};
+	// toggleSidebar();
 
 	//http://stackoverflow.com/a/3150139
 	var addEvent = function(object, type, callback) {
@@ -42,15 +44,8 @@ function init() {
 	var fixSidebar = function() {
 		sbarObj.style.right = window.innerWidth/window.getComputedStyle(document.querySelector('html'), null).getPropertyValue('font-size').match(/^[^A-Za-z]*/) - 20 +"em";
 	};
-
 	addEvent(window, "resize", fixSidebar);
 	fixSidebar();
-
-	var main = new Main();
-
-	document.querySelector('.toggleSidebar').onclick = function(evt) {
-		main.prepareAnim();
-	};
 
 	window.requestAnimFrame = (function(callback) {
 		return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||

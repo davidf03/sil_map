@@ -121,6 +121,7 @@ body, .sidebar {
         color: #DCDCDC;
 
         padding: 3em 0;
+        padding-right: 0.3em;
     }
         .heading, .options > * {
             height: 1.5em;
@@ -137,7 +138,7 @@ body, .sidebar {
             .heading:nth-of-type(even), .options > :nth-child(even) {
                 float: right;
                 clear: right;
-                width: 12em;
+                width: 11.7em;
             }
         /* menu section headings */
         .heading:nth-of-type(odd), .heading:nth-of-type(even) {
@@ -209,12 +210,51 @@ body, .sidebar {
                     }
         /* character section */
         .sidebar .main {
+          clear: both;
             /*overflow: hidden;*/
         }
-            .character {
+            .char {
+                padding: 0;
                 height: 2em;
                 background-color: #DCDCDC;
+                color: #232323;
+                border-style: solid;
+                border-width: 0.05em 0;
+                border-color: #898989;
             }
+              .char > * {
+                float: left;
+                height: 100%;
+              }
+              .char .controls {
+                float: right;
+                margin-right: 0.5em;
+              }
+                .char .controls > * {
+                  margin: auto;
+                  border: 0;
+                  padding: 0;
+                  /*margin: 0;*/
+                  background: none;
+
+                  height: 2em;
+                  width: 1.5em;
+                }
+                  .char .controls > :nth-child(1), .char .controls > :nth-child(5) {
+                    width: 1em;
+                  }
+                  .char .controls > :nth-child(2), .char .controls > :nth-child(4) {
+                    width: 1.3em;
+                  }
+                  .char .controls > :nth-child(3) {
+                    /*width: 1.6em;*/
+                  }
+                  .char .controls > * > span {
+                    font-size: 1.3em;
+                  }
+              .char .controls {
+
+              }
                 /*.character .colour, .character .name, .character .controls {
                     height: 10%;
                 }
@@ -234,6 +274,20 @@ body, .sidebar {
         /*visibility: visible;*/
         position: absolute;
     }
+
+[data-icon]:before {
+  font-family: icons; /* BYO icon font, mapped smartly */
+  content: attr(data-icon);
+  speak: none; /* Not to be trusted, but hey. */
+}
+.icon-alone {
+  display: inline-block; /* Chrome 19 was weird with clickability without this */
+}
+.screen-reader-text { /* Reusable, toolbox kind of class */
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+}
 
 
 
