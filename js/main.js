@@ -3,9 +3,6 @@ var main = new Main();
 function init() {
 	main.genCharObj();
 
-	var can = document.getElementById("canvas");
-	var ctx = can.getContext("2d");
-
 	// var mapObj = document.querySelector('.map');
 	var sbarObj = document.querySelector('.sidebar');
 
@@ -42,7 +39,7 @@ function init() {
 	    }
 	};
 	var fixSidebar = function() {
-		sbarObj.style.right = window.innerWidth/window.getComputedStyle(document.querySelector('html'), null).getPropertyValue('font-size').match(/^[^A-Za-z]*/) - 20 +"em";
+		sbarObj.style.left = window.innerWidth/window.getComputedStyle(document.querySelector('html'), null).getPropertyValue('font-size').match(/^[^A-Za-z]*/) - 20 +"em";
 	};
 	addEvent(window, "resize", fixSidebar);
 	fixSidebar();
@@ -53,36 +50,4 @@ function init() {
 			window.setTimeout(callback, 1000 / fps);
 		};
 	})();
-
-
-	// ctx.fillStyle = '#00FF00';
-	// ctx.beginPath();
-	// ctx.moveTo(100, 100);
-	// ctx.lineTo(200, 100);
-	// ctx.lineTo(200, 200);
-	// ctx.arc(100, 200, 100, 0, -0.5*Math.PI, true);
-	// // ctx.arc(loc[this.lastNode.l_i].x + offset.x, loc[this.lastNode.l_i].y + offset.y, 2, 0, Math.PI*2);
-	// ctx.closePath();
-	// ctx.fill();
-
-	/*var david = new Mon("Defed");
-	david.segeHal();*/
-
-	// ctx.strokeStyle = '#000000';
-	// ctx.lineWidth = 5;
-	// ctx.beginPath();
-	// ctx.moveTo(0, 0);
-	// ctx.lineTo(100, 10);
-	// // ctx.lineWidth = 0;
-	// // ctx.lineTo(100, 100);
-	// ctx.closePath();
-	// ctx.stroke();
-	// // ctx.strokeStyle = '#000000';
-	// // ctx.lineWidth = 5;
-	// ctx.beginPath();
-	// ctx.moveTo(100, 100);
-	// ctx.lineWidth = 5;
-	// ctx.lineTo(50, 100);
-	// ctx.closePath();
-	// ctx.stroke();
 }

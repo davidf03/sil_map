@@ -1,5 +1,3 @@
-// public var path:Array; //?
-// public var line:Array;
 
 function Main() {
 	Detect = new Detect();
@@ -98,25 +96,29 @@ Main.prototype.redraw = function() {
 		}
 	}
 
+	//here initiate bridging and update 'now'
+
 	var can = document.getElementById('canvas');
 	var ctx = can.getContext('2d');
+	var predrawn = document.getElementById('predrawn');
+	var prectx = predrawn.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
+	prectx.clearRect(0,0,predrawn.width,predrawn.height);
 	this.visLoc();
-	frozenNow = now;
-	now = timeDir.length - 1;
 
 	//testSequence
 	iLen = testSequence.length;
 	for (var i = 0; i < iLen; i++) {
 		charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
 	}
+	ctx.drawImage(predrawn, 0, 0);
 	if (active) requestAnimFrame(this.redraw.bind(this));
 	else idle = true;
 
 	//loop for path underlay; not only does this create the line underlay, it
 	//also sequenced in such a way as to
 	//the parameter 3 passed to generate is one of four channels, generating not the node, nor one of two sides but the whole path
-	// for (var i = 0; i <= frozenNow; i++) {
+	// for (var i = 0; i <= this.lastNow; i++) {
 	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
 	// }
 	//loop through drawSequence

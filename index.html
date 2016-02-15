@@ -27,7 +27,6 @@
             var Detect;
 
             var now = 0;
-            var frozenNow;
             var movSpeed = 0.1;
             var visSpeed = 5;
             var visEase = 2;
@@ -36,8 +35,7 @@
 
             var drawSequence;
             var testSequence;
-            // var lineSequence = []; //still necessary?
-            var direct = true;
+
             var startColour = 0;
             var cols = [["#6C6E58","#3E423A","#417378","#A4CFBE","#F4F7D9"]
                 /*[{hex:0x726F2D},{hex:0xBBBBBB},{hex:0x16bbe6},{hex:0x0B3D4C},{hex:0xd3ffce}],
@@ -106,6 +104,7 @@
         <canvas id="canvas" class="map" width="700" height="700">
             Canvas not supported!
         </canvas>
+        <canvas id="predrawn" class="predrawn" width="700" height="700" style="visibility: hidden;"></canvas>
 
         <!--script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script-->
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>

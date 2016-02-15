@@ -7,13 +7,12 @@ var lastNode;
 var n0t1, n0t2, n0t2e,
 	n1t1, n1t2, n1t2e;
 var pathCaps;
-
-var arc_ce;
+var arcSpan;
 
 var c_i, n_i, s_i, l_i, l_x, l_y;
 
 var animating;
-var anc_x0, anc_x1,
+var lastAnc,
 	lastBridge,
 	present,
 	moving, waiting;
@@ -185,7 +184,7 @@ Node.prototype.genPath = function(channel, active) {
 			this.findTangentPoints(n0l, n0r, n1r);}
 
 		angle = (-Math.atan2(this.n0t1.x, this.n0t1.y));
-		offset = offset.polar(n0r - (this.lastNode.oth + 1 - this.anc_x0)*this.radius, angle);
+		offset = offset.polar(n0r - (this.lastNode.oth + 1 - this.lastAnc)*this.radius, angle);
 		this.n0t2 = new Point(this.n0t1.x + offset.x, this.n0t1.y + offset.y);
 		this.n1t2 = new Point(this.n1t1.x + offset.x, this.n1t1.y + offset.y);
 
@@ -196,7 +195,7 @@ Node.prototype.genPath = function(channel, active) {
 		var can = document.getElementById('canvas');
 		var ctx = can.getContext('2d');
 
-	//drawing
+	//drawing [below is as3-relevant, but the principle is the same]
 	/* pathBreak	contains the half-radius circle covering paths outbound after the arrival of and set within lastNode
 	   pathUnderArc	contains the graphic for circular arcs around pathBreak of outermost nodes; whereas
 	   pathOverArc	contains a circle, for those inset (i.e. not outermost), due to graphical 'irregularity' at gaps
@@ -205,7 +204,7 @@ Node.prototype.genPath = function(channel, active) {
 	/* Anchoring path to previous node */
 	ctx.fillStyle = this.col;
 	ctx.beginPath();
-	ctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r - this.anc_x0*this.radius/2, 0, Math.PI*2);
+	ctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r - this.lastAnc*this.radius/2, 0, Math.PI*2);
 	ctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r, 0, Math.PI*2);
 	ctx.closePath();
 	ctx.fill("evenodd");
@@ -216,6 +215,7 @@ Node.prototype.genPath = function(channel, active) {
 
 	// /* the path itself */
 	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) == false) {
+		//path fill
 		ctx.fillStyle = this.col;
 		ctx.beginPath();
 
@@ -263,22 +263,29 @@ Node.prototype.genPath = function(channel, active) {
 	ctx.closePath();
 	ctx.stroke();
 
-	/* line overlays */
-	/*line[this.c_i][this.n_i].graphics.clear();
-	line[this.c_i][this.n_i].graphics.lineStyle(stroke, 0x000000, 0.2);
-	line[this.c_i][this.n_i].graphics.moveTo(this.n0t1.x + loc[this.l_i].x, this.n0t1.y + loc[this.l_i].y);
-	if (this.present) {
-		line[this.c_i][this.n_i].graphics.lineTo(this.n1t1.x + loc[this.l_i].x, this.n1t1.y + loc[this.l_i].y);
-	} else {
-		line[this.c_i][this.n_i].graphics.lineTo(this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge) + loc[this.l_i].x, this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge) + loc[this.l_i].y);}
+	//line overlay
+	var predrawn = document.getElementById('predrawn');
+	var prectx = predrawn.getContext('2d');
+
+	prectx.strokeStyle = "rgba(0,0,0,0.35)"
+	prectx.lineWidth = this.stroke*0.9;
+	prectx.beginPath();
+	prectx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
+	if (this.present)
+		prectx.lineTo(loc[this.l_i].x + this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge));
+	else
+		prectx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y);
 	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) == false) {
 		if (this.present) {
-			line[this.c_i][this.n_i].graphics.moveTo(this.n0t2e.x + loc[this.l_i].x, this.n0t2e.y + loc[this.l_i].y);
-			line[this.c_i][this.n_i].graphics.lineTo(this.n1t2e.x + loc[this.l_i].x, this.n1t2e.y + loc[this.l_i].y);
+			prectx.moveTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
+			prectx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
 		} else {
-			line[this.c_i][this.n_i].graphics.lineTo(this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge) + loc[this.l_i].x, this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge) + loc[this.l_i].y);
-			line[this.c_i][this.n_i].graphics.lineTo(this.n0t2e.x + loc[this.l_i].x, this.n0t2e.y + loc[this.l_i].y);}
-	}*/
+			prectx.lineTo(loc[this.l_i].x + this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge));
+			prectx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
+		}
+	}
+	prectx.closePath();
+	prectx.stroke();
 }
 
 Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
@@ -286,24 +293,21 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 		var hold_l_x = this.lastNode.l_x;
 		var hold_l_y = this.lastNode.l_y;
 		var hold_s_i = this.lastNode.s_i;
-		var hold_anc = this.anc_x0;
 	} else {
 		hold_l_x = this.l_x;
 		hold_l_y = this.l_y;
 		hold_s_i = this.s_i;
-		hold_anc = this.anc_x1;
 	}
 
 	var outermost = true;
-	if (this.n_i == 0 || this.n_i == 1 && breaking) {
+	if (0 === this.n_i || 1 === this.n_i && breaking) {
 		outermost = false;
 	} else {
 		for (i = hold_l_y + 1; i < locDir[hold_l_x].length; i++) {
-			if (this.isPresent(locDir[hold_l_x][i][0], locDir[hold_l_x][i][1], true)) {
-				if (anc[locDir[hold_l_x][i][0]].x > 0) {
-					outermost = false;}
-			} else {
-				break;}
+			if (this.isPresent(locDir[hold_l_x][i][0], locDir[hold_l_x][i][1], true))
+				if (anc[locDir[hold_l_x][i][0]].x > 0)
+					outermost = false;
+			else break;
 		}
 	}
 
@@ -315,31 +319,19 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 		ctx.strokeStyle = '#000000'
 		ctx.lineWidth = this.stroke;
 
-
-
-		if (outermost && (this.n_i >= 1 || breaking && this.n_i >= 2)) {
+		if (outermost && (1 <= this.n_i || breaking && 2 <= this.n_i)) {
 			//broken ring draws here
-			if (breaking) {
-				angle = Math.atan2(this.lastNode.n1t1.y,this.lastNode.n1t1.x);
-				angle2 = Math.atan2(this.lastNode.n1t2e.y,this.lastNode.n1t2e.x);
-				ctx.arc(n0l.x, n0l.y, n0r, angle2, angle, true);
-				// ctx.arc(n0l.x, n0l.y, n0r, Math.PI + Math.abs(Math.abs(angle - angle2) - Math.PI), angle);
+			if (breaking) var hold_n_i = this.n_i - 1;
+			else hold_n_i = this.n_i;
 
-				offset = new Point(0, 0);
-				offset = offset.polar(n0r/4*this.lastNode.arc_ce, angle - Math.PI/2);
-				ctx.moveTo(this.lastNode.n1t1.x + n0l.x, this.lastNode.n1t1.y + n0l.y);
-				ctx.lineTo(this.lastNode.n1t1.x + n0l.x + offset.x, this.lastNode.n1t1.y + n0l.y + offset.y);
-			} else {
-				angle = Math.atan2(this.n1t1.y,this.n1t1.x);
-				angle2 = Math.atan2(this.n1t2e.y,this.n1t2e.x);
-				ctx.arc(n0l.x, n0l.y, n0r, angle2, angle, true);
-				// ctx.arc(n0l.x, n0l.y, n0r, Math.PI + Math.abs(Math.abs(angle - angle2) - Math.PI), angle);
+			angle = Math.atan2(charDir[this.c_i][hold_n_i].n1t1.y,charDir[this.c_i][hold_n_i].n1t1.x);
+			angle2 = Math.atan2(charDir[this.c_i][hold_n_i].n1t2e.y,charDir[this.c_i][hold_n_i].n1t2e.x);
+			ctx.arc(n0l.x, n0l.y, n0r, angle2, angle, true);
 
-				offset = new Point(0, 0);
-				offset = offset.polar(n0r/4*this.arc_ce, angle - Math.PI/2);
-				ctx.moveTo(this.n1t1.x + n0l.x, this.n1t1.y + n0l.y);
-				ctx.lineTo(this.n1t1.x + n0l.x + offset.x, this.n1t1.y + n0l.y + offset.y);
-			}
+			offset = new Point(0, 0);
+			offset = offset.polar(n0r*this.arcSpan, angle - Math.PI/2);
+			ctx.moveTo(charDir[this.c_i][hold_n_i].n1t1.x + n0l.x, charDir[this.c_i][hold_n_i].n1t1.y + n0l.y);
+			ctx.lineTo(charDir[this.c_i][hold_n_i].n1t1.x + n0l.x + offset.x, charDir[this.c_i][hold_n_i].n1t1.y + n0l.y + offset.y);
 		} else {
 			//full ring draws here
 			ctx.arc(n0l.x, n0l.y, n0r, 0, Math.PI*2);
@@ -347,20 +339,19 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 		ctx.stroke();
 		ctx.closePath();
 
-
 		for (var i = 0; i < hold_l_y; i++) {
-			if (anc[locDir[hold_l_x][i][0]].x > 0) {
+			if (0 < anc[locDir[hold_l_x][i][0]].x) {
 				var oth_c = locDir[hold_l_x][i][0];
 				var oth_n = locDir[hold_l_x][i][1] + 1;
 				//outbound breaks; outbound paths; inbound paths
-				if (oth_n < charDir[oth_c].length) {
-					if (breaking && charDir[oth_c][oth_n].s_i < this.s_i && false == Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false)) {
-						this.drawPathCap(n0l, n0r - hold_anc*this.radius/2, oth_c, oth_n, breaking, true);}
-					if (outermost && charDir[oth_c][oth_n].s_i > hold_s_i && (breaking && charDir[oth_c][oth_n].s_i < this.s_i || breaking == false && Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false))) {
-						this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, true);}
+				if (charDir[oth_c].length > oth_n) {
+					if (breaking && this.s_i > charDir[oth_c][oth_n].s_i && false === Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false))
+						this.drawPathCap(n0l, n0r - this.lastAnc*this.radius/2, oth_c, oth_n, breaking, true);
+					if (outermost && hold_s_i < charDir[oth_c][oth_n].s_i && (breaking && this.s_i > charDir[oth_c][oth_n].s_i || false === breaking && Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false)))
+						this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, true);
 				}
 				oth_n = locDir[hold_l_x][i][1];
-				if (outermost && oth_n > 0 && charDir[oth_c][oth_n].s_i > hold_s_i) {
+				if (outermost && 0 < oth_n && hold_s_i < charDir[oth_c][oth_n].s_i) {
 					this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, false);}
 			}
 		}
@@ -386,8 +377,8 @@ Node.prototype.drawPathCap = function(cen, rad, oth_c, oth_n, breaking, outbound
 
 	var xTerm = t_int.x - cen.x,
 		yTerm = t_int.y - cen.y;
-	if (xTerm == 0) { xTerm = 0.1;}
-	if (yTerm == 0) { yTerm = 0.1;}
+	if (0 === xTerm) { xTerm = 0.1;}
+	if (0 === yTerm) { yTerm = 0.1;}
 	var angle = Math.atan2(yTerm, xTerm);
 
 	p1 = new Point(charDir[oth_c][oth_n].n1t2.x + xOffset, charDir[oth_c][oth_n].n1t2.y + yOffset);
@@ -396,8 +387,8 @@ Node.prototype.drawPathCap = function(cen, rad, oth_c, oth_n, breaking, outbound
 
 	xTerm = t_int.x - cen.x;
 	yTerm = t_int.y - cen.y;
-	if (xTerm == 0) { xTerm = 0.1;}
-	if (yTerm == 0) { yTerm = 0.1;}
+	if (0 === xTerm) { xTerm = 0.1;}
+	if (0 === yTerm) { yTerm = 0.1;}
 	var angle2 = Math.atan2(yTerm, xTerm);
 
 	var can = document.getElementById('canvas');
@@ -436,13 +427,13 @@ Node.prototype.genNode = function(active) {
 	ctx.fillStyle = this.col;
 	ctx.lineWidth = this.stroke;
 	ctx.beginPath();
-	ctx.arc(loc[this.l_i].x, loc[this.l_i].y, (this.oth + 1 - this.anc_x1)*this.radius, 0, Math.PI*2);
+	ctx.arc(loc[this.l_i].x, loc[this.l_i].y, (this.oth + 1 - this.lastAnc)*this.radius, 0, Math.PI*2);
 	ctx.arc(loc[this.l_i].x, loc[this.l_i].y, (this.oth + 1)*this.radius, 0, Math.PI*2)
 	ctx.closePath();
 	ctx.fill("evenodd");
 	ctx.strokeStyle = '#000000'
 	ctx.beginPath();
-	ctx.arc(loc[this.l_i].x, loc[this.l_i].y, (this.oth + 1 - this.anc_x1)*this.radius, 0, Math.PI*2);
+	ctx.arc(loc[this.l_i].x, loc[this.l_i].y, (this.oth + 1 - this.lastAnc)*this.radius, 0, Math.PI*2);
 	ctx.closePath();
 	ctx.stroke();
 
@@ -462,7 +453,7 @@ Node.prototype.genNode = function(active) {
 			ctx.arc(loc[this.l_i].x, loc[this.l_i].y, this.getRadius(), angle, angle2);
 
 			var offset = new Point(0, 0);
-			offset = offset.polar(this.getRadius()/4*this.arc_ce, angle - Math.PI/2);
+			offset = offset.polar(this.getRadius()*this.arcSpan, angle - Math.PI/2);
 			ctx.moveTo(this.n1t1.x, this.n1t1.y);
 			ctx.lineTo(this.n1t1.x + offset.x, this.n1t1.y + offset.y);
 			//generating outer path caps (those coincidental with outer arc) here while no pathBreak of next exists to do so
@@ -477,10 +468,11 @@ Node.prototype.genNode = function(active) {
 	}
 }
 Node.prototype.generate = function(channel, recalculate) {
-	if (0 < anc[this.c_i].x && frozenNow >= this.s_i) {
+	if (0 < anc[this.c_i].x && now >= this.s_i) {
 		if (recalculate==='undefined') recalculate = 1;
 
 		this.lastNow = now;
+		this.lastAnc = anc[this.c_i].x;
 		this.lastBridge = bridge[this.c_i].x;
 
 		if (2 <= recalculate)
@@ -497,18 +489,13 @@ Node.prototype.generate = function(channel, recalculate) {
 		if (active) {
 			//getting oth data
 			this.oth = 0;
-			this.arc_ce = 1;
-
-			for (var i = 0; i < this.l_y; i++) {
+			for (var i = 0; i <= this.l_y; i++) {
 				if (this.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], true)) {
 					this.oth += anc[locDir[this.l_x][i][0]].x;
-					this.arc_ce -= this.arc_ce*0.35*anc[locDir[this.l_x][i][0]].x;
+					// this.arc_ce -= this.arc_ce*anc[locDir[this.l_x][i][0]].x;
 				} else {
 					break;}
 			}
-			this.arc_ce += (1 - this.arc_ce)*0.75;
-			this.anc_x1 = this.anc_x0 = anc[this.c_i].x;
-			this.oth += this.anc_x1;
 		}
 
 		//this could be refactored with a trinary return from isPresent
@@ -786,7 +773,7 @@ function Node(charIndex, nodeIndex, colour, location, timeIndex) {
 	this.radius = 6;
 	this.stroke = 0.3*this.radius;
 
-	if (this.n_i > 0) {
+	if (1 <= this.n_i) {
 		this.n0t1 = new Point(0, 0);
 		this.n0t2 = new Point(0, 0);
 		this.n0t2e = new Point(0, 0);
@@ -796,6 +783,8 @@ function Node(charIndex, nodeIndex, colour, location, timeIndex) {
 		// this.pathCaps = new Array();
 
 		this.lastNode = charDir[this.c_i][this.n_i - 1];
+		if (2 <= this.n_i)
+			this.arcSpan = 3/8;
 	}
 
 	moving = waiting = false;
