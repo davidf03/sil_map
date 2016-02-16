@@ -96,29 +96,37 @@ Main.prototype.redraw = function() {
 		}
 	}
 
-	//here initiate bridging and update 'now'
+	//here define bridge.i and update 'now'
 
-	var can = document.getElementById('canvas');
-	var ctx = can.getContext('2d');
-	var predrawn = document.getElementById('predrawn');
-	var prectx = predrawn.getContext('2d');
-	ctx.clearRect(0,0,can.width,can.height);
-	prectx.clearRect(0,0,predrawn.width,predrawn.height);
-	this.visLoc();
+	var paths = document.getElementById('paths');
+	var pathctx = paths.getContext('2d');
+	pathctx.clearRect(0,0,paths.width,paths.height);
+	var update = document.getElementById('update');
+	var upctx = update.getContext('2d');
+	upctx.clearRect(0,0,update.width,update.height);
+	var lines = document.getElementById('lines');
+	var linectx = lines.getContext('2d');
+	linectx.clearRect(0,0,lines.width,lines.height);
 
 	//testSequence
 	iLen = testSequence.length;
 	for (var i = 0; i < iLen; i++) {
 		charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
 	}
-	ctx.drawImage(predrawn, 0, 0);
+	var can = document.getElementById('canvas');
+	var ctx = can.getContext('2d');
+	ctx.clearRect(0,0,can.width,can.height);
+	this.visLoc();
+	ctx.drawImage(update, 0, 0);
+	ctx.drawImage(lines, 0, 0);
+	ctx.drawImage(paths, 0, 0);
 	if (active) requestAnimFrame(this.redraw.bind(this));
 	else idle = true;
 
 	//loop for path underlay; not only does this create the line underlay, it
 	//also sequenced in such a way as to
 	//the parameter 3 passed to generate is one of four channels, generating not the node, nor one of two sides but the whole path
-	// for (var i = 0; i <= this.lastNow; i++) {
+	// for (var i = 0; i <= now; i++) {
 	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
 	// }
 	//loop through drawSequence
