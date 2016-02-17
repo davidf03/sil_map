@@ -214,68 +214,46 @@ Node.prototype.genPath = function(channel, active) {
 
 
 	/* path channeling prototype */
-	var gradientDist = 2*this.radius;
+	var gradientDist = 3*this.radius;
 	if (active) var newActivity = false;
 	else newActivity = true;
 
-	var n0c_i, n0n_i, n1c_i, n1n_i, n0t, n1t;
-	n0c_i = locDir[this.lastNode.l_x][locDir[this.lastNode.l_x].length - 1][0];
-	n0n_i = locDir[this.lastNode.l_x][locDir[this.lastNode.l_x].length - 1][1];
-	n1c_i = locDir[this.l_x][locDir[this.l_x].length - 1][0];
-	n1n_i = locDir[this.l_x][locDir[this.l_x].length - 1][1];
-	n0t = (locDir[this.lastNode.l_x].length - 1)*this.radius;
-	n1t = (locDir[this.l_x].length - 1)*this.radius;
-	var outerN0 = false;
-	var outerN1 = false;
-	if (false === active) {
-		var i;
-		for (i = this.lastNode.l_y + 1; i < locDir[this.lastNode.l_x].length; i++) {
-			if (this.isPresent(locDir[this.lastNode.l_x][i][0], locDir[this.lastNode.l_x][i][1], false, 2)) {
-				active = true;
-				n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
-			} else break;
-		}
-		if (0 === n0t) outerN0 = true;
-		else {
-			n0c_i = locDir[this.lastNode.l_x][i - 1][0];
-			n0n_i = locDir[this.lastNode.l_x][i - 1][1];
-			n0t *= this.radius;
-			n0t += this.lastNode.getRadius();
-		}
+	var n0t = 1;
+	var n1t = 1;
+
+	for (var i = this.lastNode.l_y + 1; i < locDir[this.lastNode.l_x].length; i++) {
+		n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
 	}
-	if (false === active) {
-		var i;
-		for (i = this.l_y + 1; i < locDir[this.l_x].length; i++) {
-			if (this.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], false, 2)) {
-				active = true;
-				n1t += anc[locDir[this.l_x][i][0]].x;
-			} else break;
-		}
-		if (0 === n1t) outerN1 = true;
-		else {
-			n1c_i = locDir[this.l_x][i - 1][0];
-			n1n_i = locDir[this.l_x][i - 1][1];
-			n1t *= this.radius;
-			n1t += this.getRadius();
-		}
+	if (1 < n0t) {
+		for (var i = this.lastNode.l_y; i >= 0; i--)
+			n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
+		//detect activity here, maybe, with type casting comparison to look for real-numbered anc's
+		n0t *= this.radius;
+		// n0t += this.lastNode.getRadius();
 	}
+	if (false === active && int(n0t) !== n0t) active = true;;
+
+	for (var i = this.l_y + 1; i < locDir[this.l_x].length; i++) {
+		n1t += anc[locDir[this.l_x][i][0]].x;
+	}
+	if (1 < n1t) {
+		for (var i = this.l_y; i >= 0; i--)
+			n1t += anc[locDir[this.l_x][i][0]].x;
+		n1t *= this.radius;
+		// n1t += this.getRadius();
+	}
+	if (false === active && int(n1t) !== n1t) active = true;;
+
+	// if (0 === this.c_i && 2 === this.n_i) console.log(n0t+":"+n1t+","+this.lastNode.getRadius()+":"+this.getRadius());
 
 	if (active) {
 		if (newActivity) {
 			angle = (-Math.atan2(this.n0t1.x, this.n0t1.y));
 			offset = offset.polar(n0r - (this.lastNode.oth + 1 - this.lastAnc)*this.radius, angle);
 		}
-		if (outerN0) {
-			// console.log("n0t2    "+this.n0t2.x+":"+this.n0t2.y);
-			// console.log("n1t2    "+this.n1t2.x+":"+this.n1t2.y);
-			// console.log("n0l     "+n0l.x+":"+n0l.y);
-			// console.log("lNlx    "+this.lastNode.l_x);//+":"+n1t);
-			// console.log("n0t     "+n0t);//+":"+n1t);
-			// console.log("---");
-			this.n0e = this.findIntercepts(this.n0t2, this.n1t2, n0l, n0t, this.n1t2);
-			// console.log("---");
-		} else {
-			this.n0e = new Point(this.n0t2e.x, this.n0t2e.y);}
+		// if (0 === this.c_i && 2 === this.n_i) console.log(locDir[this.lastNode.l_x].length - 1 +":"+ this.lastNode.l_y);
+		if (1 < n0t) this.n0e = this.findIntercepts(this.n0t2, this.n1t2, n0l, n0t, this.n1t2);
+		else this.n0e = new Point(this.n0t2e.x, this.n0t2e.y);}
 		// console.log("n0e     "+this.n0e.x+":"+this.n0e.y);
 		var gradOffset = new Point(0, 0);
 		gradOffset = offset.polar(gradientDist, Math.atan2(this.n1t1.y - this.n0t1.y, this.n1t1.x - this.n0t1.x));
@@ -284,44 +262,51 @@ Node.prototype.genPath = function(channel, active) {
 		// console.log("offset  "+offset.x+":"+offset.y);
 		// console.log("n0g1  "+this.n0g1.x+":"+this.n0g1.y);
 		if (this.present) {
-			if (outerN1) { this.n1e = this.findIntercepts(this.n0t2, this.n1t2, new Point(0,0), n1t, this.n0t2);}
-			else { this.n1e = new Point(this.n1t2e.x, this.n1t2e.y);}
+			// if (0 === this.c_i && 2 === this.n_i) console.log(locDir[this.l_x].length - 1 +":"+ this.l_y);
+			if (1 < n1t) this.n1e = this.findIntercepts(this.n0t2, this.n1t2, new Point(0,0), n1t, this.n0t2);
+			else this.n1e = new Point(this.n1t2e.x, this.n1t2e.y);
 			this.n1g1 = new Point(this.n1e.x - offset.x - gradOffset.x, this.n1e.y - offset.y - gradOffset.y);
 			this.n1g2 = new Point(this.n1e.x - gradOffset.x, this.n1e.y - gradOffset.y);
 		}
 	}
-	if (0 === this.c_i && 2 === this.n_i) {
-		var paths = document.querySelector('.paths');
-		var pathctx = paths.getContext('2d');
+	// if (active && 0 === this.c_i && 2 === this.n_i) {
+	//
+	// 	pathctx.fillStyle = '#FF0000';
+	// 	pathctx.beginPath();
+	// 	pathctx.arc(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y, 2, 0, Math.PI*2);
+	// 	pathctx.closePath();
+	// 	pathctx.fill();
+	// 	pathctx.beginPath();
+	// 	pathctx.arc(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y, 2, 0, Math.PI*2);
+	// 	pathctx.closePath();
+	// 	pathctx.fill();
+	// 	pathctx.beginPath();
+	// 	pathctx.arc(loc[this.l_i].x + this.n0e.x, loc[this.l_i].y + this.n0e.y, 2, 0, Math.PI*2);
+	// 	pathctx.closePath();
+	// 	pathctx.fill();
+	// 	if (this.present) {
+	// 		pathctx.beginPath();
+	// 		pathctx.arc(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y, 2, 0, Math.PI*2);
+	// 		pathctx.closePath();
+	// 		pathctx.fill();
+	// 		pathctx.beginPath();
+	// 		pathctx.arc(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y, 2, 0, Math.PI*2);
+	// 		pathctx.closePath();
+	// 		pathctx.fill();
+	// 		pathctx.beginPath();
+	// 		pathctx.arc(loc[this.l_i].x + this.n1e.x, loc[this.l_i].y + this.n1e.y, 2, 0, Math.PI*2);
+	// 		pathctx.closePath();
+	// 		pathctx.fill();
+	// 	}
+	// }
 
-		pathctx.fillStyle = '#FF0000';
-		pathctx.beginPath();
-		pathctx.arc(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y, 2, 0, Math.PI*2);
-		pathctx.closePath();
-		pathctx.fill();
-		pathctx.beginPath();
-		pathctx.arc(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y, 2, 0, Math.PI*2);
-		pathctx.closePath();
-		pathctx.fill();
-		pathctx.beginPath();
-		pathctx.arc(loc[this.l_i].x + this.n0e.x, loc[this.l_i].y + this.n0e.y, 2, 0, Math.PI*2);
-		pathctx.closePath();
-		pathctx.fill();
-		if (this.present) {
-			pathctx.beginPath();
-			pathctx.arc(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y, 2, 0, Math.PI*2);
-			pathctx.closePath();
-			pathctx.fill();
-			pathctx.beginPath();
-			pathctx.arc(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y, 2, 0, Math.PI*2);
-			pathctx.closePath();
-			pathctx.fill();
-			pathctx.beginPath();
-			pathctx.arc(loc[this.l_i].x + this.n1e.x, loc[this.l_i].y + this.n1e.y, 2, 0, Math.PI*2);
-			pathctx.closePath();
-			pathctx.fill();
-		}
+	//create gradient fill
+	var paths = document.querySelector('.paths');
+	var pathctx = paths.getContext('2d');
+	if (this.present) {
+
 	}
+
 
 	/* the path itself */
 	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) == false) {
@@ -377,7 +362,7 @@ Node.prototype.genPath = function(channel, active) {
 	var lines = document.getElementById('lines');
 	var linectx = lines.getContext('2d');
 
-	linectx.strokeStyle = "rgba(0,0,0,0.35)"
+	linectx.strokeStyle = '#000000';
 	linectx.lineWidth = this.stroke*0.9;
 	linectx.beginPath();
 	linectx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);

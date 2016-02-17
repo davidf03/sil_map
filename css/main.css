@@ -274,6 +274,9 @@ body, .sidebar {
         /*visibility: visible;*/
         position: absolute;
     }
+    .map#lines {
+      /*opacity: 0.35;*/
+    }
 
 [data-icon]:before {
   font-family: icons; /* BYO icon font, mapped smartly */

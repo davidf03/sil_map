@@ -52,6 +52,9 @@ Main.prototype.genCharObj = function() {
 	}
 }
 
+//http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image
+//for focus stuff, see second answer on saving and restoring canvas state
+
 Main.prototype.toggleChar = function(charIndex) {
 	if (1 === anc[charIndex].x || 0 < anc[charIndex].i)
 		anc[charIndex].i = -fps/1000*anc[charIndex].x*visSpeed;
@@ -118,7 +121,9 @@ Main.prototype.redraw = function() {
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
 	ctx.drawImage(update, 0, 0);
+	ctx.globalAlpha = 0.35;
 	ctx.drawImage(lines, 0, 0);
+	ctx.globalAlpha = 1;
 	ctx.drawImage(paths, 0, 0);
 	if (active) requestAnimFrame(this.redraw.bind(this));
 	else idle = true;
