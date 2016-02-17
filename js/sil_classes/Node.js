@@ -214,7 +214,7 @@ Node.prototype.genPath = function(channel, active) {
 
 
 	/* path channeling prototype */
-	var gradientDist = 3*this.radius;
+	var gradientDist = 5*this.radius;
 	if (active) var newActivity = false;
 	else newActivity = true;
 
@@ -242,109 +242,75 @@ Node.prototype.genPath = function(channel, active) {
 	}
 	if (false === active && int(n1t) !== n1t) active = true;
 
-	// if (0 === this.c_i && 2 === this.n_i) console.log(n0t+":"+n1t+","+this.lastNode.getRadius()+":"+this.getRadius());
-
 	if (active) {
 		if (newActivity) {
 			angle = (-Math.atan2(this.n0t1.x, this.n0t1.y));
 			offset = offset.polar(n0r - (this.lastNode.oth + 1 - this.lastAnc)*this.radius, angle);
 		}
-		// if (0 === this.c_i && 2 === this.n_i) console.log(locDir[this.lastNode.l_x].length - 1 +":"+ this.lastNode.l_y);
 		if (1 < n0t) this.n0e = this.findIntercepts(this.n0t2, this.n1t2, n0l, n0t, this.n1t2);
 		else this.n0e = new Point(this.n0t2e.x, this.n0t2e.y);
-		// console.log("n0e     "+this.n0e.x+":"+this.n0e.y);
 		var gradOffset = new Point(0, 0);
 		gradOffset = offset.polar(gradientDist, Math.atan2(this.n1t1.y - this.n0t1.y, this.n1t1.x - this.n0t1.x));
 		this.n0g1 = new Point(this.n0e.x - offset.x + gradOffset.x, this.n0e.y - offset.y + gradOffset.y);
 		this.n0g2 = new Point(this.n0e.x + gradOffset.x, this.n0e.y + gradOffset.y);;
-		// console.log("offset  "+offset.x+":"+offset.y);
-		// console.log("n0g1  "+this.n0g1.x+":"+this.n0g1.y);
 		if (this.present) {
-			// if (0 === this.c_i && 2 === this.n_i) console.log(locDir[this.l_x].length - 1 +":"+ this.l_y);
 			if (1 < n1t) this.n1e = this.findIntercepts(this.n0t2, this.n1t2, new Point(0,0), n1t, this.n0t2);
 			else this.n1e = new Point(this.n1t2e.x, this.n1t2e.y);
 			this.n1g1 = new Point(this.n1e.x - offset.x - gradOffset.x, this.n1e.y - offset.y - gradOffset.y);
 			this.n1g2 = new Point(this.n1e.x - gradOffset.x, this.n1e.y - gradOffset.y);
 		}
 	}
-	// if (active && 0 === this.c_i && 2 === this.n_i) {
-	//
-	// 	pathctx.fillStyle = '#FF0000';
-	// 	pathctx.beginPath();
-	// 	pathctx.arc(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y, 2, 0, Math.PI*2);
-	// 	pathctx.closePath();
-	// 	pathctx.fill();
-	// 	pathctx.beginPath();
-	// 	pathctx.arc(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y, 2, 0, Math.PI*2);
-	// 	pathctx.closePath();
-	// 	pathctx.fill();
-	// 	pathctx.beginPath();
-	// 	pathctx.arc(loc[this.l_i].x + this.n0e.x, loc[this.l_i].y + this.n0e.y, 2, 0, Math.PI*2);
-	// 	pathctx.closePath();
-	// 	pathctx.fill();
-	// 	if (this.present) {
-	// 		pathctx.beginPath();
-	// 		pathctx.arc(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y, 2, 0, Math.PI*2);
-	// 		pathctx.closePath();
-	// 		pathctx.fill();
-	// 		pathctx.beginPath();
-	// 		pathctx.arc(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y, 2, 0, Math.PI*2);
-	// 		pathctx.closePath();
-	// 		pathctx.fill();
-	// 		pathctx.beginPath();
-	// 		pathctx.arc(loc[this.l_i].x + this.n1e.x, loc[this.l_i].y + this.n1e.y, 2, 0, Math.PI*2);
-	// 		pathctx.closePath();
-	// 		pathctx.fill();
-	// 	}
-	// }
 
-	//create gradient fill
+	//checking status
+	var xdif = this.n1t1.x - this.n0t1.x, ydif = this.n1t1.y - this.n0t1.y;
+	var underComp = Math.sqrt(xdif*xdif + ydif*ydif)*this.lastBridge;
+	xdif = this.n0g1.x - this.n0t1.x, ydif = this.n0g1.y - this.n0t1.y;
+	var overComp = Math.sqrt(xdif*xdif + ydif*ydif);
+	var ratio = underComp/overComp; //lol
+	if (1 < ratio || this.present) ratio = 1;
+	//setting outbound fill
 	var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n0e.x,loc[this.l_i].y + this.n0e.y, loc[this.l_i].x + this.n0g2.x,loc[this.l_i].y + this.n0g2.y);
 	grd.addColorStop(0, this.hexToRGB(this.col, 1));
 	grd.addColorStop(1, this.hexToRGB(this.col, 0));
-	upctx.fillStyle = grd;//;//grd;
+	upctx.fillStyle = grd;
 	upctx.beginPath();
-	//establish outbound fill here
+
+	//outbound fill, full
+	upctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
+	upctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
+	angle = Math.atan2(this.n0t2e.y - n0l.y, this.n0t2e.x - n0l.x);
+	offset = new Point(0,0);
+	offset = offset.polar(n0r - (this.stroke/2 + 0.35), angle);
+	upctx.lineTo(loc[this.lastNode.l_i].x + offset.x, loc[this.lastNode.l_i].y + offset.y);
+	angle2 = Math.atan2(this.n0t1.y - n0l.y, this.n0t1.x - n0l.x);
+	upctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r - (this.stroke/2 + 0.35), angle2, angle);
+	upctx.lineTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
+	upctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
+	upctx.closePath();
+	upctx.fill();
+
+	//outbound stroke, full
+	upctx.lineWidth = this.stroke;
+	var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n0e.x,loc[this.l_i].y + this.n0e.y, loc[this.l_i].x + this.n0g2.x,loc[this.l_i].y + this.n0g2.y);
+	grd.addColorStop(0, this.hexToRGB('#000000', 1));
+	grd.addColorStop(1, this.hexToRGB('#000000', 0));
+	upctx.strokeStyle = grd;
+
+	upctx.beginPath();
+	upctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
+	upctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
+	upctx.stroke();
+	upctx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
+	upctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
+	upctx.stroke();
+
 	if (this.present) {
-		//outbound fill
-		// upctx.beginPath();
-		// upctx.arc(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y, 2, 0, Math.PI*2);
-		// upctx.closePath();
-		// upctx.fill();
-		// angle = Math.atan2(this.n0t2e.y - n0l.y, this.n0t2e.x - n0l.x);
-		// offset = new Point(0,0);
-		// offset = offset.polar(n0r - (this.stroke/2 + 0.35), angle);
-		// upctx.beginPath();
-		// upctx.arc(loc[this.lastNode.l_i].x + offset.x, loc[this.lastNode.l_i].y + offset.y, 2, 0, Math.PI*2);
-		// upctx.closePath();
-		// upctx.fill();
-		// upctx.beginPath();
-		// upctx.arc(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y, 2, 0, Math.PI*2);
-		// upctx.closePath();
-		// upctx.fill();
-		// upctx.beginPath();
-		// upctx.arc(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y, 2, 0, Math.PI*2);
-		// upctx.closePath();
-		// upctx.fill();
-
-		upctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
-		upctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
-		angle = Math.atan2(this.n0t2e.y - n0l.y, this.n0t2e.x - n0l.x);
-		offset = new Point(0,0);
-		offset = offset.polar(n0r - (this.stroke/2 + 0.35), angle);
-		upctx.lineTo(loc[this.lastNode.l_i].x + offset.x, loc[this.lastNode.l_i].y + offset.y);
-		angle2 = Math.atan2(this.n0t1.y - n0l.y, this.n0t1.x - n0l.x);
-		upctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r - (this.stroke/2 + 0.35), angle2, angle);
-		upctx.lineTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
-		upctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
-		upctx.closePath();
-		upctx.fill();
-
 		//inbound fill
 		var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n1e.x,loc[this.l_i].y + this.n1e.y, loc[this.l_i].x + this.n1g2.x,loc[this.l_i].y + this.n1g2.y);
 		grd.addColorStop(0, this.hexToRGB(this.col, 1));
 		grd.addColorStop(1, this.hexToRGB(this.col, 0));
-		upctx.fillStyle = grd;//;//grd;
+		upctx.fillStyle = grd;
+
 		upctx.beginPath();
 		upctx.moveTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
 		upctx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
@@ -359,23 +325,13 @@ Node.prototype.genPath = function(channel, active) {
 		upctx.closePath();
 		upctx.fill();
 
+		//inbound stroke
 		upctx.lineWidth = this.stroke;
-		var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n0e.x,loc[this.l_i].y + this.n0e.y, loc[this.l_i].x + this.n0g2.x,loc[this.l_i].y + this.n0g2.y);
-		grd.addColorStop(0, this.hexToRGB('#000000', 1));
-		grd.addColorStop(1, this.hexToRGB('#000000', 0));
-		upctx.strokeStyle = grd;
-		upctx.beginPath();
-		upctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
-		upctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
-		upctx.stroke();
-		upctx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
-		upctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
-		upctx.stroke();
-
 		var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n1e.x,loc[this.l_i].y + this.n1e.y, loc[this.l_i].x + this.n1g2.x,loc[this.l_i].y + this.n1g2.y);
 		grd.addColorStop(0, this.hexToRGB('#000000', 1));
 		grd.addColorStop(1, this.hexToRGB('#000000', 0));
 		upctx.strokeStyle = grd;
+
 		upctx.beginPath();
 		upctx.moveTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
 		upctx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
@@ -383,23 +339,6 @@ Node.prototype.genPath = function(channel, active) {
 		upctx.moveTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y);
 		upctx.lineTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
 		upctx.stroke();
-	} else {
-		// var xdif = this.n1t1.x - this.n0t1.x, ydif = this.n1t1.y - this.n0t1.y;
-		// var underComp = Math.sqrt(xdif*xdif + ydif*ydif)*this.lastBridge;
-		// xdif = this.n0g1.x - this.n0t1.x, ydif = this.n0g1.y - this.n0t1.y;
-		// var overComp = Math.sqrt(xdif*xdif + ydif*ydif)*this.lastBridge;
-		// if (underComp >= overComp) {
-		// 	upctx.beginPath();
-		// 	upctx.moveTo();
-		//
-		// 	upctx.closePath();
-		// 	upctx.stroke();
-		// } else {
-		// 	upctx.beginPath();
-		// 	upctx.moveTo();
-		// 	upctx.closePath();
-		// 	upctx.stroke();
-		// }
 	}
 
 
