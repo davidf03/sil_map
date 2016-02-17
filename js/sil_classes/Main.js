@@ -120,11 +120,11 @@ Main.prototype.redraw = function() {
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
+	// ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
 	ctx.globalAlpha = 0.35;
 	ctx.drawImage(lines, 0, 0);
 	ctx.globalAlpha = 1;
-	ctx.drawImage(paths, 0, 0);
 	if (active) requestAnimFrame(this.redraw.bind(this));
 	else idle = true;
 
