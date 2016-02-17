@@ -1,125 +1,39 @@
-package sil_cas
-{
-	import flash.display.*;
-	import flash.events.*;
-	import flash.geom.Point;
-	
-	import gs.com.greensock.TweenLite;
-	import gs.com.greensock.easing.Linear;
-	import gs.com.greensock.plugins.HexColorsPlugin;
-	
-	import sil_cas.*;
-	
-	public class SeqToggle extends Sprite
-	{
-		private var nextOn:Sprite;
-		private var nextOff:Sprite;
-		private var prevOn:Sprite;
-		private var prevOff:Sprite;
-		private static var hght:uint = 5;
-		private static var wdth:uint = 8;
-		private var c_i:uint;
 		private var target:uint;
-		private var animated:Boolean = false;
-		
-		private var direction:Boolean;
-		
-		private var test:Sprite;
-		
-		public function SeqToggle(i:uint): void {
-			c_i = i;
-			
-			nextOn = new Sprite();
-			addChild(nextOn);
-			nextOff = new Sprite();
-			addChild(nextOff);
-			prevOn = new Sprite();
-			addChild(prevOn);
-			prevOff = new Sprite();
-			addChild(prevOff);
-			
-			/*var guide:Sprite = new Sprite();
-			guide.graphics.beginFill(0x00FF00);
-			guide.graphics.drawCircle(10,10*(c_i+1),2);
-			guide.graphics.drawCircle(40,10*(c_i+1),2);
-			guide.graphics.endFill();
-			Main.instance.addChild(guide);*/
 
-			genToggle();
-			evalState();
-		}
-		private function genToggle():void {
-			nextOn.graphics.lineStyle(2, 0x000000);
-			nextOn.graphics.beginFill(0x454545);
-			nextOn.graphics.moveTo(Main.instance.pathCon[c_i].width/2 + wdth/2, hght);
-			nextOn.graphics.lineTo(Main.instance.pathCon[c_i].width/2 + wdth/2, -hght);
-			nextOn.graphics.lineTo(Main.instance.pathCon[c_i].width/2 + wdth*1.5, 0);
-			nextOn.graphics.lineTo(Main.instance.pathCon[c_i].width/2 + wdth/2, hght);
-			nextOn.graphics.lineStyle(0,0,0);
-			nextOn.graphics.beginFill(0x000000, 0);
-			nextOn.graphics.drawCircle(Main.instance.pathCon[c_i].width/2 + wdth, 0, wdth);
-			nextOn.graphics.endFill();
-			
-			nextOff.graphics.lineStyle(2, 0xAAAAAA);
-			nextOff.graphics.beginFill(0xD3D3D3);
-			nextOff.graphics.moveTo(Main.instance.pathCon[c_i].width/2 + wdth/2, hght);
-			nextOff.graphics.lineTo(Main.instance.pathCon[c_i].width/2 + wdth/2, -hght);
-			nextOff.graphics.lineTo(Main.instance.pathCon[c_i].width/2 + wdth*1.5, 0);
-			nextOff.graphics.lineTo(Main.instance.pathCon[c_i].width/2 + wdth/2, hght);
-			nextOff.graphics.endFill();
-			
-			prevOn.graphics.lineStyle(2, 0x000000);
-			prevOn.graphics.beginFill(0x454545);
-			prevOn.graphics.moveTo(-(Main.instance.pathCon[c_i].width/2 + wdth/2), hght);
-			prevOn.graphics.lineTo(-(Main.instance.pathCon[c_i].width/2 + wdth/2), -hght);
-			prevOn.graphics.lineTo(-(Main.instance.pathCon[c_i].width/2 + wdth*1.5), 0);
-			prevOn.graphics.lineTo(-(Main.instance.pathCon[c_i].width/2 + wdth/2), hght);
-			prevOn.graphics.lineStyle(0,0,0);
-			prevOn.graphics.beginFill(0x000000, 0);
-			prevOn.graphics.drawCircle(-(Main.instance.pathCon[c_i].width/2 + wdth), 0, wdth);
-			prevOn.graphics.endFill();
-			
-			prevOff.graphics.lineStyle(2, 0xAAAAAA);
-			prevOff.graphics.beginFill(0xD3D3D3);
-			prevOff.graphics.moveTo(-(Main.instance.pathCon[c_i].width/2 + wdth/2), hght);
-			prevOff.graphics.lineTo(-(Main.instance.pathCon[c_i].width/2 + wdth/2), -hght);
-			prevOff.graphics.lineTo(-(Main.instance.pathCon[c_i].width/2 + wdth*1.5), 0);
-			prevOff.graphics.lineTo(-(Main.instance.pathCon[c_i].width/2 + wdth/2), hght);
-			prevOff.graphics.endFill();
-		}
+		evalState();
 		public function evalState(): void {
 			if (Main.instance.char[c_i].length > 1 && (Main.instance.now < Main.instance.char[c_i][Main.instance.char[c_i].length - 1].s_i || Main.instance.bridge[c_i].x < 1) && Main.instance.anc[Main.instance.char[c_i][0].l_x][Main.instance.char[c_i][0].l_y].x >= 1) {
 				nextOn.visible = true;
 				nextOff.visible = false;
-				nextOn.buttonMode = true; 
+				nextOn.buttonMode = true;
 				nextOn.useHandCursor = true;
 				nextOn.addEventListener(MouseEvent.CLICK, goNext);
 			} else {
 				nextOn.visible = false;
 				nextOff.visible = true;
-				nextOn.buttonMode = false; 
+				nextOn.buttonMode = false;
 				nextOn.useHandCursor = false;
 				nextOn.removeEventListener(MouseEvent.CLICK, goNext);
 			}
 			if (Main.instance.char[c_i].length > 1 && Main.instance.now >= Main.instance.char[c_i][0].s_i && false == Detect.isWithin(Main.instance.now, 0) && Main.instance.anc[Main.instance.char[c_i][0].l_x][Main.instance.char[c_i][0].l_y].x >= 1) {
 				prevOn.visible = true;
 				prevOff.visible = false;
-				prevOn.buttonMode = true; 
+				prevOn.buttonMode = true;
 				prevOn.useHandCursor = true;
 				prevOn.addEventListener(MouseEvent.CLICK, goPrev);
 			} else {
 				prevOn.visible = false;
 				prevOff.visible = true;
-				prevOn.buttonMode = false; 
+				prevOn.buttonMode = false;
 				prevOn.useHandCursor = false;
 				prevOn.removeEventListener(MouseEvent.CLICK, goPrev);
 			}
 		}
-		
+
 		private function goNext(evt:MouseEvent): void {
 			Main.instance.test.graphics.clear();
 			Controller.pause();
-			
+
 			//direction = true;
 			var end:Boolean;
 			var i:int;
@@ -137,12 +51,12 @@ package sil_cas
 					break;
 				}
 			}
-			
+
 			if (Main.instance.direct) {
 				//fix this!
 				instant(end);
 				Main.instance.now = target;
-				
+
 				for (i = 0; i < Main.instance.time.length; i++) {
 					Main.instance.char[Main.instance.time[i][0][0]][Main.instance.time[i][0][1]].genNode();}
 				for (i = 0; i < Main.instance.char.length; i++) {
@@ -151,7 +65,7 @@ package sil_cas
 				if (0 >= Main.instance.time[Main.instance.now][1][2] && 0 >= Main.instance.time[Main.instance.now][1][1]) {
 					/*if (1 <= Main.instance.riftBridge.x) {
 						Main.instance.riftBridge.x = 0;}*/
-					TweenLite.to(Main.instance.riftBridge, Detect.findInterval(Main.instance.now + 1, false)*(1 - Main.instance.riftBridge.x), {x:1, ease:Linear.easeNone}); 
+					TweenLite.to(Main.instance.riftBridge, Detect.findInterval(Main.instance.now + 1, false)*(1 - Main.instance.riftBridge.x), {x:1, ease:Linear.easeNone});
 					Main.instance.char[Main.instance.time[Main.instance.now + 1][0][0]][Main.instance.time[Main.instance.now + 1][0][1]].movementNext(true, target, end, 0, true);
 				} else {
 					continuous(end);}
@@ -209,7 +123,7 @@ package sil_cas
 			//Controller.pause();
 			//check bridges for ones active
 			//could retrieve actives within the section above; see first: next/prev
-			
+
 			var active:Array = new Array();
 			var callers:Array = new Array();
 			var focused:Boolean = true;
@@ -253,10 +167,10 @@ package sil_cas
 						break;}*/
 				//}
 			}
-		
+
 			//sort arrays chronologically
 			//not needed
-			
+
 			//assign remaining animations in appropriate direction
 			//call wait function on current index (assuming next!)
 			//perhaps unnecesary to realign riftBridge:
@@ -276,6 +190,7 @@ package sil_cas
 			var i:int,
 				within:uint = 0,
 				j:int;
+				console.log('hi there');
 			if (i < Main.instance.char[c_i].length) {
 				var hit:Array = new Array();
 				for (i = 0; i < Main.instance.char.length; i++) {
