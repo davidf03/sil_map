@@ -153,47 +153,47 @@ Main.prototype.redraw = function() {
 
 /* time stuff */
 Main.prototype.evalState = function(c_i) {
+	var inext = document.querySelector('[data-index="'+c_i+'"] .i-next');
+	var cnext = document.querySelector('[data-index="'+c_i+'"] .c-next');
+	inext.onclick = null;
+	cnext.onclick = null;
 	if (charDir[c_i].length > 1 && (now < charDir[c_i][charDir[c_i].length - 1].s_i || bridge[c_i].x < 1) && anc[c_i].x >= 1) {
-		this.changeState(c_i, true, true);
+		inext.onclick = function(e) {
+			main.goNext(inext.parentNode.parentNode.dataset.index, true);
+		};
+		cnext.onclick = function(e) {
+			main.goNex(cnext.parentNode.parentNode.dataset.index, false);
+		};
+		inext.style.color = "#232323";
+		inext.style.cursor = "pointer";
+		cnext.style.color = "#232323";
+		cnext.style.cursor = "pointer";
 	} else {
-		this.changeState(c_i, true, false);
+		inext.style.color = "#787878";
+		inext.style.cursor = "default";
+		cnext.style.color = "#787878";
+		cnext.style.cursor = "default";
 	}
+	var iprev = document.querySelector('[data-index="'+c_i+'"] .i-prev');
+	var cprev = document.querySelector('[data-index="'+c_i+'"] .c-prev');
+	iprev.onclick = null
+	cprev.onclick = null
 	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && false == Detect.isWithin(now, 0) && anc[c_i].x >= 1) {
-		this.changeState(c_i, false, true);
+		iprev.onclick = function(e) {
+			main.goPrev(iprev.parentNode.parentNode.dataset.index);
+		};
+		cprev.onclick = function(e) {
+			main.goPrev(cprev.parentNode.parentNode.dataset.index);
+		};
+		iprev.style.color = "#232323";
+		iprev.style.cursor = "pointer";
+		cprev.style.color = "#232323";
+		cprev.style.cursor = "pointer";
 	} else {
-		this.changeState(c_i, false, false);
-	}
-}
-Main.prototype.changeState = function(c_i, next, on) {
-	if (next === 'undefined') next = true;
-	if (on === 'undefined') on = true;
-
-	if (next) {
-		var inext = document.querySelector('[data-index="'+c_i+'"] .i-next');
-		var cnext = document.querySelector('[data-index="'+c_i+'"] .c-next');
-		inext.onclick = null;
-		cnext.onclick = null;
-		if (on) {
-			inext.onclick = function(e) {
-				main.goNext(inext.parentNode.parentNode.dataset.index, true);
-			};
-			cnext.onclick = function(e) {
-				main.goNex(cnext.parentNode.parentNode.dataset.index, false);
-			};
-		}
-	} else {
-		var iprev = document.querySelector('[data-index="'+c_i+'"] .i-prev');
-		var cprev = document.querySelector('[data-index="'+c_i+'"] .c-prev');
-		iprev.onclick = null
-		cprev.onclick = null
-		if (on) {
-			iprev.onclick = function(e) {
-				main.goPrev(iprev.parentNode.parentNode.dataset.index);
-			};
-			cprev.onclick = function(e) {
-				main.goPrev(cprev.parentNode.parentNode.dataset.index);
-			};
-		}
+		iprev.style.color = "#787878";
+		iprev.style.cursor = "default";
+		cprev.style.color = "#787878";
+		cprev.style.cursor = "default";
 	}
 }
 Main.prototype.pause = function() {
