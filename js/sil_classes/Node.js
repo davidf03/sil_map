@@ -5,8 +5,14 @@ var col;
 
 var lastNode;
 var n0t1, n0t2, n0t2e, n1t1, n1t2, n1t2e; //tangent points
+
+var gradientDist;
 var n0e, n1e; //edge points
 var n0g1, n0g2, n1g1, n1g2; //gradient points
+var n0t, n1t;
+var underComp, overComp, compDiff;
+var outDrawLimit, inDrawLimit;
+
 var pathCaps;
 var arcSpan;
 
@@ -214,32 +220,31 @@ Node.prototype.genPath = function(channel, active) {
 
 
 	/* node-fixed focus fragments */
-	var gradientDist = 3*this.radius;
-	var n0t = 1;
-	var n1t = 1;
+	this.n0t = 1;
+	this.n1t = 1;
 
 	var locActive = true;
 	for (var i = this.lastNode.l_y + 1; i < locDir[this.lastNode.l_x].length; i++) {
 		if (this.isPresent(locDir[this.lastNode.l_x][i][0], locDir[this.lastNode.l_x][i][1]))
-			n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
+			this.n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
 		else break;
 	}
-	if (1 < n0t) {
+	if (1 < this.n0t) {
 		for (var i = this.lastNode.l_y; i >= 0; i--)
-			n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
+			this.n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
 		//detect activity here, maybe, with type casting comparison to look for real-numbered anc's
-		n0t *= this.radius;
-		// n0t += this.lastNode.getRadius();
+		this.n0t *= this.radius;
+		// this.n0t += this.lastNode.getRadius();
 	} else locActive = false;
 	for (var i = this.l_y + 1; i < locDir[this.l_x].length; i++)
 		if (this.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1]))
-			n1t += anc[locDir[this.l_x][i][0]].x;
+			this.n1t += anc[locDir[this.l_x][i][0]].x;
 		else break;
-	if (1 < n1t) {
+	if (1 < this.n1t) {
 		for (var i = this.l_y; i >= 0; i--)
-			n1t += anc[locDir[this.l_x][i][0]].x;
-		n1t *= this.radius;
-		// n1t += this.getRadius();
+			this.n1t += anc[locDir[this.l_x][i][0]].x;
+		this.n1t *= this.radius;
+		// this.n1t += this.getRadius();
 	} else locActive = false;
 
 	if (active || locActive) {
@@ -247,38 +252,33 @@ Node.prototype.genPath = function(channel, active) {
 			angle = (-Math.atan2(this.n0t1.x, this.n0t1.y));
 			offset = offset.polar(n0r - (this.lastNode.oth + 1 - this.lastAnc)*this.radius, angle);
 		}
-		if (1 < n0t) this.n0e = this.findIntercepts(this.n0t2, this.n1t2, n0l, n0t, this.n1t2);
+		if (1 < this.n0t) this.n0e = this.findIntercepts(this.n0t2, this.n1t2, n0l, this.n0t, this.n1t2);
 		else this.n0e = new Point(this.n0t2e.x, this.n0t2e.y);
 		var gradOffset = new Point(0, 0);
-		gradOffset = offset.polar(gradientDist, Math.atan2(this.n1t1.y - this.n0t1.y, this.n1t1.x - this.n0t1.x));
+		gradOffset = offset.polar(this.gradientDist, Math.atan2(this.n1t1.y - this.n0t1.y, this.n1t1.x - this.n0t1.x));
 		this.n0g1 = new Point(this.n0e.x - offset.x + gradOffset.x, this.n0e.y - offset.y + gradOffset.y);
 		this.n0g2 = new Point(this.n0e.x + gradOffset.x, this.n0e.y + gradOffset.y);
 
-		if (1 < n1t) this.n1e = this.findIntercepts(this.n0t2, this.n1t2, new Point(0,0), n1t, this.n0t2);
+		if (1 < this.n1t) this.n1e = this.findIntercepts(this.n0t2, this.n1t2, new Point(0,0), this.n1t, this.n0t2);
 		else this.n1e = new Point(this.n1t2e.x, this.n1t2e.y);
 		this.n1g1 = new Point(this.n1e.x - offset.x - gradOffset.x, this.n1e.y - offset.y - gradOffset.y);
 		this.n1g2 = new Point(this.n1e.x - gradOffset.x, this.n1e.y - gradOffset.y);
 	}
 
 	//checking status
-	var outDrawLimit, inDrawLimit;
-	var underComp, overComp;
-	var complete = true;
+	if (this.present) {
+		this.outDrawLimit = this.n1t1;
+		this.inDrawLimit = this.n1t2;
+	} else {
+		this.outDrawLimit = new Point(this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge));;
+		this.inDrawLimit = new Point(this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge));
+	}
 	if (false === this.present) {
 		var xdif = this.n1t1.x - this.n0t1.x, ydif = this.n1t1.y - this.n0t1.y;
-		underComp = Math.sqrt(xdif*xdif + ydif*ydif);
+		this.underComp = Math.sqrt(xdif*xdif + ydif*ydif);
 		xdif = this.n0g1.x - this.n0t1.x, ydif = this.n0g1.y - this.n0t1.y;
-		overComp = Math.sqrt(xdif*xdif + ydif*ydif);
-		var ratio = underComp*this.lastBridge/overComp; //lol
-		if (1 > ratio) {
-			complete = false;
-			outDrawLimit = new Point(this.n0t1.x + (this.n0g1.x - this.n0t1.x)*ratio, this.n0t1.y + (this.n0g1.y - this.n0t1.y)*ratio);;
-			inDrawLimit = new Point(this.n0t2.x + (this.n0g2.x - this.n0t2.x)*ratio, this.n0t2.y + (this.n0g2.y - this.n0t2.y)*ratio);
-		}
-	}
-	if (complete) {
-		outDrawLimit = this.n0g1;
-		inDrawLimit = this.n0g2;
+		this.overComp = Math.sqrt(xdif*xdif + ydif*ydif);
+		this.compDiff = this.overComp - this.underComp*this.lastBridge;
 	}
 
 	//outbound fill
@@ -288,7 +288,10 @@ Node.prototype.genPath = function(channel, active) {
 	upctx.fillStyle = grd;
 	upctx.beginPath();
 
-	upctx.moveTo(loc[this.l_i].x + inDrawLimit.x, loc[this.l_i].y + inDrawLimit.y);
+	if (this.compDiff > 0)
+		upctx.moveTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+	else
+		upctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
 	upctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
 	angle = Math.atan2(this.n0t2e.y - n0l.y, this.n0t2e.x - n0l.x);
 	offset = new Point(0,0);
@@ -297,7 +300,10 @@ Node.prototype.genPath = function(channel, active) {
 	angle2 = Math.atan2(this.n0t1.y - n0l.y, this.n0t1.x - n0l.x);
 	upctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r - (this.stroke/2 + 0.35), angle2, angle);
 	upctx.lineTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
-	upctx.lineTo(loc[this.l_i].x + outDrawLimit.x, loc[this.l_i].y + outDrawLimit.y);
+	if (this.compDiff > 0)
+		upctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+	else
+		upctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
 	upctx.closePath();
 	upctx.fill();
 
@@ -309,32 +315,26 @@ Node.prototype.genPath = function(channel, active) {
 	upctx.strokeStyle = grd;
 
 	upctx.beginPath();
-	upctx.moveTo(loc[this.l_i].x + inDrawLimit.x, loc[this.l_i].y + inDrawLimit.y);
+	upctx.moveTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
 	upctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
 	upctx.stroke();
 	upctx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
-	upctx.lineTo(loc[this.l_i].x + outDrawLimit.x, loc[this.l_i].y + outDrawLimit.y);
-	if (1 > ratio)
-		upctx.lineTo(loc[this.l_i].x + inDrawLimit.x, loc[this.l_i].y + inDrawLimit.y);
+	upctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+	if (this.compDiff > 0)
+		upctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+	else
+		upctx.lineTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
 	upctx.stroke();
 
-	if (this.present) {
-		outDrawLimit = this.n1t1;
-		inDrawLimit = this.n1t2;
-	} else {
+	if (false === this.present) {
 		//this stuff doesn't calculate properly
-		if (n0t !== n1t) {
-			var xdif = this.n1g1.x - this.n1t1.x, ydif = this.n1g1.y - this.n1t1.y;
-			overComp = Math.sqrt(xdif*xdif + ydif*ydif);
+		if (this.n0t !== this.n1t) {
+			var xdif = this.n1t1.x - this.n1g1.x, ydif = this.n1t1.y - this.n1g1.y;
+			this.overComp = Math.sqrt(xdif*xdif + ydif*ydif);
 		}
-		underComp = underComp*(this.lastBridge - 1) + overComp;
-		var ratio = underComp/overComp;
-		if (0 < ratio) {
-			outDrawLimit = new Point(this.n1g1.x + (this.n1t1.x - this.n1g1.x)*ratio, this.n1g1.y + (this.n1t1.y - this.n1g1.y)*ratio);;
-			inDrawLimit = new Point(this.n1g2.x + (this.n1t2.x - this.n1g2.x)*ratio, this.n1g2.y + (this.n1t2.y - this.n1g2.y)*ratio);
-		}
+		this.compDiff = this.underComp*(this.lastBridge - 1) + this.overComp;
 	}
-	if (this.present || 0 < ratio) {
+	if (this.present || 0 < this.compDiff) {
 		//inbound fill, stroke
 		var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n1e.x,loc[this.l_i].y + this.n1e.y, loc[this.l_i].x + this.n1g2.x,loc[this.l_i].y + this.n1g2.y);
 		grd.addColorStop(0, this.hexToRGB(this.col, 1));
@@ -348,15 +348,20 @@ Node.prototype.genPath = function(channel, active) {
 
 		upctx.beginPath();
 		upctx.moveTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
-		upctx.lineTo(loc[this.l_i].x + inDrawLimit.x, loc[this.l_i].y + inDrawLimit.y);
-		upctx.lineTo(loc[this.l_i].x + outDrawLimit.x, loc[this.l_i].y + outDrawLimit.y);
+		if (this.present) {
+			upctx.lineTo(loc[this.l_i].x + this.n1t2.x, loc[this.l_i].y + this.n1t2.y);
+			upctx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y);
+		} else {
+			upctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+			upctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+		}
 		upctx.lineTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
 		upctx.fill();
 		upctx.stroke();
 		// upctx.beginPath();
 		// upctx.moveTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
-		// upctx.lineTo(loc[this.l_i].x + inDrawLimit.x, loc[this.l_i].y + inDrawLimit.y);
-		// upctx.lineTo(loc[this.l_i].x + outDrawLimit.x, loc[this.l_i].y + outDrawLimit.y);
+		// upctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+		// upctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
 		// upctx.lineTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
 		// upctx.stroke();
 	}
@@ -392,7 +397,7 @@ Node.prototype.genPath = function(channel, active) {
 	// testctx.fill();
 	var paths = document.querySelector('.paths');
 	var pathctx = paths.getContext('2d');
-	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) == false) {
+	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) === false) {
 		//path fill
 		pathctx.fillStyle = this.col;
 		pathctx.beginPath();
@@ -406,8 +411,8 @@ Node.prototype.genPath = function(channel, active) {
 			pathctx.lineTo(loc[this.l_i].x + offset.x, loc[this.l_i].y + offset.y);
 			pathctx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
 		} else {
-			pathctx.lineTo(loc[this.l_i].x + this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge))
-			pathctx.lineTo(loc[this.l_i].x + this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge));
+			pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
+			pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
 		}
 
 		upctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
@@ -429,8 +434,8 @@ Node.prototype.genPath = function(channel, active) {
 		if (this.present)
 			pathctx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
 		else {
-			pathctx.lineTo(loc[this.l_i].x + this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge))
-			pathctx.lineTo(loc[this.l_i].x + this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge))
+			pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y)
+			pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
 		}
 		pathctx.stroke();
 	}
@@ -440,7 +445,7 @@ Node.prototype.genPath = function(channel, active) {
 	if (this.present)
 		pathctx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y)
 	else
-		pathctx.lineTo(loc[this.l_i].x + this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge))
+		pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
 	pathctx.closePath();
 	pathctx.stroke();
 
@@ -456,13 +461,13 @@ Node.prototype.genPath = function(channel, active) {
 	if (this.present)
 		linectx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y);
 	else
-		linectx.lineTo(loc[this.l_i].x + this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge));
-	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) == false) {
+		linectx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) === false) {
 		if (this.present) {
 			linectx.moveTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
 			linectx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
 		} else {
-			linectx.lineTo(loc[this.l_i].x + this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), loc[this.l_i].y + this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge));
+			linectx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
 			linectx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
 		}
 	}
@@ -982,6 +987,10 @@ function Node(charIndex, nodeIndex, colour, location, timeIndex) {
 		this.lastNode = charDir[this.c_i][this.n_i - 1];
 		if (2 <= this.n_i)
 			this.arcSpan = 3/8;
+
+		this.gradientDist = 3*this.radius;
+		this.outDrawLimit = new Point(0,0);
+		this.inDrawLimit = new Point(0,0);
 	}
 
 	moving = waiting = false;

@@ -170,7 +170,7 @@ Main.prototype.evalState = function(c_i) {
 	var cnext = document.querySelector('[data-index="'+c_i+'"] .c-next');
 	inext.onclick = null;
 	cnext.onclick = null;
-	if (charDir[c_i].length > 1 && (now < charDir[c_i][charDir[c_i].length - 1].s_i || bridge[c_i].x < 1) && anc[c_i].i >= 0) {
+	if (charDir[c_i].length > 1 && (now < charDir[c_i][charDir[c_i].length - 1].s_i || bridge[c_i].x < 1) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
 		inext.onclick = function(e) {
 			main.goNext(inext.parentNode.parentNode.dataset.index, true);
 		};
@@ -191,7 +191,7 @@ Main.prototype.evalState = function(c_i) {
 	var cprev = document.querySelector('[data-index="'+c_i+'"] .c-prev');
 	iprev.onclick = null
 	cprev.onclick = null
-	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && false == Detect.isWithin(now, 0) && anc[c_i].i >= 0) {
+	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && false == Detect.isWithin(now, 0) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
 		iprev.onclick = function(e) {
 			main.goPrev(iprev.parentNode.parentNode.dataset.index, true);
 		};
