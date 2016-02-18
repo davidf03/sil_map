@@ -322,6 +322,7 @@ Node.prototype.genPath = function(channel, active) {
 		outDrawLimit = this.n1t1;
 		inDrawLimit = this.n1t2;
 	} else {
+		//this stuff doesn't calculate properly
 		if (n0t !== n1t) {
 			var xdif = this.n1g1.x - this.n1t1.x, ydif = this.n1g1.y - this.n1t1.y;
 			overComp = Math.sqrt(xdif*xdif + ydif*ydif);
@@ -362,6 +363,33 @@ Node.prototype.genPath = function(channel, active) {
 
 
 	/* the path itself */
+	// var test = document.getElementById('test');
+	// var testctx = test.getContext('2d');
+	// testctx.fillStyle = "#FF0000";
+	// testctx.beginPath();
+	// testctx.arc(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y, 2, 0, Math.PI);
+	// testctx.closePath();
+	// testctx.fill();
+	// testctx.beginPath();
+	// testctx.arc(loc[this.l_i].x + this.n0t2.x, loc[this.l_i].y + this.n0t2.y, 2, 0, Math.PI);
+	// testctx.closePath();
+	// testctx.fill();
+	// testctx.beginPath();
+	// testctx.arc(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y, 2, 0, Math.PI);
+	// testctx.closePath();
+	// testctx.fill();
+	// testctx.beginPath();
+	// testctx.arc(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y, 2, 0, Math.PI);
+	// testctx.closePath();
+	// testctx.fill();
+	// testctx.beginPath();
+	// testctx.arc(loc[this.l_i].x + this.n1t2.x, loc[this.l_i].y + this.n1t2.y, 2, 0, Math.PI);
+	// testctx.closePath();
+	// testctx.fill();
+	// testctx.beginPath();
+	// testctx.arc(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y, 2, 0, Math.PI);
+	// testctx.closePath();
+	// testctx.fill();
 	var paths = document.querySelector('.paths');
 	var pathctx = paths.getContext('2d');
 	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) == false) {
@@ -644,42 +672,40 @@ Node.prototype.generate = function(channel, recalculate) {
 			var active = true;
 		else if (1 <= recalculate) {
 			active = false;
-			for (var i = this.l_y; i >= 0; i--) {
+			for (var i = this.l_y; i >= 0; i--)
 				if (0 !== anc[locDir[this.l_x][i][0]].i) {
 					active = true;
-					break;}
-			}
+					break;
+				}
 		}
 
 		if (active) {
 			//getting oth data
 			this.oth = 0;
-			for (var i = 0; i <= this.l_y; i++) {
-				if (this.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], true)) {
+			for (var i = 0; i < this.l_y; i++) {
+				if (this.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], true))
 					this.oth += anc[locDir[this.l_x][i][0]].x;
 					// this.arc_ce -= this.arc_ce*anc[locDir[this.l_x][i][0]].x;
-				} else {
-					break;}
+				else break;
 			}
+			this.oth += anc[this.c_i].x;
 		}
 
 		//this could be refactored with a trinary return from isPresent
 		if (this.isPresent(this.c_i, this.n_i, true, 1)) {
-			if (this.isPresent(this.c_i, this.n_i, true)) {
+			if (this.isPresent(this.c_i, this.n_i, true))
 				this.present = true;
-			} else {
+			else
 				this.present = false;
-			}
 
 			if (channel) {
 				if (this.n_i > 0) {
-					if (1 === recalculate && false === active && false === channel) {
-						for (var i = this.lastNode.l_y - 1; i >= 0; i--) {
+					if (1 === recalculate && false === active && false === channel)
+						for (var i = this.lastNode.l_y - 1; i >= 0; i--)
 							if (0 !== anc[locDir[this.lastNode.l_x][i][0]].i) {
 								active = true;
-								break;}
-						}
-					}
+								break;
+							}
 					this.genPath(channel, active);
 				}
 			} else if (this.present) {

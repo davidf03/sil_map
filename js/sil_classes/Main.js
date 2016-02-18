@@ -58,17 +58,6 @@ Main.prototype.genCharObj = function() {
 //http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image
 //for focus stuff, see second answer on saving and restoring canvas state
 
-Main.prototype.toggleChar = function(charIndex) {
-	if (1 === anc[charIndex].x || 0 < anc[charIndex].i)
-		anc[charIndex].i = -fps/1000*anc[charIndex].x*visSpeed;
-	else
-		anc[charIndex].i = fps/1000*(1 - anc[charIndex].x)*visSpeed;
-	// anc[0].f = 1/visEase;
-	if (idle) {
-		requestAnimFrame(this.redraw.bind(this));
-		idle = false;
-	}
-}
 Main.prototype.redraw = function() {
 	var active = false;
 	var iLen = anc.length;
@@ -113,6 +102,9 @@ Main.prototype.redraw = function() {
 	var lines = document.getElementById('lines');
 	var linectx = lines.getContext('2d');
 	linectx.clearRect(0,0,lines.width,lines.height);
+	var test = document.getElementById('test');
+	var testctx = test.getContext('2d');
+	testctx.clearRect(0,0,test.width,test.height);
 
 	//testSequence
 	iLen = testSequence.length;
@@ -128,6 +120,8 @@ Main.prototype.redraw = function() {
 	ctx.globalAlpha = 0.35;
 	ctx.drawImage(lines, 0, 0);
 	ctx.globalAlpha = 1;
+	ctx.drawImage(test, 0, 0);
+
 	if (active) requestAnimFrame(this.redraw.bind(this));
 	else idle = true;
 
@@ -150,6 +144,25 @@ Main.prototype.redraw = function() {
 	// 	}
 	// }
 }
+Main.prototype.removeClass = function(e,c) {e.className = e.className.replace( new RegExp('(?:^|\\s)'+c+'(?!\\S)') ,'');};
+Main.prototype.toggleChar = function(c_i) {
+	var toggle = document.querySelector('[data-index="'+c_i+'"] .toggle span');
+	if (1 <= anc[c_i].x || 0 < anc[c_i].i) {
+		this.removeClass(toggle, "fa-circle");
+		toggle.className += " fa-circle-o";
+		anc[c_i].i = -fps/1000*(60/fps)*anc[c_i].x*visSpeed;
+	} else {
+		this.removeClass(toggle, "fa-circle-o");
+		toggle.className += " fa-circle";
+		anc[c_i].i = fps/1000*(60/fps)*(1 - anc[c_i].x)*visSpeed;
+	}
+	// anc[0].f = 1/visEase;
+	if (idle) {
+		requestAnimFrame(this.redraw.bind(this));
+		idle = false;
+	}
+	this.evalState(c_i);
+}
 
 /* time stuff */
 Main.prototype.evalState = function(c_i) {
@@ -157,43 +170,43 @@ Main.prototype.evalState = function(c_i) {
 	var cnext = document.querySelector('[data-index="'+c_i+'"] .c-next');
 	inext.onclick = null;
 	cnext.onclick = null;
-	if (charDir[c_i].length > 1 && (now < charDir[c_i][charDir[c_i].length - 1].s_i || bridge[c_i].x < 1) && anc[c_i].x >= 1) {
+	if (charDir[c_i].length > 1 && (now < charDir[c_i][charDir[c_i].length - 1].s_i || bridge[c_i].x < 1) && anc[c_i].i >= 0) {
 		inext.onclick = function(e) {
 			main.goNext(inext.parentNode.parentNode.dataset.index, true);
 		};
 		cnext.onclick = function(e) {
-			main.goNex(cnext.parentNode.parentNode.dataset.index, false);
+			main.goNext(cnext.parentNode.parentNode.dataset.index, false);
 		};
 		inext.style.color = "#232323";
-		inext.style.cursor = "pointer";
+		inext.disabled = false;
 		cnext.style.color = "#232323";
-		cnext.style.cursor = "pointer";
+		cnext.disabled = false;
 	} else {
 		inext.style.color = "#787878";
-		inext.style.cursor = "default";
+		inext.disabled = true;
 		cnext.style.color = "#787878";
-		cnext.style.cursor = "default";
+		cnext.disabled = true;
 	}
 	var iprev = document.querySelector('[data-index="'+c_i+'"] .i-prev');
 	var cprev = document.querySelector('[data-index="'+c_i+'"] .c-prev');
 	iprev.onclick = null
 	cprev.onclick = null
-	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && false == Detect.isWithin(now, 0) && anc[c_i].x >= 1) {
+	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && false == Detect.isWithin(now, 0) && anc[c_i].i >= 0) {
 		iprev.onclick = function(e) {
-			main.goPrev(iprev.parentNode.parentNode.dataset.index);
+			main.goPrev(iprev.parentNode.parentNode.dataset.index, true);
 		};
 		cprev.onclick = function(e) {
-			main.goPrev(cprev.parentNode.parentNode.dataset.index);
+			main.goPrev(cprev.parentNode.parentNode.dataset.index, false);
 		};
 		iprev.style.color = "#232323";
-		iprev.style.cursor = "pointer";
+		iprev.disabled = false;
 		cprev.style.color = "#232323";
-		cprev.style.cursor = "pointer";
+		cprev.disabled = false;
 	} else {
 		iprev.style.color = "#787878";
-		iprev.style.cursor = "default";
+		iprev.disabled = true;
 		cprev.style.color = "#787878";
-		cprev.style.cursor = "default";
+		cprev.disabled = true;
 	}
 }
 Main.prototype.pause = function() {
@@ -221,9 +234,8 @@ Main.prototype.pause = function() {
 	}
 }
 Main.prototype.goNext = function(c_i, direct) {
-	// this.pause();
-	var end;
-	var i;
+	this.pause();
+	var end, i;
 	for (i = charDir[c_i].length - 1; i >= 0; i--) {
 		if (charDir[c_i][i].s_i <= now) {
 			target = charDir[c_i][i].s_i;
@@ -239,25 +251,23 @@ Main.prototype.goNext = function(c_i, direct) {
 	}
 
 	if (direct) {
-		//fix this!
 		this.instant(c_i, target, end);
-
 		if (idle) this.redraw();
 		for (i = 0; i < charDir.length; i++)
 			this.evalState(i);
-	} else {
-		if (0 >= timeDir[now][1][2] && 0 >= timeDir[now][1][1]) {
-			/*if (1 <= riftBridge.x) {
-				riftBridge.x = 0;}*/
-			// TweenLite.to(riftBridge, Detect.findInterval(now + 1, false)*(1 - riftBridge.x), {x:1, ease:Linear.easeNone});
-			charDir[timeDir[now + 1][0][0]][timeDir[now + 1][0][1]].movementNext(true, target, end, 0, true);
-		} else {
-			continuous(target, end);}
+	// } else {
+		// if (0 >= timeDir[now][1][2] && 0 >= timeDir[now][1][1]) {
+		// 	/*if (1 <= riftBridge.x) {
+		// 		riftBridge.x = 0;}*/
+		// 	// TweenLite.to(riftBridge, Detect.findInterval(now + 1, false)*(1 - riftBridge.x), {x:1, ease:Linear.easeNone});
+		// 	charDir[timeDir[now + 1][0][0]][timeDir[now + 1][0][1]].movementNext(true, target, end, 0, true);
+		// } else {
+		// 	continuous(target, end);}
 	}
 }
-Main.prototype.goPrev = function(c_i) {
-	// this.pause();
-	var i;
+Main.prototype.goPrev = function(c_i, direct) {
+	this.pause();
+	var end, i;
 	var found = false;
 	for (i = charDir[c_i].length - 1; i >= 0; i--) {
 		if (charDir[c_i][i].s_i <= now) {
@@ -266,35 +276,35 @@ Main.prototype.goPrev = function(c_i) {
 				//(extra) logic below provides for last index ending movement before others, going to end rather than beginning
 				if (target == charDir[timeDir[target][0][0]][charDir[timeDir[target][0][0]].length - 1].s_i) {
 					var last = true;
-					for (var j = 0; j < charDir.length; j++) {
+					for (var j = 0; j < charDir.length; j++)
 						if (j != c_i && now >= charDir[j][charDir[j].length - 1].s_i && Detect.isWithin(target, charDir[j][charDir[j].length - 1].s_i, 2, 1, false)) {
 							last = false;
-							break;}
-					}
-					if (last) { this.instant(c_i, target, false);}
-							 else { this.instant(c_i, target, true);}
-				} else {
-					this.instant(c_i, target, false);}
+							break;
+						}
+					if (last) end = false;
+					else end = true;
+				} else end = false;
 				found = true;
 			} else if (bridge[c_i].x >= 1) {
 				target = charDir[c_i][i].s_i;
-				this.instant(c_i, target, true);
+				end = true;
 				found = true;
 			} else if (i > 0) {
 				target = charDir[c_i][i - 1].s_i;
-				if (Detect.isWithin(now, target)) {
-					this.instant(c_i, target, false);
-				} else {
-					this.instant(c_i, target, true);}
-				found = true;}
+				if (Detect.isWithin(now, target))
+					end = false;
+				else end = true;
+				found = true;
+			}
 			break;
 		}
 	}
 	if (found) {
-		//severe lack of precision; should regen only those necessary (requires consideration of those nodes responsible only for path caps)
-		if (idle) this.redraw();
-		for (i = 0; i < charDir.length; i++) {
-			this.evalState(i);
+		if (direct) {
+			this.instant(c_i, target, end)
+			if (idle) this.redraw();
+			for (i = 0; i < charDir.length; i++)
+				this.evalState(i);
 		}
 	}
 }
@@ -425,9 +435,6 @@ Main.prototype.instant = function(c_i, target, end) {
 		target += within;
 	}
 	now = target;
-	for (var i = 0; i < bridge.length; i++)
-		console.log(bridge[i].x);
-	console.log(now);
 }
 
 Main.prototype.genLocDir = function() {
