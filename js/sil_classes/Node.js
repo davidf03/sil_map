@@ -284,6 +284,7 @@ Node.prototype.genPath = function(channel, active) {
 	//outbound fill
 	var gp1 = new Point(loc[this.l_i].x + this.n0e.x,loc[this.l_i].y + this.n0e.y);
 	var gp2 = new Point(loc[this.l_i].x + this.n0g2.x,loc[this.l_i].y + this.n0g2.y);
+	if (gp1.x === gp2.x) gp2.x += 0.01
 	// console.log("char: "+this.c_i+" | node: "+this.n_i+" | time: "+this.s_i);
 	// console.log("loc : "+loc[this.l_i].x+" , "+loc[this.l_i].y);
 	// console.log("n0t1: "+this.n0t1.x+" , "+this.n0t1.y);
@@ -348,6 +349,7 @@ Node.prototype.genPath = function(channel, active) {
 		//inbound fill, stroke
 		gp1 = new Point(loc[this.l_i].x + this.n1e.x,loc[this.l_i].y + this.n1e.y);
 		gp2 = new Point(loc[this.l_i].x + this.n1g2.x,loc[this.l_i].y + this.n1g2.y);
+		if (gp1.x === gp2.x) gp2.x += 0.01
 		grd = upctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
 		grd.addColorStop(0, this.hexToRGB(this.col, 1));
 		grd.addColorStop(1, this.hexToRGB(this.col, 0));
