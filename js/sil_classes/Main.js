@@ -60,7 +60,7 @@ Main.prototype.genCharObj = function() {
 //for focus stuff, see second answer on saving and restoring canvas state
 
 Main.prototype.redraw = function() {
-	console.log('drawing');
+	// console.log('drawing');
 	var active = false;
 	var iLen = anc.length;
 	for (var i = 0; i < iLen; i++) {
@@ -85,8 +85,10 @@ Main.prototype.redraw = function() {
 			active = true;
 			if (0 < bridge[i].i) {
 				if (1 <= bridge[i].x || bridge[i].x >= bridge[i].e) {
+					console.log(bridge[0].x);
 					bridge[i].x = bridge[i].e;
 					bridge[i].i = 0;
+					this.evalState(timeDir[i][0][0]);
 				}
 			// } else if (0 >= bridge[i].x || bridge[i].x <= bridge[i].e) {
 			// 	bridge[i].x = bridge[i].e;
@@ -102,6 +104,7 @@ Main.prototype.redraw = function() {
 			if (1 <= riftBridge.x || riftBridge.x >= riftBridge.e) {
 				riftBridge.x = 1;
 				riftBridge.i = 0;
+				this.evalState(timeDir[now + 1][0][0]);
 			}
 		// } else if (0 >= bridge[i].x || bridge[i].x <= bridge[i].e) {
 		// 	bridge[i].x = bridge[i].e;
@@ -113,7 +116,7 @@ Main.prototype.redraw = function() {
 		//forward movement
 		var csi = moveQueue[i][1];
 		if (moveQueue[i][0] && riftBridge.e <= riftBridge.x || false === moveQueue[i][0] && now >= csi && bridge[timeDir[csi][0][0]].x >= moveQueue[i][2]) {
-			console.log('moving! '+ moveQueue[i][3]+" "+moveQueue[i][0]+" "+moveQueue[i][1]);
+			// console.log('moving! '+ moveQueue[i][3]+" "+moveQueue[i][0]+" "+moveQueue[i][1]);
 			var tsi = moveQueue[i][3];
 			bridge[timeDir[tsi][0][0]].i = moveQueue[i][4];
 			bridge[timeDir[tsi][0][0]].e = moveQueue[i][5];
@@ -127,10 +130,16 @@ Main.prototype.redraw = function() {
 				if (0 >= riftBridge.x || 1 >= riftBridge.x)
 					riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/timeDir[tsi + 1][1][0];
 			}
-			this.evalState(timeDir[moveQueue[i][3]][0][0]);
 			moveQueue.splice(0,1);
 			now++;
 		} else {
+			// for (var j = now + 1; j < timeDir.length; j++) {
+			// 	if (0 >= timeDir[j][1][0]) {
+			// 		now++;
+			// 	} else {
+			// 		break;
+			// 	}
+			// }
 			break;
 		}
 	}
@@ -380,22 +389,40 @@ Main.prototype.continuous = function(c_i, target, end) {
 	for (i = 0; i < charDir.length; i++) {
 		if (1 > bridge[i].x)
 			for (j = charDir[i].length - 1; j >= 0; j--) {
-				if (now >= charDir[i][j].s_i)
+				if (now >= charDir[i][j].s_i) {
 					active.push(charDir[i][j].s_i);
+					bridge[i].i = (60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
+					console.log(i+" : "+timeDir[charDir[i][j].s_i][1][1]+" , "+bridge[i].i);
+					break;
+				}
 			}
 	}
 	active.sort(function(a,b){return a - b});
 
 	var pastLimit = false;
 	for (i = 0; i < active.length; i++) {
-		bridge[timeDir[active[i]][0][0]].i = (60/1000)*movSpeed / timeDir[active[i]][1][1];
+		// if (0 >= timeDir[active[i]][1][1]) {
+		// 	bridge[timeDir[active[i]][0][0]].i = 1;
+		// } else {
+		// }
+		// if (0 === timeDir[active[i]][0][0])
+		// 	console.log("bridge inc: "+bridge[timeDir[active[i]][0][0]].i);
 		bridge[timeDir[active[i]][0][0]].e = this.getExtent(active[i], target, end);
 		for (j = riftIndex; j < timeDir.length; j++) {
 			if (j <= target || false == end && Detect.findInterval(j, false, target) <= 0 || end && Detect.isWithin(j, target, 0)) {
 				if (Detect.isWithin(j, i, 0)) {
-					if (0 >= timeDir[j][1][1]) var inc = 1;
-						else inc = (60/1000)*movSpeed / timeDir[j][1][1];
-					moveQueue.push([ false, i, Detect.findInterval(j, false, i)/timeDir[i][1][1], j, inc, this.getExtent(j, target, end) ]);
+					// indexInactive = true;
+					// for (var k = 0; k < active.length; k++) {
+					// 	if (k === j) {
+					// 		indexInactive = false;
+					// 		break;
+					// 	}
+					// }
+					// if (indexInactive) {
+						if (0 >= timeDir[j][1][1]) var inc = 1;
+							else inc = (60/1000)*movSpeed / timeDir[j][1][1];
+						moveQueue.push([ false, i, Detect.findInterval(j, false, i)/timeDir[i][1][1], j, inc, this.getExtent(j, target, end) ]);
+					// }
 				} else {
 					break;
 				}
@@ -408,10 +435,8 @@ Main.prototype.continuous = function(c_i, target, end) {
 			break;
 		riftIndex = j;
 	}
-	for (i = 0; i < active.length; i++)
-		console.log(timeDir[active[i]][0][0]);
-	for (i = 0; i < bridge.length; i++)
-		console.log(i+": "+bridge[i].x+", "+bridge[i].i+", "+bridge[i].e);
+	// for (i = 0; i < active.length; i++)
+	// 	console.log(timeDir[active[i]][0][0]+" : "+timeDir[active[i]][1][1]);
 
 
 	//rift:Boolean, caller/riftInc:uint/float, trigger:float, called:uint, increment:float, extent:float
@@ -454,10 +479,18 @@ Main.prototype.continuous = function(c_i, target, end) {
 			break;
 		}
 	}
-	for (i = 0; i < active.length; i++)
-		console.log(timeDir[active[i]][0][0]);
-	for (i = 0; i < bridge.length; i++)
-		console.log(i+": "+bridge[i].x+", "+bridge[i].i+", "+bridge[i].e);
+	// for (i = 0; i < bridge.length; i++)
+	// 	console.log(i+": "+bridge[i].x+", "+bridge[i].i+", "+bridge[i].e);
+
+	var activeInc = 0;
+	for (i = 0; i < bridge.length; i++) {
+		var activity = false;
+		if (active.length > activeInc && timeDir[active[activeInc]][0][0] === i) {
+			activity = true;
+			activeInc++;
+		}
+		console.log(i+": "+activity+", "+bridge[i].x+", "+bridge[i].i+", "+bridge[i].e);
+	}
 
 
 	// var active = new Array();
@@ -631,7 +664,7 @@ Main.prototype.continuous = function(c_i, target, end) {
 Main.prototype.getExtent = function(s_i, target, end) {
 	if (0 < timeDir[s_i][1][1]) {
 		if (end) {
-			if (target == s_i) {
+			if (target === s_i) {
 				var extent = timeDir[target][1][1];
 			} else if (Detect.isWithin(s_i, target, 2)) {
 				extent = timeDir[s_i][1][1];
@@ -640,20 +673,18 @@ Main.prototype.getExtent = function(s_i, target, end) {
 							 else { extent = timeDir[target][1][1] + Detect.findInterval(target, false, s_i);}
 			}
 		} else {
-			if (target == s_i) {
+			if (target === s_i) {
 				extent = 0;
-			} else if (Detect.isWithin(s_i, target, 2, 0, true)) {
+			} else if (Detect.isWithin(s_i, target, 2, 0)) {
 				extent = timeDir[s_i][1][1];
 			} else {
 				if (target < s_i) { extent = 0;}
 							 else { extent = Detect.findInterval(target, false, s_i);}
 			}
 		}
-		console.log("calculated: "+extent+":"+timeDir[s_i][1][1]);
 		return extent/timeDir[s_i][1][1];
 	} else {
-		console.log("default: "+0+":"+timeDir[s_i][1][1]);
-		return 0;
+		return 1;
 	}
 }
 //does not yet set riftBridge
@@ -819,7 +850,7 @@ Main.prototype.genLocDir = function() {
 			testSequence.push([c_i, n_i, 3]);
 		}
 
-		if (timeDir[i][1][1] == 0) {
+		if (0 === timeDir[i][1][1]) {
 			locDir[key].push([c_i, n_i, i]);
 			drawSequence[key].push([c_i, n_i, 0]);
 			testSequence.push([c_i, n_i, 0]);

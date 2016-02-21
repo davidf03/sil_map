@@ -18,7 +18,7 @@ Detect.prototype.isWithin = function(index, lastIndex, indexEnd, lastEnd, incl) 
 	}
 	switch (lastEnd) {
 		case 0: bound = 0; break;
-		case 1: bound = Math.ceil(timeDir[lastIndex][1][1]*bridge[timeDir[lastIndex][0][0]].x*10)/10; break;
+		case 1: bound = timeDir[lastIndex][1][1]*bridge[timeDir[lastIndex][0][0]].x; break;
 		case 2: bound = timeDir[lastIndex][1][1]; break;
 	}
 	if (index > lastIndex) {
