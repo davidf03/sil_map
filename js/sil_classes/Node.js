@@ -282,7 +282,17 @@ Node.prototype.genPath = function(channel, active) {
 	}
 
 	//outbound fill
-	var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n0e.x,loc[this.l_i].y + this.n0e.y, loc[this.l_i].x + this.n0g2.x,loc[this.l_i].y + this.n0g2.y);
+	var gp1 = new Point(loc[this.l_i].x + this.n0e.x,loc[this.l_i].y + this.n0e.y);
+	var gp2 = new Point(loc[this.l_i].x + this.n0g2.x,loc[this.l_i].y + this.n0g2.y);
+	// console.log("char: "+this.c_i+" | node: "+this.n_i+" | time: "+this.s_i);
+	// console.log("loc : "+loc[this.l_i].x+" , "+loc[this.l_i].y);
+	// console.log("n0t1: "+this.n0t1.x+" , "+this.n0t1.y);
+	// console.log("n1t1: "+this.n1t1.x+" , "+this.n1t1.y);
+	// console.log("n0e : "+this.n0e.x+" , "+this.n0e.y);
+	// console.log("n0g2: "+this.n0g2.x+" , "+this.n0g2.y);
+	// console.log("gp1 : "+gp1.x+" , "+gp1.y);
+	// console.log("gp2 : "+gp2.x+" , "+gp2.y);
+	var grd = upctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
 	grd.addColorStop(0, this.hexToRGB(this.col, 1));
 	grd.addColorStop(1, this.hexToRGB(this.col, 0));
 	upctx.fillStyle = grd;
@@ -309,7 +319,7 @@ Node.prototype.genPath = function(channel, active) {
 
 	//outbound stroke
 	upctx.lineWidth = this.stroke;
-	var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n0e.x,loc[this.l_i].y + this.n0e.y, loc[this.l_i].x + this.n0g2.x,loc[this.l_i].y + this.n0g2.y);
+	grd = upctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
 	grd.addColorStop(0, this.hexToRGB('#000000', 1));
 	grd.addColorStop(1, this.hexToRGB('#000000', 0));
 	upctx.strokeStyle = grd;
@@ -336,12 +346,14 @@ Node.prototype.genPath = function(channel, active) {
 	}
 	if (this.present || 0 < this.compDiff) {
 		//inbound fill, stroke
-		var grd = upctx.createLinearGradient(loc[this.l_i].x + this.n1e.x,loc[this.l_i].y + this.n1e.y, loc[this.l_i].x + this.n1g2.x,loc[this.l_i].y + this.n1g2.y);
+		gp1 = new Point(loc[this.l_i].x + this.n1e.x,loc[this.l_i].y + this.n1e.y);
+		gp2 = new Point(loc[this.l_i].x + this.n1g2.x,loc[this.l_i].y + this.n1g2.y);
+		grd = upctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
 		grd.addColorStop(0, this.hexToRGB(this.col, 1));
 		grd.addColorStop(1, this.hexToRGB(this.col, 0));
 		upctx.fillStyle = grd;
 		upctx.lineWidth = this.stroke;
-		grd = upctx.createLinearGradient(loc[this.l_i].x + this.n1e.x,loc[this.l_i].y + this.n1e.y, loc[this.l_i].x + this.n1g2.x,loc[this.l_i].y + this.n1g2.y);
+		grd = upctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
 		grd.addColorStop(0, this.hexToRGB('#000000', 1));
 		grd.addColorStop(1, this.hexToRGB('#000000', 0));
 		upctx.strokeStyle = grd;
