@@ -29,7 +29,7 @@ Main.prototype.genCharObj = function() {
 				"<span class='fa fa-step-backward'></span>" +
 				"<span class='screen-reader-text'>RSS</span>" +
 			"</button>" +
-			"<button class='c-prev icon-alone'>" +
+			"<button class='prev icon-alone'>" +
 				"<span class='fa fa-play fa-rotate-180'></span>" +
 				"<span class='screen-reader-text'>RSS</span>" +
 			"</button>" +
@@ -37,7 +37,7 @@ Main.prototype.genCharObj = function() {
 				"<span class='fa fa-circle'></span>" +
 				"<span class='screen-reader-text'>RSS</span>" +
 			"</button>" +
-			"<button class='c-next icon-alone'>" +
+			"<button class='next icon-alone'>" +
 				"<span class='fa fa-play'></span>" +
 				"<span class='screen-reader-text'>RSS</span>" +
 			"</button>" +
@@ -190,8 +190,20 @@ Main.prototype.redraw = function() {
 	ctx.drawImage(test, 0, 0);
 
 
-	if (active && false === idle) requestAnimFrame(this.redraw.bind(this));
-	else idle = true;
+	if (active && false === idle)
+		requestAnimFrame(this.redraw.bind(this));
+	else {
+		//replace 'instant next' symbol with 'play next'
+		var buttons = document.querySelectorAll('.next .fa-step-forward');
+		for (var i = 0; i < buttons.length; i++) {
+			// console.log(buttons[b]);
+			// b = buttons[b].querySelector('span');
+			this.removeClass(buttons[i], "fa-step-forward");
+			this.removeClass(buttons[i], "fa-play");
+			buttons[i].className += " fa-play";
+		}
+		idle = true;
+	}
 
 
 	//loop for path underlay; not only does this create the line underlay, it
@@ -236,7 +248,7 @@ Main.prototype.toggleChar = function(c_i) {
 /* time stuff */
 Main.prototype.evalState = function(c_i) {
 	var inext = document.querySelector('[data-index="'+c_i+'"] .i-next');
-	var cnext = document.querySelector('[data-index="'+c_i+'"] .c-next');
+	var cnext = document.querySelector('[data-index="'+c_i+'"] .next');
 	inext.onclick = null;
 	cnext.onclick = null;
 	if (charDir[c_i].length > 1 && (now < charDir[c_i][charDir[c_i].length - 1].s_i || bridge[c_i].x < 1) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
@@ -257,7 +269,7 @@ Main.prototype.evalState = function(c_i) {
 		cnext.disabled = true;
 	}
 	var iprev = document.querySelector('[data-index="'+c_i+'"] .i-prev');
-	var cprev = document.querySelector('[data-index="'+c_i+'"] .c-prev');
+	var cprev = document.querySelector('[data-index="'+c_i+'"] .prev');
 	iprev.onclick = null
 	cprev.onclick = null
 	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && false == Detect.isWithin(now, 0) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
@@ -346,6 +358,7 @@ Main.prototype.goPrev = function(c_i, direct) {
 			if (bridge[c_i].x > 0 && bridge[c_i].x < 1 || bridge[c_i].x >= 1 && Detect.isWithin(now, charDir[c_i][i].s_i, 0)) {
 				target = charDir[c_i][i].s_i;
 				//(extra) logic below provides for last index ending movement before others, going to end rather than beginning
+				//this needs to be rewritten - it can happen anywhere
 				if (target == charDir[timeDir[target][0][0]][charDir[timeDir[target][0][0]].length - 1].s_i) {
 					var last = true;
 					for (var j = 0; j < charDir.length; j++)
@@ -477,6 +490,13 @@ Main.prototype.continuous = function(c_i, target, end) {
 
 	// for (i = 0; i < moveQueue.length; i++)
 	// 	console.log(moveQueue[i]);
+
+	var button = document.querySelector('[data-index="'+c_i+'"] .next span');
+	this.removeClass(button, "fa-play");
+	this.removeClass(button, "fa-step-forward");
+	button.className += " fa-step-forward";
+	// button.onclick = null;
+	// button.onclick = this.instant(c_i, target, end);
 
 	idle = false;
 	this.redraw();
@@ -763,21 +783,54 @@ Main.prototype.genSequence = function(paths, moves) {
 	}
 	riftBridge = {x:1, i:0, f:1, e:1};
 
-	for (var i = 0; i < paths; i++) {
-		timeDir.push(new Array());
-		timeDir[timeDir.length - 1].push([i]);
-		timeDir[timeDir.length - 1].push([0, 0]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
-	}
+	// for (var i = 0; i < paths; i++) {
+	// 	timeDir.push(new Array());
+	// 	timeDir[timeDir.length - 1].push([i]);
+	// 	timeDir[timeDir.length - 1].push([0, 0]);
+	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
+	// }
+	//
+	// var c_i;
+	// for (var i = 0; i < moves; i++) {
+	// 	c_i = Math.floor(Math.random()*paths);
+	// 	timeDir.push(new Array());
+	// 	timeDir[timeDir.length - 1].push([c_i]);
+	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
+	// 	timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
+	// }
 
-	var c_i;
-	for (var i = 0; i < moves; i++) {
-		c_i = Math.floor(Math.random()*paths);
-		timeDir.push(new Array());
-		timeDir[timeDir.length - 1].push([c_i]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
-		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
-	}
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([0, 10]);
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([2, 6]);
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([10, 6]);
+	timeDir[timeDir.length - 1].push([2]);
 
 	// timeDir.push(new Array());
 	// timeDir[timeDir.length - 1].push([0]);
