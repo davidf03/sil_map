@@ -128,8 +128,7 @@ Main.prototype.redraw = function() {
 		}
 		// console.log("!"+moveQueue[0][0]+" && "+now+">="+csi+" && ("+bridge[timeDir[csi][0][0]].x+">="+moveQueue[0][2]+"||"+bridge[timeDir[csi][0][0]].e+")");
 		if (rift && 1 <= riftBridge.x || false === rift && (now >= csi && (bridge[cci].x >= moveQueue[0][2] || bridge[cci].x >= bridge[cci].e) || cni + 1 < charDir[cci].length && now >= charDir[cci][cni + 1].s_i)) {
-			console.log('hi');
-			console.log(moveQueue[0]);
+			// console.log(moveQueue[0]);
 			// console.log('moving! '+ moveQueue[0][3]+" "+moveQueue[0][0]+" "+moveQueue[0][1]);
 			var tsi = moveQueue[0][3];
 			bridge[timeDir[tsi][0][0]].i = moveQueue[0][4];
@@ -139,7 +138,7 @@ Main.prototype.redraw = function() {
 			// else
 			// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][2])*timeDir[csi][1][1]/timeDir[tsi][1][1];
 			if (1 < moveQueue.length && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/ && tsi + 1 < timeDir.length) {
-				console.log(now);
+				active = true;
 				riftBridge.i = moveQueue[1][1];
 				riftBridge.e = 1;
 				if (0 >= riftBridge.x || 1 <= riftBridge.x)
@@ -441,7 +440,7 @@ Main.prototype.continuous = function(c_i, target, end) {
 					riftBridge.i = (60/1000)*movSpeed / Detect.findInterval(now + 1, false, now);
 					riftBridge.e = 1;
 				}
-				riftIndex += 2;
+				riftIndex++;
 			}
 			for (j = riftIndex; j < timeDir.length; j++) {
 				if (j <= target || false === end && Detect.findInterval(j, false, target) <= 0 || end && Detect.isWithin(j, target, 0)) {
@@ -756,74 +755,74 @@ Main.prototype.genSequence = function(paths, moves) {
 	}
 	riftBridge = {x:1, i:0, f:1, e:1};
 
-	// for (var i = 0; i < paths; i++) {
-	// 	timeDir.push(new Array());
-	// 	timeDir[timeDir.length - 1].push([i]);
-	// 	timeDir[timeDir.length - 1].push([0, 0]);
-	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
-	// }
-	//
-	// var c_i;
-	// for (var i = 0; i < moves; i++) {
-	// 	c_i = Math.floor(Math.random()*paths);
-	// 	timeDir.push(new Array());
-	// 	timeDir[timeDir.length - 1].push([c_i]);
-	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
-	// 	timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
-	// }
+	for (var i = 0; i < paths; i++) {
+		timeDir.push(new Array());
+		timeDir[timeDir.length - 1].push([i]);
+		timeDir[timeDir.length - 1].push([0, 0]);
+		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
+	}
 
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([10, 9]);
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir[timeDir.length - 1].push([10, 7]);
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([4, 9]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([10, 7]);
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([4, 18]);
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([1, 11]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([1, 15]);
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir[timeDir.length - 1].push([2, 10]);
-	timeDir[timeDir.length - 1].push([0]);
+	var c_i;
+	for (var i = 0; i < moves; i++) {
+		c_i = Math.floor(Math.random()*paths);
+		timeDir.push(new Array());
+		timeDir[timeDir.length - 1].push([c_i]);
+		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
+		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
+	}
+
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([10, 9]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([10, 7]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([4, 9]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([10, 7]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([4, 18]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([1, 11]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([1, 15]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([2, 10]);
+	// timeDir[timeDir.length - 1].push([0]);
 
 	// timeDir.push(new Array());
 	// timeDir[timeDir.length - 1].push([0]);
