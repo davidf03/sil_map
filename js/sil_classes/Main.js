@@ -118,8 +118,17 @@ Main.prototype.redraw = function() {
 	//rift:Boolean, caller/riftInc:uint/float, trigger:float, called:uint, increment:float, extent:float
 	while (0 < moveQueue.length) {
 		//forward movement
-		var csi = moveQueue[0][1];
-		if (moveQueue[0][0] && 1 <= riftBridge.x || false === moveQueue[0][0] && now >= csi && bridge[timeDir[csi][0][0]].x >= moveQueue[0][2]) {
+		// console.log(moveQueue[0][0]);
+		// console.log(csi);
+		var rift = moveQueue[0][0];
+		if (false === rift) {
+			var csi = moveQueue[0][1];
+			var cci = timeDir[csi][0][0];
+			var cni = timeDir[csi][0][1];
+		}
+		// console.log("!"+moveQueue[0][0]+" && "+now+">="+csi+" && ("+bridge[timeDir[csi][0][0]].x+">="+moveQueue[0][2]+"||"+bridge[timeDir[csi][0][0]].e+")");
+		if (rift && 1 <= riftBridge.x || false === rift && (now >= csi && (bridge[cci].x >= moveQueue[0][2] || bridge[cci].x >= bridge[cci].e) || cni + 1 < charDir[cci].length && now >= charDir[cci][cni + 1].s_i)) {
+			console.log('hi');
 			console.log(moveQueue[0]);
 			// console.log('moving! '+ moveQueue[0][3]+" "+moveQueue[0][0]+" "+moveQueue[0][1]);
 			var tsi = moveQueue[0][3];
@@ -128,12 +137,14 @@ Main.prototype.redraw = function() {
 			// if (moveQueue[0][0])
 				bridge[timeDir[tsi][0][0]].x = 0;
 			// else
-			// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][1])*timeDir[csi][1][1]/timeDir[tsi][1][1];
-			if (moveQueue.length > i + 1 && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/ && timeDir.length > tsi + 1) {
+			// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][2])*timeDir[csi][1][1]/timeDir[tsi][1][1];
+			if (1 < moveQueue.length && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/ && tsi + 1 < timeDir.length) {
+				console.log(now);
 				riftBridge.i = moveQueue[1][1];
 				riftBridge.e = 1;
 				if (0 >= riftBridge.x || 1 <= riftBridge.x)
-					riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
+					riftBridge.x = 0;
+					// riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
 			}
 			moveQueue.splice(0,1);
 			now++;
@@ -426,7 +437,11 @@ Main.prototype.continuous = function(c_i, target, end) {
 				moveQueue.push([ true, (60/1000)*movSpeed / Detect.findInterval(i, false, i - 1), 1, i, inc, this.getExtent(i, target, end) ]);
 				if (0 >= riftBridge.x || 1 <= riftBridge)
 					riftBridge.x = 0;
-				riftIndex++;
+				if (0 >= moveQueue.length) {
+					riftBridge.i = (60/1000)*movSpeed / Detect.findInterval(now + 1, false, now);
+					riftBridge.e = 1;
+				}
+				riftIndex += 2;
 			}
 			for (j = riftIndex; j < timeDir.length; j++) {
 				if (j <= target || false === end && Detect.findInterval(j, false, target) <= 0 || end && Detect.isWithin(j, target, 0)) {
@@ -741,21 +756,115 @@ Main.prototype.genSequence = function(paths, moves) {
 	}
 	riftBridge = {x:1, i:0, f:1, e:1};
 
-	for (var i = 0; i < paths; i++) {
-		timeDir.push(new Array());
-		timeDir[timeDir.length - 1].push([i]);
-		timeDir[timeDir.length - 1].push([0, 0]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
-	}
+	// for (var i = 0; i < paths; i++) {
+	// 	timeDir.push(new Array());
+	// 	timeDir[timeDir.length - 1].push([i]);
+	// 	timeDir[timeDir.length - 1].push([0, 0]);
+	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
+	// }
+	//
+	// var c_i;
+	// for (var i = 0; i < moves; i++) {
+	// 	c_i = Math.floor(Math.random()*paths);
+	// 	timeDir.push(new Array());
+	// 	timeDir[timeDir.length - 1].push([c_i]);
+	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
+	// 	timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
+	// }
 
-	var c_i;
-	for (var i = 0; i < moves; i++) {
-		c_i = Math.floor(Math.random()*paths);
-		timeDir.push(new Array());
-		timeDir[timeDir.length - 1].push([c_i]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
-		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
-	}
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([10, 9]);
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([10, 7]);
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([4, 9]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([10, 7]);
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([4, 18]);
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([1, 11]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([1, 15]);
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([2, 10]);
+	timeDir[timeDir.length - 1].push([0]);
+
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([7, 17]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([7, 11]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([0, 6]);
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([6, 8]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([3, 10]);
+	// timeDir[timeDir.length - 1].push([3]);
 
 	// timeDir.push(new Array());
 	// timeDir[timeDir.length - 1].push([0]);
