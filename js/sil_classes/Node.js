@@ -767,8 +767,4 @@ function Node(charIndex, nodeIndex, colour, location, timeIndex) {
 		this.outDrawLimit = new Point(0,0);
 		this.inDrawLimit = new Point(0,0);
 	}
-
-	moving = waiting = false;
-	this.waitNextFunction = this.waitNext(0, true, 0);
-	this.moveNextFunction = this.moveNext(0, true);
 }
