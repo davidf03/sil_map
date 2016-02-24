@@ -453,6 +453,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 
 	//create active
 		//any instant durations at present, including 0 bridges, are automatically rolled back
+		//order indeces based on latest activity
 	//create moveQueue
 		//collect every relevant index
 			//indeces not suspended from target are not included
@@ -460,6 +461,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 		//define callers
 			//rifts are defined similar to forwards, an index pushed as the array is traversed: encountering it prepares a rift
 			//this and the other should work the same in that they ought to be made to have characters call themselves when chaining
+			//rifts ought to be unified forwards and backwards. not sure how
 
 	moveQueue = new Array();
 
@@ -470,24 +472,28 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 			if (now >= charDir[i][j].s_i) {
 				if (1 > bridge[i].x) {
 					if (0 >= bridge[i].x) {
-						now--;
-						bridge[i].x = 1;
+						// now--;
+						// bridge[i].x = 1;
 						if (0 < j && 0 < timeDir[charDir[i][j].s_i][1][1] && Detect.findInterval(charDir[i][j].s_i) === timeDir[charDir[i][j - 1].s_i][1][1])
 							active.push(charDir[i][j - 1].s_i);
-							else break;
 					} else {
 						active.push(charDir[i][j].s_i);
 					}
 					// bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
 					// bridge[i].e = this.getExtent(active.length - 1, target, end, false);
-					break;
-				} else if (0 >= timeDir[charDir[i][j].s_i][1][1]) {
-					
+				} else if (0 >= timeDir[charDir[i][j].s_i][1][1] && 0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) {
+					// now--;
 				}
-			} else {
 				break;
 			}
-		}
+
+	active.sort(function(a,b){
+		//this should result in descending order by latest activity
+		var result = (timeDir[b][1][1] + Detect.findInterval(b, false, 0)) - (timeDir[a][1][1] + Detect.findInterval(a, false, 0));
+		//deferring to the later index
+		if (0 === result) return b - a;
+			else return result;
+	});
 
 	// var sortMethod = function(a,b) {
 	// 	//this should result in descending order by latest activity
@@ -498,12 +504,11 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	// }
 	// active.sort(function(a,b){return sortMethod(a,b)}); //sorts in descending order
 
-
 	for (i = now - 1; i >= target; i--) {
 		if (false === end || Detect.findInterval(i, false, target) >= timeDir[target][1][1] || false === Detect.isWithin(i, target, 2, 2, false)) {
 			if (0 >= timeDir[i][1][1]) var inc = -1;
 				else inc = -(60/1000)*movSpeed / timeDir[i][1][1];
-			moveQueue.push([ true, 0, 0, i, inc, this.getExtent(i, target, end, false) ]);
+			moveQueue.push([ false, 0, 0, i, inc, this.getExtent(i, target, end, false) ]);
 		} else {
 			break;
 		}
@@ -518,10 +523,54 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 					if (end && indexTotal - (targetBase + timeDir[target][1][1]) > 0 || false === end && indexTotal - targetBase > 0) {
 						if (0 >= timeDir[charDir[i][j].s_i][1][1]) var inc = -1;
 							else inc = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
-						moveQueue.push([ true, 0, 0, i, inc, this.getExtent(charDir[i][j].s_i, target, end, false) ]);
+						moveQueue.push([ false, 0, 0, i, inc, this.getExtent(charDir[i][j].s_i, target, end, false) ]);
 					}
 					break;
 				}
+
+	//*drawn with crayon* sort array by latest activity
+	//for some reason the custom sort function [below] won't work
+	// moveQueue.sort(function(a,b){
+	// 	//this should result in descending order by latest activity
+	// 	var result = (timeDir[moveQueue[b][3]][1][1] + Detect.findInterval(moveQueue[b][3], false, 0)) - (timeDir[moveQueue[a][3]][1][1] + Detect.findInterval(moveQueue[a][3], false, 0));
+	// 	//deferring to the later index
+	// 	if (0 === result) return moveQueue[b][3] - moveQueue[a][3];
+	// 		else return result;
+	// });
+
+	var riftIndex = 0;
+	for (i = 0; i < active.length; i++) {
+		for (j = 0; j < moveQueue.length; j++) {
+			if (Detect.isWithin(j, i, 2)) {
+				moveQueue[j][1] = i;
+				moveQueue[j][2] = ((Detect.findInterval(j, false, 0) + timeDir[j][1][1]) - Detect.findInterval(i, false, 0))/timeDir[i][1][1];
+			} else {
+				break;
+			}
+		}
+		riftIndex = j;
+	}
+	for (i = 0; i < moveQueue.length; i++) {
+		if (moveQueue.length > riftIndex) {
+			if (i === riftIndex) {
+				moveQueue[i][0] = true;
+				// moveQueue[i][1] = ;//rift increment: how to unify with forward usage?
+				moveQueue[i][2] = 0;
+				riftIndex++;
+			}
+			for (j = riftIndex; j < moveQueue.length; j++) {
+				if (Detect.isWithin(j, i, 2)) {
+					moveQueue[j][1] = i;
+					moveQueue[j][2] = ((Detect.findInterval(j, false, 0) + timeDir[j][1][1]) - Detect.findInterval(i, false, 0))/timeDir[i][1][1];
+				} else {
+					break;
+				}
+			}
+			riftIndex = j;
+		} else {
+			break;
+		}
+	}
 
 	// console.log(moveQueue);
 	// moveQueue.sort(function(a,b){return sortMethod(moveQueue[a][3],moveQueue[b][3])});
@@ -532,6 +581,8 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	for (i = 0; i < moveQueue.length; i++) {
 		console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
 	}
+
+	moveQueue = new Array();
 
 
 	// var riftIndex = now + 1
