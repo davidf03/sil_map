@@ -472,25 +472,39 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 			if (now >= charDir[i][j].s_i) {
 				if (1 > bridge[i].x) {
 					if (0 >= bridge[i].x) {
-						// now--;
-						// bridge[i].x = 1;
-						if (0 < j && 0 < timeDir[charDir[i][j].s_i][1][1] && Detect.findInterval(charDir[i][j].s_i) === timeDir[charDir[i][j - 1].s_i][1][1])
-							active.push(charDir[i][j - 1].s_i);
+						now--;
+						bridge[i].x = 1;
+						for (var k = j - 1; k >= 0; k--) {
+							if (0 >= Detect.findInterval(now, false, k))
+								now--;
+							else {
+								if (Detect.findInterval(now, false, k) === timeDir[k][1][1]) {
+									active.push(charDir[i][k].s_i);
+									// bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+									// bridge[i].e = this.getExtent(active.length - 1, target, end, false);
+								}
+								break;
+							}
+						}
 					} else {
 						active.push(charDir[i][j].s_i);
+						// bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+						// bridge[i].e = this.getExtent(active.length - 1, target, end, false);
 					}
+				} else if (Detect.findInterval(now, false, charDir[i][j].s_i) === timeDir[charDir[i][j].s_i][1][1]) {
+					active.push(charDir[i][j].s_i);
 					// bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
 					// bridge[i].e = this.getExtent(active.length - 1, target, end, false);
 				} else if (0 >= timeDir[charDir[i][j].s_i][1][1] && 0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) {
-					// now--;
+					now--;
 				}
 				break;
 			}
-
 	active.sort(function(a,b){return b - a});
 
-	for (i = now - 1; i >= target; i--) {
-		if (false === end || Detect.findInterval(i, false, target) >= timeDir[target][1][1] || false === Detect.isWithin(i, target, 2, 2, false)) {
+
+	for (i = now; i >= target; i--) {
+		if (false === end && (0 < Detect.findInterval(i, false, target) || 0 < timeDir[i][1][1]) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])/* || false === Detect.isWithin(i, target, 2, 2, false)*/) {
 			if (0 >= timeDir[i][1][1]) var inc = -1;
 				else inc = -(60/1000)*movSpeed / timeDir[i][1][1];
 			moveQueue.push([ false, 0, 0, i, inc, this.getExtent(i, target, end, false) ]);
@@ -512,14 +526,21 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 					}
 					break;
 				}
-
-	moveQueue.sort(function(a,b){
-		//sorting into descending order by latest activity
+	moveQueue.sort(function(a,b){//sorting into descending order by latest activity
 		var result = (timeDir[b[3]][1][1] + Detect.findInterval(b[3], false, 0)) - (timeDir[a[3]][1][1] + Detect.findInterval(a[3], false, 0));
-		//deferring to the later index
-		if (0 === result) return b[3] - a[3];
+		if (0 === result) return b[3] - a[3];//deferring to the later index
 			else return result;
 	});
+	// for (i = 0; i < active.length; i++)
+	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
+	// console.log("---");
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+	moveQueue.splice(0, active.length);//ideally they wouldn't be added in the first place
+	// console.log("---");
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+
 
 	var riftIndex = 0;
 	for (i = 0; i < active.length; i++) {
@@ -537,8 +558,15 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 		if (moveQueue.length > riftIndex) {
 			if (i === riftIndex) {
 				moveQueue[i][0] = true;
-				// moveQueue[i][1] = ;//rift increment: how to unify with forward usage?
 				moveQueue[i][2] = 0;
+				var riftDuration = (Detect.findInterval(i + 1, false, i) - timeDir[i][1][1] + timeDir[i + 1][1][1]);
+				moveQueue[i][1] = (60/1000)*movSpeed / riftDuration;
+				// if (0 >= riftBridge)
+				// riftBridge.x = (riftDuration - timeDir[i + 1][1][1]*(1 - bridge[timeDir[i + 1][0][0]].x)) / riftDuration;
+				if (1 >= moveQueue.length) {
+					// riftBridge.i = -moveQueue[0][1];
+					// riftBridge.e = 0;
+				}
 				riftIndex++;
 			}
 			for (j = riftIndex; j < moveQueue.length; j++) {
@@ -555,15 +583,12 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 		}
 	}
 
-	for (i = 0; i < active.length; i++) {
+	// moveQueue = new Array();
+
+	for (i = 0; i < active.length; i++)
 		console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
-	}
-	for (i = 0; i < moveQueue.length; i++) {
+	for (i = 0; i < moveQueue.length; i++)
 		console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-	}
-
-	moveQueue = new Array();
-
 }
 Main.prototype.continuousNext = function(c_i, target, end) {
 	this.pause();

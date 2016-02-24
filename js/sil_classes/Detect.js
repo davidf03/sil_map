@@ -26,7 +26,7 @@ Detect.prototype.isWithin = function(index, lastIndex, indexEnd, lastEnd, incl) 
 	} else {
 		bound += this.findInterval(lastIndex, false, index);
 	}
-	if (incl && span > bound || false == incl && span >= bound) {
+	if (incl && span > bound || false === incl && span >= bound) {
 		return false;}
 	return true;
 };
@@ -35,7 +35,7 @@ Detect.prototype.findInterval = function(index, last, lastIndex) {
 	if (typeof(last)==='undefined') last = true;
 	if (typeof(lastIndex)==='undefined') lastIndex = 0;
 
-	if (last && index <= 0 || false == last && index <= lastIndex) {
+	if (last && index <= 0 || false === last && index <= lastIndex) {
 		return 0;
 	} else if (last) {
 		lastIndex = index - 1;
