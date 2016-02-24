@@ -98,9 +98,15 @@ Main.prototype.redraw = function() {
 					bridge[i].i = 0;
 					this.evalState(timeDir[i][0][0]);
 				}
-			// } else if (0 >= bridge[i].x || bridge[i].x <= bridge[i].e) {
-			// 	bridge[i].x = bridge[i].e;
-			// 	bridge[i].i = 0;
+			} else {
+				if (0 >= bridge[i].x && 0 >= bridge[i].e) {
+					now--;
+					bridge[i].x = 1;
+					bridge[i].i = 0;
+				} else if (bridge[i].x <= bridge[i].e) {
+					bridge[i].x = bridge[i].e;
+					bridge[i].i = 0;
+				}
 			}
 		}
 	}
@@ -114,41 +120,90 @@ Main.prototype.redraw = function() {
 				riftBridge.i = 0;
 				this.evalState(timeDir[now + 1][0][0]);
 			}
-		// } else if (0 >= bridge[i].x || bridge[i].x <= bridge[i].e) {
-		// 	bridge[i].x = bridge[i].e;
-		// 	bridge[i].i = 0;
+		} else {
+			if (riftBridge.x <= riftBridge.e) {
+				riftBridge.x = riftBridge.e;
+				riftBridge.i = 0;
+				this.evalState(timeDir[now][0][0]);
+			}
 		}
 	}
 	//rift:Boolean, caller/riftInc:uint/float, trigger:float, called:uint, increment:float, extent:float
 	while (0 < moveQueue.length) {
-		//forward movement
-		var rift = moveQueue[0][0];
-		if (false === rift) {
-			var csi = moveQueue[0][1];
-			var cci = timeDir[csi][0][0];
-			var cni = timeDir[csi][0][1];
-		}
-		if (rift && 1 <= riftBridge.x || false === rift && (now >= csi && (bridge[cci].x >= moveQueue[0][2] || bridge[cci].x >= bridge[cci].e) || cni + 1 < charDir[cci].length && now >= charDir[cci][cni + 1].s_i)) {
-			console.log(moveQueue[0]);
-			var tsi = moveQueue[0][3];
-			bridge[timeDir[tsi][0][0]].i = moveQueue[0][4];
-			bridge[timeDir[tsi][0][0]].e = moveQueue[0][5];
-			// if (moveQueue[0][0])
-				bridge[timeDir[tsi][0][0]].x = 0;
-			// else
-			// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][2])*timeDir[csi][1][1]/timeDir[tsi][1][1];
-			if (1 < moveQueue.length && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/ && tsi + 1 < timeDir.length) {
-				active = true;
-				riftBridge.i = moveQueue[1][1];
-				riftBridge.e = 1;
-				// if (0 >= riftBridge.x || 1 <= riftBridge.x)
-					riftBridge.x = 0;
-					// riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
+		if (now < moveQueue[0][3]) {
+			//forward movement
+			var rift = moveQueue[0][0];
+			if (false === rift) {
+				var csi = moveQueue[0][1];
+				var cci = timeDir[csi][0][0];
+				var cni = timeDir[csi][0][1];
 			}
-			moveQueue.splice(0,1);
-			now++;
+			if (rift && 1 <= riftBridge.x || false === rift && now >= csi && ((bridge[cci].x >= moveQueue[0][2] || bridge[cci].x >= bridge[cci].e) || cni + 1 < charDir[cci].length && now >= charDir[cci][cni + 1].s_i)) {
+				console.log(moveQueue[0]);
+				var tsi = moveQueue[0][3];
+				bridge[timeDir[tsi][0][0]].i = moveQueue[0][4];
+				bridge[timeDir[tsi][0][0]].e = moveQueue[0][5];
+				// if (moveQueue[0][0])
+					bridge[timeDir[tsi][0][0]].x = 0;
+				// else
+				// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][2])*timeDir[csi][1][1]/timeDir[tsi][1][1];
+				if (1 < moveQueue.length && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/ && tsi + 1 < timeDir.length) {
+					active = true;
+					riftBridge.i = moveQueue[1][1];
+					riftBridge.e = 1;
+					// if (0 >= riftBridge.x || 1 <= riftBridge.x)
+						riftBridge.x = 0;
+						// riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
+				}
+				moveQueue.splice(0,1);
+				now++;
+			} else {
+				break;
+			}
 		} else {
-			break;
+			//backwards movement
+			console.log('hi');
+			var rift = moveQueue[0][0];
+			if (false === rift) {
+				var csi = moveQueue[0][1];
+				var cci = timeDir[csi][0][0];
+				var cni = timeDir[csi][0][1];
+			}
+			// if (rift) {
+			// 	console.log(rift);
+			// 	console.log(riftBridge.x);
+			// } else {
+			// 	console.log(rift);
+			// 	console.log(now+" <= "+csi);
+			// 	console.log(bridge[cci].x+" <= "+moveQueue[0][2]);
+			// 	console.log(bridge[cci].x+" <= "+bridge[cci].e);
+			// 	console.log("0 < "+cni);
+			// 	if (0 < cni) {
+			// 		console.log(now+" <= "+charDir[cci][cni - 1].s_i);
+			// 	}
+			// }
+			// console.log("---");
+			if (rift && 0 >= riftBridge.x || false === rift && (now < csi || (now <= csi || charDir[cci].length <= cni + 1 || now < charDir[cci][cni + 1].s_i) && (bridge[cci].x <= moveQueue[0][2] || bridge[cci].x <= bridge[cci].e))) {
+				console.log(moveQueue[0]);
+				var tsi = moveQueue[0][3];
+				bridge[timeDir[tsi][0][0]].i = moveQueue[0][4];
+				bridge[timeDir[tsi][0][0]].e = moveQueue[0][5];
+				// if (moveQueue[0][0])
+					bridge[timeDir[tsi][0][0]].x = 1;
+				// else
+				// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][2])*timeDir[csi][1][1]/timeDir[tsi][1][1];
+				if (1 < moveQueue.length && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/) {
+					active = true;
+					riftBridge.i = moveQueue[1][1];
+					riftBridge.e = 0;
+					// if (0 >= riftBridge.x || 1 <= riftBridge.x)
+						riftBridge.x = 1;
+						// riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
+				}
+				moveQueue.splice(0,1);
+			} else {
+				break;
+			}
 		}
 	}
 
@@ -448,8 +503,8 @@ Main.prototype.instant = function(c_i, target, end) {
 	now = target;
 }
 Main.prototype.continuousPrev = function(c_i, target, end) {
-	// this.pause();
-	// idle = true;
+	this.pause();
+	idle = true;
 
 	//create active
 		//any instant durations at present, including 0 bridges, are automatically rolled back
@@ -463,7 +518,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 			//this and the other should work the same in that they ought to be made to have characters call themselves when chaining
 			//rifts ought to be unified forwards and backwards. not sure how
 
-	moveQueue = new Array();
+	// moveQueue = new Array();
 
 	var i, j;
 	var active = new Array();
@@ -480,21 +535,21 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 							else {
 								if (Detect.findInterval(now, false, k) === timeDir[k][1][1]) {
 									active.push(charDir[i][k].s_i);
-									// bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-									// bridge[i].e = this.getExtent(active.length - 1, target, end, false);
+									bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+									bridge[i].e = this.getExtent(active.length - 1, target, end, false);
 								}
 								break;
 							}
 						}
 					} else {
 						active.push(charDir[i][j].s_i);
-						// bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-						// bridge[i].e = this.getExtent(active.length - 1, target, end, false);
+						bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+						bridge[i].e = this.getExtent(active.length - 1, target, end, false);
 					}
 				} else if (Detect.findInterval(now, false, charDir[i][j].s_i) === timeDir[charDir[i][j].s_i][1][1]) {
 					active.push(charDir[i][j].s_i);
-					// bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-					// bridge[i].e = this.getExtent(active.length - 1, target, end, false);
+					bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+					bridge[i].e = this.getExtent(active.length - 1, target, end, false);
 				} else if (0 >= timeDir[charDir[i][j].s_i][1][1] && 0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) {
 					now--;
 				}
@@ -512,6 +567,9 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 			break;
 		}
 	}
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	// console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+	// 	console.log(moveQueue[i][5]);
 	for (i = 0; i < charDir.length; i++)
 		if (i !== c_i && 1 <= bridge[i].x)
 			for (j = charDir[i].length - 1; j >= 0; j--)
@@ -526,6 +584,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 					}
 					break;
 				}
+
 	moveQueue.sort(function(a,b){//sorting into descending order by latest activity
 		var result = (timeDir[b[3]][1][1] + Detect.findInterval(b[3], false, 0)) - (timeDir[a[3]][1][1] + Detect.findInterval(a[3], false, 0));
 		if (0 === result) return b[3] - a[3];//deferring to the later index
@@ -545,9 +604,9 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	var riftIndex = 0;
 	for (i = 0; i < active.length; i++) {
 		for (j = riftIndex; j < moveQueue.length; j++) {
-			if (Detect.isWithin(j, i, 2)) {
-				moveQueue[j][1] = i;
-				moveQueue[j][2] = ((Detect.findInterval(j, false, 0) + timeDir[j][1][1]) - Detect.findInterval(i, false, 0))/timeDir[i][1][1];
+			if (Detect.isWithin(moveQueue[j][3], moveQueue[i][3], 2)) {
+				moveQueue[j][1] = moveQueue[i][3];
+				moveQueue[j][2] = ((Detect.findInterval(moveQueue[j][3], false, 0) + timeDir[moveQueue[j][3]][1][1]) - Detect.findInterval(moveQueue[i][3], false, 0))/timeDir[moveQueue[i][3]][1][1];
 			} else {
 				break;
 			}
@@ -559,20 +618,20 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 			if (i === riftIndex) {
 				moveQueue[i][0] = true;
 				moveQueue[i][2] = 0;
-				var riftDuration = (Detect.findInterval(i + 1, false, i) - timeDir[i][1][1] + timeDir[i + 1][1][1]);
+				var riftDuration = (Detect.findInterval(moveQueue[i][3] + 1, false, moveQueue[i][3]) - timeDir[moveQueue[i][3]][1][1] + timeDir[moveQueue[i][3] + 1][1][1]);
 				moveQueue[i][1] = (60/1000)*movSpeed / riftDuration;
 				// if (0 >= riftBridge)
-				// riftBridge.x = (riftDuration - timeDir[i + 1][1][1]*(1 - bridge[timeDir[i + 1][0][0]].x)) / riftDuration;
+				riftBridge.x = (riftDuration - timeDir[moveQueue[i][3] + 1][1][1]*(1 - bridge[timeDir[moveQueue[i][3] + 1][0][0]].x)) / riftDuration;
 				if (1 >= moveQueue.length) {
-					// riftBridge.i = -moveQueue[0][1];
-					// riftBridge.e = 0;
+					riftBridge.i = -moveQueue[0][1];
+					riftBridge.e = 0;
 				}
 				riftIndex++;
 			}
 			for (j = riftIndex; j < moveQueue.length; j++) {
 				if (Detect.isWithin(j, i, 2)) {
-					moveQueue[j][1] = i;
-					moveQueue[j][2] = ((Detect.findInterval(j, false, 0) + timeDir[j][1][1]) - Detect.findInterval(i, false, 0))/timeDir[i][1][1];
+					moveQueue[j][1] = moveQueue[i][3];
+					moveQueue[j][2] = ((Detect.findInterval(moveQueue[j][3], false, 0) + timeDir[moveQueue[j][3]][1][1]) - Detect.findInterval(moveQueue[i][3], false, 0))/timeDir[moveQueue[i][3]][1][1];
 				} else {
 					break;
 				}
@@ -583,12 +642,16 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 		}
 	}
 
+	idle = false;
+	this.redraw();
+
 	// moveQueue = new Array();
 
-	for (i = 0; i < active.length; i++)
-		console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
+	// for (i = 0; i < active.length; i++)
+	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
 	for (i = 0; i < moveQueue.length; i++)
-		console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+		console.log(moveQueue[i]);
 }
 Main.prototype.continuousNext = function(c_i, target, end) {
 	this.pause();
@@ -703,7 +766,10 @@ Main.prototype.getExtent = function(s_i, target, end, forward) {
 			} else if (Detect.isWithin(s_i, target, 2)) {
 				extent = timeDir[s_i][1][1];
 			} else {
-				if (target < s_i) extent = timeDir[target][1][1] - Detect.findInterval(s_i, false, target);
+				if (target < s_i) {
+					if (forward) extent = timeDir[target][1][1] - Detect.findInterval(s_i, false, target);
+						else extent = timeDir[s_i][1][1];
+				}
 				else extent = timeDir[target][1][1] + Detect.findInterval(target, false, s_i);
 			}
 		} else {
@@ -716,7 +782,9 @@ Main.prototype.getExtent = function(s_i, target, end, forward) {
 				else extent = Detect.findInterval(target, false, s_i);
 			}
 		}
-		return extent/timeDir[s_i][1][1];
+		extent /= timeDir[s_i][1][1];
+		if (forward || 1 > extent) return extent;
+			else return 0;
 	} else if (forward) return 1;
 	  else return 0;
 }
