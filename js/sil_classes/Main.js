@@ -487,22 +487,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 				break;
 			}
 
-	active.sort(function(a,b){
-		//this should result in descending order by latest activity
-		var result = (timeDir[b][1][1] + Detect.findInterval(b, false, 0)) - (timeDir[a][1][1] + Detect.findInterval(a, false, 0));
-		//deferring to the later index
-		if (0 === result) return b - a;
-			else return result;
-	});
-
-	// var sortMethod = function(a,b) {
-	// 	//this should result in descending order by latest activity
-	// 	var result = (timeDir[b][1][1] + Detect.findInterval(b, false, 0)) - (timeDir[a][1][1] + Detect.findInterval(a, false, 0));
-	// 	//deferring to the later index
-	// 	if (0 === result) return b - a;
-	// 		else return result;
-	// }
-	// active.sort(function(a,b){return sortMethod(a,b)}); //sorts in descending order
+	active.sort(function(a,b){return b - a});
 
 	for (i = now - 1; i >= target; i--) {
 		if (false === end || Detect.findInterval(i, false, target) >= timeDir[target][1][1] || false === Detect.isWithin(i, target, 2, 2, false)) {
@@ -528,19 +513,17 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 					break;
 				}
 
-	//*drawn with crayon* sort array by latest activity
-	//for some reason the custom sort function [below] won't work
-	// moveQueue.sort(function(a,b){
-	// 	//this should result in descending order by latest activity
-	// 	var result = (timeDir[moveQueue[b][3]][1][1] + Detect.findInterval(moveQueue[b][3], false, 0)) - (timeDir[moveQueue[a][3]][1][1] + Detect.findInterval(moveQueue[a][3], false, 0));
-	// 	//deferring to the later index
-	// 	if (0 === result) return moveQueue[b][3] - moveQueue[a][3];
-	// 		else return result;
-	// });
+	moveQueue.sort(function(a,b){
+		//sorting into descending order by latest activity
+		var result = (timeDir[b[3]][1][1] + Detect.findInterval(b[3], false, 0)) - (timeDir[a[3]][1][1] + Detect.findInterval(a[3], false, 0));
+		//deferring to the later index
+		if (0 === result) return b[3] - a[3];
+			else return result;
+	});
 
 	var riftIndex = 0;
 	for (i = 0; i < active.length; i++) {
-		for (j = 0; j < moveQueue.length; j++) {
+		for (j = riftIndex; j < moveQueue.length; j++) {
 			if (Detect.isWithin(j, i, 2)) {
 				moveQueue[j][1] = i;
 				moveQueue[j][2] = ((Detect.findInterval(j, false, 0) + timeDir[j][1][1]) - Detect.findInterval(i, false, 0))/timeDir[i][1][1];
@@ -572,9 +555,6 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 		}
 	}
 
-	// console.log(moveQueue);
-	// moveQueue.sort(function(a,b){return sortMethod(moveQueue[a][3],moveQueue[b][3])});
-
 	for (i = 0; i < active.length; i++) {
 		console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
 	}
@@ -583,29 +563,6 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	}
 
 	moveQueue = new Array();
-
-
-	// var riftIndex = now + 1
-	// var pastLimit = false;
-	// for (i = 0; i < active.length; i++) {
-	// 	for (j = riftIndex; j < timeDir.length; j++) {
-	// 		if (j <= target || false == end && Detect.findInterval(j, false, target) <= 0 || end && Detect.isWithin(j, target, 0)) {
-	// 			if (Detect.isWithin(j, active[i], 0)) {
-	// 				if (0 >= timeDir[j][1][1]) var inc = 1;
-	// 					else inc = (60/1000)*movSpeed / timeDir[j][1][1];
-	// 				moveQueue.push([ false, active[i], Detect.findInterval(j, false, active[i])/timeDir[active[i]][1][1], j, inc, this.getExtent(j, target, end, true) ]);
-	// 				// console.log(j+":"+timeDir[j][0][0]+":"+timeDir[j][0][1]);
-	// 			} else {
-	// 				break;
-	// 			}
-	// 		} else {
-	// 			pastLimit = true;
-	// 			break;
-	// 		}
-	// 	}
-	// 	riftIndex = j;
-	// 	if (pastLimit) break;
-	// }
 
 }
 Main.prototype.continuousNext = function(c_i, target, end) {
