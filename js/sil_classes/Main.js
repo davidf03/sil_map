@@ -19,7 +19,6 @@ function Main() {
 }
 Main.prototype.genCharObj = function() {
 	charConsole = document.querySelector('.charConsole .main');
-
 	var template =
 		"<div class='number'></div>" +
 		"<div class='colour'></div>" +
@@ -502,163 +501,6 @@ Main.prototype.instant = function(c_i, target, end) {
 	}
 	now = target;
 }
-Main.prototype.continuousPrev = function(c_i, target, end) {
-	this.pause();
-	idle = true;
-
-	//create active
-		//any instant durations at present, including 0 bridges, are automatically rolled back
-		//order indeces based on latest activity
-	//create moveQueue
-		//collect every relevant index
-			//indeces not suspended from target are not included
-		//order indeces based on latest activity
-		//define callers
-			//rifts are defined similar to forwards, an index pushed as the array is traversed: encountering it prepares a rift
-			//this and the other should work the same in that they ought to be made to have characters call themselves when chaining
-			//rifts ought to be unified forwards and backwards. not sure how
-
-	// moveQueue = new Array();
-
-	var i, j;
-	var active = new Array();
-	for (i = 0; i < charDir.length; i++)
-		for (j = charDir[i].length - 1; j >= 0; j--)
-			if (now >= charDir[i][j].s_i) {
-				if (1 > bridge[i].x) {
-					if (0 >= bridge[i].x) {
-						now--;
-						bridge[i].x = 1;
-						for (var k = j - 1; k >= 0; k--) {
-							if (0 >= Detect.findInterval(now, false, k))
-								now--;
-							else {
-								if (Detect.findInterval(now, false, k) === timeDir[k][1][1]) {
-									active.push(charDir[i][k].s_i);
-									bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-									bridge[i].e = this.getExtentPrev(active.length - 1, target, end);
-								}
-								break;
-							}
-						}
-					} else {
-						active.push(charDir[i][j].s_i);
-						bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-						bridge[i].e = this.getExtentPrev(active.length - 1, target, end);
-					}
-				} else if (Detect.findInterval(now, false, charDir[i][j].s_i) === timeDir[charDir[i][j].s_i][1][1]) {
-					active.push(charDir[i][j].s_i);
-					bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-					bridge[i].e = this.getExtentPrev(active.length - 1, target, end);
-				} else if (0 >= timeDir[charDir[i][j].s_i][1][1] && 0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) {
-					now--;
-				}
-				break;
-			}
-	active.sort(function(a,b){return b - a});
-
-
-	moveQueue = new Array();
-	for (i = now; i >= target; i--) {
-		if (false === end && (0 < Detect.findInterval(i, false, target) || 0 < timeDir[i][1][1]) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])/* || false === Detect.isWithin(i, target, 2, 2, false)*/) {
-			if (0 >= timeDir[i][1][1]) var inc = -1;
-				else inc = -(60/1000)*movSpeed / timeDir[i][1][1];
-			moveQueue.push([ false, 0, 0, i, inc, this.getExtentPrev(i, target, end) ]);
-		} else {
-			break;
-		}
-	}
-	// for (i = 0; i < moveQueue.length; i++)
-	// 	// console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-	// 	console.log(moveQueue[i][5]);
-	for (i = 0; i < charDir.length; i++)
-		if (i !== c_i && 1 <= bridge[i].x)
-			for (j = charDir[i].length - 1; j >= 0; j--)
-				if (target > charDir[i][j].s_i && 0 < timeDir[charDir[i][j].s_i][1][1]) {
-					//Detect.isWithin might need an update for more precise filtering
-					var indexTotal = timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0);
-					var targetBase = Detect.findInterval(target, false, 0);
-					if (end && indexTotal - (targetBase + timeDir[target][1][1]) > 0 || false === end && indexTotal - targetBase > 0) {
-						if (0 >= timeDir[charDir[i][j].s_i][1][1]) var inc = -1;
-							else inc = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
-						moveQueue.push([ false, 0, 0, i, inc, this.getExtentPrev(charDir[i][j].s_i, target, end) ]);
-					}
-					break;
-				}
-
-	moveQueue.sort(function(a,b){//sorting into descending order by latest activity
-		var result = (timeDir[b[3]][1][1] + Detect.findInterval(b[3], false, 0)) - (timeDir[a[3]][1][1] + Detect.findInterval(a[3], false, 0));
-		if (0 === result) return b[3] - a[3];//deferring to the later index
-			else return result;
-	});
-	// for (i = 0; i < active.length; i++)
-	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
-	// console.log("---");
-	// for (i = 0; i < moveQueue.length; i++)
-	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-	moveQueue.splice(0, active.length);//ideally they wouldn't be added in the first place
-	// console.log("---");
-	// for (i = 0; i < moveQueue.length; i++)
-	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-
-
-	var riftIndex = 0;
-	for (i = 0; i < active.length; i++) {
-		var callerBase = Detect.findInterval(active[i], false, 0);
-		for (j = riftIndex; j < moveQueue.length; j++) {
-			var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
-			if (indexTotal >= callerBase) {
-				moveQueue[j][1] = moveQueue[i][3];
-				moveQueue[j][2] = (indexTotal - callerBase)/timeDir[active[i]][1][1];
-			} else {
-				break;
-			}
-		}
-		riftIndex = j;
-	}
-	for (i = 0; i < moveQueue.length; i++) {
-		if (moveQueue.length > riftIndex) {
-			if (i === riftIndex) {
-				moveQueue[i][0] = true;
-				moveQueue[i][2] = 0;
-				var riftDuration = (Detect.findInterval(moveQueue[i][3] + 1, false, moveQueue[i][3]) - timeDir[moveQueue[i][3]][1][1] + timeDir[moveQueue[i][3] + 1][1][1]);
-				moveQueue[i][1] = (60/1000)*movSpeed / riftDuration;
-				// if (0 >= riftBridge)
-				riftBridge.x = (riftDuration - timeDir[moveQueue[i][3] + 1][1][1]*(1 - bridge[timeDir[moveQueue[i][3] + 1][0][0]].x)) / riftDuration;
-				if (0 === i) {
-					console.log("rift");
-					riftBridge.i = -moveQueue[0][1];
-					riftBridge.e = 0;
-				}
-				riftIndex++;
-			}
-			var callerBase = Detect.findInterval(moveQueue[i][3], false, 0);
-			for (j = riftIndex; j < moveQueue.length; j++) {
-				var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
-				if (indexTotal >= callerBase) {
-					moveQueue[j][1] = moveQueue[i][3];
-					moveQueue[j][2] = (indexTotal - callerBase)/timeDir[moveQueue[i][3]][1][1];
-				} else {
-					break;
-				}
-			}
-			riftIndex = j;
-		} else {
-			break;
-		}
-	}
-
-	idle = false;
-	this.redraw();
-
-	// moveQueue = new Array();
-
-	// for (i = 0; i < active.length; i++)
-	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
-	for (i = 0; i < moveQueue.length; i++)
-	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-		console.log(moveQueue[i]);
-}
 Main.prototype.continuousNext = function(c_i, target, end) {
 	this.pause();
 	idle = true; //sufficient?
@@ -761,6 +603,163 @@ Main.prototype.continuousNext = function(c_i, target, end) {
 
 	idle = false;
 	this.redraw();
+}
+Main.prototype.continuousPrev = function(c_i, target, end) {
+	this.pause();
+	idle = true;
+
+	//create active
+		//any instant durations at present, including 0 bridges, are automatically rolled back
+		//order indeces based on latest activity
+	//create moveQueue
+		//collect every relevant index
+			//indeces not suspended from target are not included
+		//order indeces based on latest activity
+		//define callers
+			//rifts are defined similar to forwards, an index pushed as the array is traversed: encountering it prepares a rift
+			//this and the other should work the same in that they ought to be made to have characters call themselves when chaining
+			//rifts ought to be unified forwards and backwards. not sure how
+
+	// moveQueue = new Array();
+
+	var i, j;
+	var active = new Array();
+	for (i = 0; i < charDir.length; i++)
+		for (j = charDir[i].length - 1; j >= 0; j--)
+			if (now >= charDir[i][j].s_i) {
+				if (1 > bridge[i].x) {
+					if (0 >= bridge[i].x) {
+						now--;
+						bridge[i].x = 1;
+						for (var k = j - 1; k >= 0; k--) {
+							if (0 >= Detect.findInterval(now, false, charDir[i][k].s_i))
+								now--;
+							else {
+								if (Detect.findInterval(now, false, charDir[i][k].s_i) === timeDir[charDir[i][k].s_i][1][1]) {
+									active.push(charDir[i][k].s_i);
+									bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+									bridge[i].e = this.getExtentPrev(active.length - 1, target, end);
+								}
+								break;
+							}
+						}
+					} else {
+						active.push(charDir[i][j].s_i);
+						bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+						bridge[i].e = this.getExtentPrev(active.length - 1, target, end);
+					}
+				} else if (Detect.findInterval(now, false, charDir[i][j].s_i) === timeDir[charDir[i][j].s_i][1][1]) {
+					active.push(charDir[i][j].s_i);
+					bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
+					bridge[i].e = this.getExtentPrev(active.length - 1, target, end);
+				} else if (0 >= timeDir[charDir[i][j].s_i][1][1] && 0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) {
+					now--;
+				}
+				break;
+			}
+	active.sort(function(a,b){return b - a});
+
+
+	moveQueue = new Array();
+	for (i = now; i >= target; i--) {
+		if (false === end && (0 < timeDir[i][1][1] || 0 < Detect.findInterval(i, false, target)) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])/* || false === Detect.isWithin(i, target, 2, 2, false)*/) {
+			if (0 >= timeDir[i][1][1]) var inc = -1;
+				else inc = -(60/1000)*movSpeed / timeDir[i][1][1];
+			moveQueue.push([ false, 0, 0, i, inc, this.getExtentPrev(i, target, end) ]);
+		} else {
+			break;
+		}
+	}
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	// console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+	// 	console.log(moveQueue[i][5]);
+	for (i = 0; i < charDir.length; i++)
+		if (i !== c_i && 1 <= bridge[i].x)
+			for (j = charDir[i].length - 1; j >= 0; j--)
+				if (target > charDir[i][j].s_i && 0 < timeDir[charDir[i][j].s_i][1][1]) {
+					//Detect.isWithin might need an update for more precise filtering
+					var indexTotal = timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0);
+					var targetBase = Detect.findInterval(target, false, 0);
+					if (end && indexTotal - (targetBase + timeDir[target][1][1]) > 0 || false === end && indexTotal - targetBase > 0) {
+						if (0 >= timeDir[charDir[i][j].s_i][1][1]) var inc = -1;
+							else inc = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
+						moveQueue.push([ false, 0, 0, i, inc, this.getExtentPrev(charDir[i][j].s_i, target, end) ]);
+					}
+					break;
+				}
+
+	moveQueue.sort(function(a,b){//sorting into descending order by latest activity
+		var result = (timeDir[b[3]][1][1] + Detect.findInterval(b[3], false, 0)) - (timeDir[a[3]][1][1] + Detect.findInterval(a[3], false, 0));
+		if (0 === result) return b[3] - a[3];//deferring to the later index
+			else return result;
+	});
+	// for (i = 0; i < active.length; i++)
+	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
+	// console.log("---");
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+	moveQueue.splice(0, active.length);//ideally they wouldn't be added in the first place
+	// console.log("---");
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+
+
+	var riftIndex = 0;
+	for (i = 0; i < active.length; i++) {
+		var callerBase = Detect.findInterval(active[i], false, 0);
+		for (j = riftIndex; j < moveQueue.length; j++) {
+			var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
+			if (indexTotal >= callerBase) {
+				moveQueue[j][1] = moveQueue[i][3];
+				moveQueue[j][2] = (indexTotal - callerBase)/timeDir[active[i]][1][1];
+			} else {
+				break;
+			}
+		}
+		riftIndex = j;
+	}
+	for (i = 0; i < moveQueue.length; i++) {
+		if (moveQueue.length > riftIndex) {
+			if (i === riftIndex) {
+				moveQueue[i][0] = true;
+				moveQueue[i][2] = 0;
+				var riftDuration = (Detect.findInterval(moveQueue[i][3] + 1, false, moveQueue[i][3]) - timeDir[moveQueue[i][3]][1][1] + timeDir[moveQueue[i][3] + 1][1][1]);
+				moveQueue[i][1] = (60/1000)*movSpeed / riftDuration;
+				// if (0 >= riftBridge)
+				riftBridge.x = (riftDuration - timeDir[moveQueue[i][3] + 1][1][1]*(1 - bridge[timeDir[moveQueue[i][3] + 1][0][0]].x)) / riftDuration;
+				if (0 === i) {
+					console.log("rift");
+					riftBridge.i = -moveQueue[0][1];
+					riftBridge.e = 0;
+				}
+				riftIndex++;
+			}
+			var callerBase = Detect.findInterval(moveQueue[i][3], false, 0);
+			for (j = riftIndex; j < moveQueue.length; j++) {
+				var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
+				if (indexTotal >= callerBase) {
+					moveQueue[j][1] = moveQueue[i][3];
+					moveQueue[j][2] = (indexTotal - callerBase)/timeDir[moveQueue[i][3]][1][1];
+				} else {
+					break;
+				}
+			}
+			riftIndex = j;
+		} else {
+			break;
+		}
+	}
+
+	idle = false;
+	this.redraw();
+
+	// moveQueue = new Array();
+
+	// for (i = 0; i < active.length; i++)
+	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
+	for (i = 0; i < moveQueue.length; i++)
+	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+		console.log(moveQueue[i]);
 }
 Main.prototype.getExtentNext = function(s_i, target, end) {
 	//this won't work for backwards movement
