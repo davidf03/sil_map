@@ -124,7 +124,7 @@ Main.prototype.redraw = function() {
 			if (1 <= riftBridge.x || riftBridge.x >= riftBridge.e) {
 				riftBridge.x = 1;
 				riftBridge.i = 0;
-				this.evalState(timeDir[now + 1][0][0]);
+				// this.evalState(timeDir[now + 1][0][0]);
 			}
 		} else {
 			if (0 >= riftBridge.x || riftBridge.x <= riftBridge.e) {
@@ -134,7 +134,7 @@ Main.prototype.redraw = function() {
 		}
 	}
 	//rift:Boolean, caller/riftInc:uint/float, trigger:float, called:uint, increment:float, extent:float
-	console.log(now);
+	console.log(now+":"+active);
 	while (0 < moveQueue.length) {
 		if (now < moveQueue[0][3]) {
 			//forward movement
@@ -197,12 +197,16 @@ Main.prototype.redraw = function() {
 					bridge[timeDir[tsi][0][0]].x = 1;
 				// else
 				// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][2])*timeDir[csi][1][1]/timeDir[tsi][1][1];
+				if (moveQueue.length > 1) console.log(moveQueue.length+" && "+moveQueue[1][0]);
+				else console.log(moveQueue.length);
 				if (1 < moveQueue.length && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/) {
+					console.log("rift active")
 					active = true;
 					riftBridge.i = moveQueue[1][1];
 					riftBridge.e = 0;
 					// if (0 >= riftBridge.x || 1 <= riftBridge.x)
-						riftBridge.x = 1;
+					var riftDuration = Detect.findInterval(moveQueue[1][3] + 1, false, moveQueue[1][3]) - timeDir[moveQueue[1][3]][1][1] + timeDir[moveQueue[1][3] + 1][1][1];
+						riftBridge.x = (riftDuration - timeDir[moveQueue[1][3] + 1][1][1]*(1 - bridge[timeDir[moveQueue[1][3] + 1][0][0]].x)) / riftDuration;
 						// riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
 				}
 				moveQueue.splice(0,1);
@@ -638,19 +642,12 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 				if (0 >= bridge[i].x || 0 >= timeDir[charDir[i][j].s_i][1][1] && 0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) {
 					rollBack++;
 					bridge[i].x = 1;
-					for (var k = j - 1; k >= 0; k--) {
-						if (0 >= Detect.findInterval(now, false, charDir[i][k].s_i))
-							rollBack++;
-						else {
-							if (nowTotal <= timeDir[charDir[i][k].s_i][1][1] + Detect.findInterval(charDir[i][k].s_i, false, 0)) {
-								active.push(charDir[i][k].s_i);
-								bridge[i].i = -(60/1000)*movSpeed / timeDir[charDir[i][k].s_i][1][1];
-								bridge[i].e = this.getExtentPrev(charDir[i][k].s_i, target, end);
-							}
-							break;
-						}
+					for (j -= 1; j >= 0; j--) {
+						if (0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) rollBack++;
+							else break;
 					}
-				} else if (1 > bridge[i].x || nowTotal <= timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0)) {
+				}
+				if (1 > bridge[i].x || j >= 0 && nowTotal <= timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0)) {
 					active.push(charDir[i][j].s_i);
 					bridge[i].i = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
 					bridge[i].e = this.getExtentPrev(charDir[i][j].s_i, target, end);
@@ -729,10 +726,10 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 				var riftDuration = (Detect.findInterval(moveQueue[i][3] + 1, false, moveQueue[i][3]) - timeDir[moveQueue[i][3]][1][1] + timeDir[moveQueue[i][3] + 1][1][1]);
 				moveQueue[i][1] = -(60/1000)*movSpeed / riftDuration;
 				// if (0 >= riftBridge)
-				riftBridge.x = (riftDuration - timeDir[moveQueue[i][3] + 1][1][1]*(1 - bridge[timeDir[moveQueue[i][3] + 1][0][0]].x)) / riftDuration;
 				if (0 === i) {
 					// console.log("rift");
-					riftBridge.i = -moveQueue[0][1];
+					riftBridge.x = (riftDuration - timeDir[moveQueue[i][3] + 1][1][1]*(1 - bridge[timeDir[moveQueue[i][3] + 1][0][0]].x)) / riftDuration;
+					riftBridge.i = moveQueue[0][1];
 					riftBridge.e = 0;
 				}
 				riftIndex++;
