@@ -1,5 +1,8 @@
 var charConsole;
+var targetIndex;
+
 function Main() {
+	targetIndex = 0;
 	Detect = new Detect();
 	moveQueue = new Array();
 	this.genLocDir();
@@ -99,8 +102,11 @@ Main.prototype.redraw = function() {
 				}
 			} else {
 				if (0 >= bridge[i].x && 0 >= bridge[i].e) {
-					now--;
-					bridge[i].x = 1;
+					if (targetIndex !== now) {
+						now--;
+						bridge[i].x = 1;
+					} else
+						bridge[i].x = 0;
 					bridge[i].i = 0;
 				} else if (bridge[i].x <= bridge[i].e) {
 					bridge[i].x = bridge[i].e;
@@ -623,34 +629,37 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 
 	var i, j;
 	var active = new Array();
+	var rollBack = 0;
+	var nowTotal = timeDir[now][1][1]*bridge[timeDir[now][0][0]].x + Detect.findInterval(now, false, 0);
 	for (i = 0; i < charDir.length; i++)
 		for (j = charDir[i].length - 1; j >= 0; j--)
 			if (now >= charDir[i][j].s_i) {
 				if (0 >= bridge[i].x || 0 >= timeDir[charDir[i][j].s_i][1][1] && 0 >= Detect.findInterval(now, false, charDir[i][j].s_i)) {
-					now--;
+					rollBack++;
 					bridge[i].x = 1;
 					for (var k = j - 1; k >= 0; k--) {
 						if (0 >= Detect.findInterval(now, false, charDir[i][k].s_i))
-							now--;
+							rollBack++;
 						else {
-							if (Detect.isWithin(now, charDir[i][k].s_i)) {
+							if (nowTotal <= timeDir[charDir[i][k].s_i][1][1] + Detect.findInterval(charDir[i][k].s_i, false, 0)) {
 								active.push(charDir[i][k].s_i);
-								bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-								bridge[i].e = this.getExtentPrev(active[active.length - 1], target, end);
+								bridge[i].i = -(60/1000)*movSpeed / timeDir[charDir[i][k].s_i][1][1];
+								bridge[i].e = this.getExtentPrev(charDir[i][k].s_i, target, end);
 							}
 							break;
 						}
 					}
-				} else if (1 > bridge[i].x || Detect.isWithin(now, charDir[i][j].s_i)) {
+				} else if (1 > bridge[i].x || nowTotal <= timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0)) {
 					active.push(charDir[i][j].s_i);
-					bridge[i].i = -(60/1000)*movSpeed / timeDir[active[active.length - 1]][1][1];
-					bridge[i].e = this.getExtentPrev(active[active.length - 1], target, end);
+					bridge[i].i = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
+					bridge[i].e = this.getExtentPrev(charDir[i][j].s_i, target, end);
 				}
 				break;
 			}
 	active.sort(function(a,b){return b - a});
+	now -= rollBack;
 
-
+	//scouting indeces for moveQueue
 	moveQueue = new Array();
 	for (i = now; i >= target; i--) {
 		if (false === end && (0 < timeDir[i][1][1] || 0 < Detect.findInterval(i, false, target)) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])/* || false === Detect.isWithin(i, target, 2, 2, false)*/) {
@@ -674,12 +683,12 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 					if (end && indexTotal - (targetBase + timeDir[target][1][1]) > 0 || false === end && indexTotal - targetBase > 0) {
 						if (0 >= timeDir[charDir[i][j].s_i][1][1]) var inc = -1;
 							else inc = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
-						moveQueue.push([ false, 0, 0, i, inc, this.getExtentPrev(charDir[i][j].s_i, target, end) ]);
+						moveQueue.push([ false, 0, 0, charDir[i][j].s_i, inc, this.getExtentPrev(charDir[i][j].s_i, target, end) ]);
 					}
 					break;
 				}
-
-	moveQueue.sort(function(a,b){//sorting into descending order by latest activity
+	//sorting into descending order by latest activity
+	moveQueue.sort(function(a,b){
 		var result = (timeDir[b[3]][1][1] + Detect.findInterval(b[3], false, 0)) - (timeDir[a[3]][1][1] + Detect.findInterval(a[3], false, 0));
 		if (0 === result) return b[3] - a[3];//deferring to the later index
 			else return result;
@@ -694,14 +703,15 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	// for (i = 0; i < moveQueue.length; i++)
 	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
 
-
+	//priming moveQueue indeces
+	//active stems
 	var riftIndex = 0;
 	for (i = 0; i < active.length; i++) {
 		var callerBase = Detect.findInterval(active[i], false, 0);
 		for (j = riftIndex; j < moveQueue.length; j++) {
 			var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
 			if (indexTotal >= callerBase) {
-				moveQueue[j][1] = moveQueue[i][3];
+				moveQueue[j][1] = active[i];
 				moveQueue[j][2] = (indexTotal - callerBase)/timeDir[active[i]][1][1];
 			} else {
 				break;
@@ -709,6 +719,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 		}
 		riftIndex = j;
 	}
+	//moveQueue stems
 	for (i = 0; i < moveQueue.length; i++) {
 		if (moveQueue.length > riftIndex) {
 			if (i === riftIndex) {
@@ -748,18 +759,23 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 		}
 	}
 
+	for (i = 0; i < active.length; i++) {
+		console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
+	}
+	for (i = 0; i < moveQueue.length; i++) {
+		console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+	// 	console.log(moveQueue[i]);
+	}
+	for (i = 0; i < moveQueue.length; i++) {
+		console.log(moveQueue[i]);
+	}
+
+	targetIndex = target;
+
 	idle = false;
 	this.redraw();
 
 	// moveQueue = new Array();
-
-	// for (i = 0; i < active.length; i++) {
-	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
-	// }
-	// for (i = 0; i < moveQueue.length; i++) {
-	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-	// 	console.log(moveQueue[i]);
-	// }
 }
 Main.prototype.getExtentNext = function(s_i, target, end) {
 	//this won't work for backwards movement

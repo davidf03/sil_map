@@ -488,7 +488,7 @@ Node.prototype.genPath = function(channel, active) {
 	linectx.stroke();
 }
 Node.prototype.hexToRGB = function(h, alpha) {
-	if (alpha === 'undefined') alpha = 1;
+	if (typeof(alpha) === 'undefined') alpha = 1;
 	h = (h.charAt(0)=="#") ? h.substring(1,7):h;
 	var r = parseInt(h.substring(0,2),16);
 	var g = parseInt(h.substring(2,4),16);
@@ -681,7 +681,7 @@ Node.prototype.genNode = function(active) {
 }
 Node.prototype.generate = function(channel, recalculate) {
 	if (0 < anc[this.c_i].x && now >= this.s_i) {
-		if (recalculate==='undefined') recalculate = 1;
+		if (typeof(recalculate)==='undefined') recalculate = 1;
 
 		this.lastNow = now;
 		this.lastAnc = anc[this.c_i].x;
