@@ -102,12 +102,13 @@ Main.prototype.redraw = function() {
 				}
 			} else {
 				if (0 >= bridge[i].x && 0 >= bridge[i].e) {
-					if (targetIndex !== now) {
+					if (i !== timeDir[targetIndex][0][0] || 0 < Detect.findInterval(now, false, targetIndex)) {
 						now--;
 						bridge[i].x = 1;
 					} else
 						bridge[i].x = 0;
 					bridge[i].i = 0;
+					this.evalState(i);
 				} else if (bridge[i].x <= bridge[i].e) {
 					bridge[i].x = bridge[i].e;
 					bridge[i].i = 0;
@@ -304,7 +305,7 @@ Main.prototype.evalState = function(c_i) {
 	var cnext = document.querySelector('[data-index="'+c_i+'"] .next');
 	inext.onclick = null;
 	cnext.onclick = null;
-	if (charDir[c_i].length > 1 && (now < charDir[c_i][charDir[c_i].length - 1].s_i || bridge[c_i].x < 1) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
+	if (charDir[c_i].length > 1 && (1 > bridge[c_i].x || now < charDir[c_i][charDir[c_i].length - 1].s_i) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
 		inext.onclick = function(e) {
 			main.targetNext(inext.parentNode.parentNode.dataset.index, true);
 		};
@@ -325,7 +326,7 @@ Main.prototype.evalState = function(c_i) {
 	var cprev = document.querySelector('[data-index="'+c_i+'"] .prev');
 	iprev.onclick = null
 	cprev.onclick = null
-	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && false == Detect.isWithin(now, 0) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
+	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && (0 < Detect.findInterval(now, false, charDir[c_i][0].s_i) || 0 < bridge[timeDir[now][0][0]].x && 0 < timeDir[now][1][1]) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
 		iprev.onclick = function(e) {
 			main.targetPrev(iprev.parentNode.parentNode.dataset.index, true);
 		};
@@ -726,7 +727,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 				moveQueue[i][0] = true;
 				moveQueue[i][2] = 0;
 				var riftDuration = (Detect.findInterval(moveQueue[i][3] + 1, false, moveQueue[i][3]) - timeDir[moveQueue[i][3]][1][1] + timeDir[moveQueue[i][3] + 1][1][1]);
-				moveQueue[i][1] = (60/1000)*movSpeed / riftDuration;
+				moveQueue[i][1] = -(60/1000)*movSpeed / riftDuration;
 				// if (0 >= riftBridge)
 				riftBridge.x = (riftDuration - timeDir[moveQueue[i][3] + 1][1][1]*(1 - bridge[timeDir[moveQueue[i][3] + 1][0][0]].x)) / riftDuration;
 				if (0 === i) {
