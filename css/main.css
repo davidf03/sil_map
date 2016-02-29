@@ -240,13 +240,13 @@ body, .sidebar {
                   height: 2em;
                   width: 1.5em;
                 }
-                  .char .controls > :nth-child(1), .char .controls > :nth-child(5) {
+                  /*.char .controls > :nth-child(1), .char .controls > :nth-child(5) {
                     width: 1em;
+                  }*/
+                  .char .controls > :nth-child(1), .char .controls > :nth-child(3) {
+                    width: 1.2em;
                   }
-                  .char .controls > :nth-child(2), .char .controls > :nth-child(4) {
-                    width: 1.3em;
-                  }
-                  .char .controls > :nth-child(3) {
+                  .char .controls > :nth-child(2) {
                     /*width: 1.6em;*/
                   }
                   .char .controls > * > span {

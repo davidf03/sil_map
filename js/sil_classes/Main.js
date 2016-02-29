@@ -5,14 +5,29 @@ function Main() {
 	targetIndex = 0;
 	Detect = new Detect();
 	moveQueue = new Array();
+
 	this.genLocDir();
+
 	console.log(timeDir);
 	console.log(charDir);
 	console.log(locDir);
-	// console.log(drawSequence);
-	console.log(testSequence);
+	console.log(drawSequence);
+	// console.log(testSequence);
 	console.log(anc);
 	console.log(bridge);
+
+	now = timeDir.length - 1;
+	iLen = charDir.length;
+	var jLen;
+	for (var i = 0; i < iLen; i++) {
+		jLen = charDir[i].length;
+		charDir[i][0].generate(0, 2);
+		for (var j = 1; j < jLen; j++) {
+			charDir[i][j].generate(3, 2);
+		}
+	}
+	now = charDir.length - 1;
+	this.redraw();
 
 	// var fs = require('fs');
 	// var file = fs.createWriteStream('timeDir.txt');
@@ -27,10 +42,10 @@ Main.prototype.genCharObj = function() {
 		"<div class='colour'></div>" +
 		"<div class='name'></div>" +
 		"<div class='controls'>" +
-			"<button class='i-prev icon-alone'>" +
-				"<span class='fa fa-step-backward'></span>" +
-				"<span class='screen-reader-text'>RSS</span>" +
-			"</button>" +
+			// "<button class='i-prev icon-alone'>" +
+			// 	"<span class='fa fa-step-backward'></span>" +
+			// 	"<span class='screen-reader-text'>RSS</span>" +
+			// "</button>" +
 			"<button class='prev icon-alone'>" +
 				"<span class='fa fa-play fa-rotate-180'></span>" +
 				"<span class='screen-reader-text'>RSS</span>" +
@@ -43,10 +58,10 @@ Main.prototype.genCharObj = function() {
 				"<span class='fa fa-play'></span>" +
 				"<span class='screen-reader-text'>RSS</span>" +
 			"</button>" +
-			"<button class='i-next icon-alone'>" +
-				"<span class='fa fa-step-forward'></span>" +
-				"<span class='screen-reader-text'>RSS</span>" +
-			"</button>" +
+			// "<button class='i-next icon-alone'>" +
+			// 	"<span class='fa fa-step-forward'></span>" +
+			// 	"<span class='screen-reader-text'>RSS</span>" +
+			// "</button>" +
 		"</div>";
 
 	var charConsole = document.querySelector('.charConsole .main');
@@ -102,7 +117,7 @@ Main.prototype.redraw = function() {
 				}
 			} else {
 				if (0 >= bridge[i].x && 0 >= bridge[i].e) {
-					if (i !== timeDir[targetIndex][0][0] || 0 < Detect.findInterval(now, false, targetIndex)) {
+					if (i !== timeDir[targetIndex][0][0] || now !== targetIndex) {
 						now--;
 						bridge[i].x = 1;
 					} else
@@ -231,20 +246,35 @@ Main.prototype.redraw = function() {
 	var testctx = test.getContext('2d');
 	testctx.clearRect(0,0,test.width,test.height);
 
-	//testSequence
-	iLen = testSequence.length;
-	for (var i = 0; i < iLen; i++) {
-		charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
+	// //testSequence
+	// iLen = testSequence.length;
+	// for (var i = 0; i < iLen; i++) {
+	// 	charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
+	// }
+
+	for (var i = 0; i <= now; i++) {
+		if (0 < timeDir[i][0][1])
+			charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
+		else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
 	}
+	iLen = drawSequence.length;
+	var jLen;
+	for (var i = 0; i < iLen; i++) {
+		jLen = drawSequence[i].length;
+		for (var j = 0; j < jLen; j++) {
+			charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
+		}
+	}
+
 	var can = document.getElementById('canvas');
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
-	ctx.drawImage(paths, 0, 0);
+	// ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
-	ctx.globalAlpha = 0.35;
-	ctx.drawImage(lines, 0, 0);
-	ctx.globalAlpha = 1;
+	// ctx.globalAlpha = 0.35;
+	// ctx.drawImage(lines, 0, 0);
+	// ctx.globalAlpha = 1;
 	ctx.drawImage(test, 0, 0);
 
 
@@ -254,22 +284,27 @@ Main.prototype.redraw = function() {
 		//replace 'instant next' symbol with 'play next'
 		var buttons = document.querySelectorAll('.next .fa-step-forward');
 		for (var i = 0; i < buttons.length; i++) {
-			// console.log(buttons[b]);
-			// b = buttons[b].querySelector('span');
 			this.removeClass(buttons[i], "fa-step-forward");
 			this.removeClass(buttons[i], "fa-play");
 			buttons[i].className += " fa-play";
+			buttons[i].parentNode.onclick = null;
+			buttons[i].parentNode.onclick = function(e) {
+				main.targetNext(this.parentNode.parentNode.dataset.index, false);
+			}
+		}
+		buttons = document.querySelectorAll('.prev .fa-step-forward');
+		for (var i = 0; i < buttons.length; i++) {
+			this.removeClass(buttons[i], "fa-step-forward");
+			this.removeClass(buttons[i], "fa-play");
+			buttons[i].className += " fa-play";
+			buttons[i].parentNode.onclick = null;
+			buttons[i].parentNode.onclick = function(e) {
+				main.targetPrev(this.parentNode.parentNode.dataset.index, false);
+			}
 		}
 		idle = true;
 	}
 
-
-	//loop for path underlay; not only does this create the line underlay, it
-	//also sequenced in such a way as to
-	//the parameter 3 passed to generate is one of four channels, generating not the node, nor one of two sides but the whole path
-	// for (var i = 0; i <= now; i++) {
-	// 	charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3);
-	// }
 	//loop through drawSequence
 	// iLen = drawSequence.length;
 	// var jLen;
@@ -305,45 +340,45 @@ Main.prototype.toggleChar = function(c_i) {
 
 /* time stuff */
 Main.prototype.evalState = function(c_i) {
-	var inext = document.querySelector('[data-index="'+c_i+'"] .i-next');
+	// var inext = document.querySelector('[data-index="'+c_i+'"] .i-next');
 	var cnext = document.querySelector('[data-index="'+c_i+'"] .next');
-	inext.onclick = null;
+	// inext.onclick = null;
 	cnext.onclick = null;
 	if (charDir[c_i].length > 1 && (1 > bridge[c_i].x || now < charDir[c_i][charDir[c_i].length - 1].s_i) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
-		inext.onclick = function(e) {
-			main.targetNext(inext.parentNode.parentNode.dataset.index, true);
-		};
+		// inext.onclick = function(e) {
+		// 	main.targetNext(inext.parentNode.parentNode.dataset.index, true);
+		// };
 		cnext.onclick = function(e) {
 			main.targetNext(cnext.parentNode.parentNode.dataset.index, false);
 		};
-		inext.style.color = "#232323";
-		inext.disabled = false;
+		// inext.style.color = "#232323";
+		// inext.disabled = false;
 		cnext.style.color = "#232323";
 		cnext.disabled = false;
 	} else {
-		inext.style.color = "#787878";
-		inext.disabled = true;
+		// inext.style.color = "#787878";
+		// inext.disabled = true;
 		cnext.style.color = "#787878";
 		cnext.disabled = true;
 	}
-	var iprev = document.querySelector('[data-index="'+c_i+'"] .i-prev');
+	// var iprev = document.querySelector('[data-index="'+c_i+'"] .i-prev');
 	var cprev = document.querySelector('[data-index="'+c_i+'"] .prev');
-	iprev.onclick = null
+	// iprev.onclick = null
 	cprev.onclick = null
 	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && (0 < Detect.findInterval(now, false, charDir[c_i][0].s_i) || 0 < bridge[timeDir[now][0][0]].x && 0 < timeDir[now][1][1]) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
-		iprev.onclick = function(e) {
-			main.targetPrev(iprev.parentNode.parentNode.dataset.index, true);
-		};
+		// iprev.onclick = function(e) {
+		// 	main.targetPrev(iprev.parentNode.parentNode.dataset.index, true);
+		// };
 		cprev.onclick = function(e) {
 			main.targetPrev(cprev.parentNode.parentNode.dataset.index, false);
 		};
-		iprev.style.color = "#232323";
-		iprev.disabled = false;
+		// iprev.style.color = "#232323";
+		// iprev.disabled = false;
 		cprev.style.color = "#232323";
 		cprev.disabled = false;
 	} else {
-		iprev.style.color = "#787878";
-		iprev.disabled = true;
+		// iprev.style.color = "#787878";
+		// iprev.disabled = true;
 		cprev.style.color = "#787878";
 		cprev.disabled = true;
 	}
@@ -510,6 +545,12 @@ Main.prototype.instant = function(c_i, target, end) {
 		target += within;
 	}
 	now = target;
+	// for (var i = 0; i < charDir.length; i++)
+	// 	for (var j = charDir[i].length - 1; j >= 0; j--)
+	// 		if (now >= charDir[i][j].s_i) {
+	// 			bridge[i].x = (timeDir[now][1][1]*bridge[timeDir[now][0][0]].x + Detect.findInterval(now, false, charDir[i][j].s_i)) / timeDir[charDir[i][j].s_i][1][1];
+	// 			break;
+	// 		}
 }
 Main.prototype.continuousNext = function(c_i, target, end) {
 	this.pause();
@@ -604,12 +645,15 @@ Main.prototype.continuousNext = function(c_i, target, end) {
 	// for (i = 0; i < moveQueue.length; i++)
 	// 	console.log(moveQueue[i]);
 
-	var button = document.querySelector('[data-index="'+c_i+'"] .next span');
+	var button = document.querySelector('[data-index="'+c_i+'"] .next');
+	button.onclick = null;
+	button.onclick = function(e) {
+		main.targetNext(c_i, true);
+	}
+	button = button.querySelector('span');
 	this.removeClass(button, "fa-play");
 	this.removeClass(button, "fa-step-forward");
 	button.className += " fa-step-forward";
-	// button.onclick = null;
-	// button.onclick = this.instant(c_i, target, end);
 
 	idle = false;
 	this.redraw();
@@ -770,6 +814,16 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 
 	targetIndex = target;
 
+	var button = document.querySelector('[data-index="'+c_i+'"] .prev');
+	button.onclick = null;
+	button.onclick = function(e) {
+		main.targetPrev(c_i, true);
+	}
+	button = button.querySelector('span');
+	this.removeClass(button, "fa-play");
+	this.removeClass(button, "fa-step-forward");
+	button.className += " fa-step-forward";
+
 	idle = false;
 	this.redraw();
 
@@ -902,6 +956,9 @@ Main.prototype.genLocDir = function() {
 			drawSequence[key].push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0 ]);
 			testSequence.push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0 ]);
 
+			console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
+			console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
+
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;
 		}
@@ -930,12 +987,16 @@ Main.prototype.genLocDir = function() {
 			drawSequence[charDir[c_i][n_i - 1].l_x].push([c_i, n_i, 1]);
 			drawSequence[key].push([c_i, n_i, 2]);
 			testSequence.push([c_i, n_i, 3]);
+			console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
+			console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
 		}
 
 		if (0 === timeDir[i][1][1]) {
 			locDir[key].push([c_i, n_i, i]);
 			drawSequence[key].push([c_i, n_i, 0]);
 			testSequence.push([c_i, n_i, 0]);
+			console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
+			console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
 
 			charDir[c_i][n_i].l_x = key;
 			charDir[c_i][n_i].l_y = locDir[key].length - 1;
@@ -989,6 +1050,8 @@ Main.prototype.genLocDir = function() {
 		locDir[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], term[i][0]]);
 		drawSequence[key].push([ timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], 0 ]);
 		testSequence.push([ timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], 0 ]);
+		console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
+		console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
 
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;
@@ -1001,10 +1064,6 @@ Main.prototype.genLocDir = function() {
 			break;
 		}
 	}
-	now = timeDir.length - 1;
-	this.redraw();
-	now = charDir.length - 1;
-	this.redraw();
 }
 Main.prototype.genSequence = function(paths, moves) {
 	bridge = new Array();
