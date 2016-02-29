@@ -1,5 +1,5 @@
 var charConsole;
-var targetIndex;
+var target, end;
 
 function Main() {
 	targetIndex = 0;
@@ -27,7 +27,6 @@ function Main() {
 		}
 	}
 	now = charDir.length - 1;
-	this.redraw();
 
 	// var fs = require('fs');
 	// var file = fs.createWriteStream('timeDir.txt');
@@ -75,15 +74,22 @@ Main.prototype.genCharObj = function() {
 		char.querySelector('.toggle').onclick = function(e) {
 			main.toggleChar(this.parentNode.parentNode.dataset.index);
 		};
+		char.querySelector('.prev').onclick = function(e) {
+			main.targetPrev(this.parentNode.parentNode.dataset.index, false);
+		};
+		char.querySelector('.next').onclick = function(e) {
+			main.targetNext(this.parentNode.parentNode.dataset.index, false);
+		};
 		this.evalState(i);
 	}
+
+	this.redraw();
 }
 
 //http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image
 //for focus stuff, see second answer on saving and restoring canvas state
 
 Main.prototype.redraw = function() {
-	// console.log('drawing');
 	var active = false;
 	var iLen = anc.length;
 	for (var i = 0; i < iLen; i++) {
@@ -113,17 +119,17 @@ Main.prototype.redraw = function() {
 					// if (0 === i) console.log(bridge[0].x);
 					bridge[i].x = bridge[i].e;
 					bridge[i].i = 0;
-					this.evalState(timeDir[i][0][0]);
+					// this.evalState(i);
 				}
 			} else {
 				if (0 >= bridge[i].x && 0 >= bridge[i].e) {
-					if (i !== timeDir[targetIndex][0][0] || now !== targetIndex) {
+					if (target < now && (end && timeDir[target][1][1] < Detect.findInterval(now, false, target) || false === end && 0 < Detect.findInterval(now, false, target))) {
 						now--;
 						bridge[i].x = 1;
 					} else
 						bridge[i].x = 0;
 					bridge[i].i = 0;
-					this.evalState(i);
+					// this.evalState(i);
 				} else if (bridge[i].x <= bridge[i].e) {
 					bridge[i].x = bridge[i].e;
 					bridge[i].i = 0;
@@ -131,6 +137,7 @@ Main.prototype.redraw = function() {
 			}
 		}
 	}
+
 	if (0 !== riftBridge.i) {
 		riftBridge.x += riftBridge.i;
 		// bridge[i].i *= bridge[i].f;
@@ -176,8 +183,9 @@ Main.prototype.redraw = function() {
 						riftBridge.x = 0;
 						// riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
 				}
-				moveQueue.splice(0,1);
 				now++;
+				// this.evalState(timeDir[tsi][0][0]);
+				moveQueue.splice(0,1);
 			} else {
 				break;
 			}
@@ -270,53 +278,23 @@ Main.prototype.redraw = function() {
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
-	// ctx.drawImage(paths, 0, 0);
+	ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
-	// ctx.globalAlpha = 0.35;
-	// ctx.drawImage(lines, 0, 0);
-	// ctx.globalAlpha = 1;
+	ctx.globalAlpha = 0.35;
+	ctx.drawImage(lines, 0, 0);
+	ctx.globalAlpha = 1;
 	ctx.drawImage(test, 0, 0);
 
+	for (var i = 0; i < charDir.length; i++) {
+		this.evalState(i);
+	}
 
 	if (active && false === idle)
 		requestAnimFrame(this.redraw.bind(this));
 	else {
-		//replace 'instant next' symbol with 'play next'
-		var buttons = document.querySelectorAll('.next .fa-step-forward');
-		for (var i = 0; i < buttons.length; i++) {
-			this.removeClass(buttons[i], "fa-step-forward");
-			this.removeClass(buttons[i], "fa-play");
-			buttons[i].className += " fa-play";
-			buttons[i].parentNode.onclick = null;
-			buttons[i].parentNode.onclick = function(e) {
-				main.targetNext(this.parentNode.parentNode.dataset.index, false);
-			}
-		}
-		buttons = document.querySelectorAll('.prev .fa-step-forward');
-		for (var i = 0; i < buttons.length; i++) {
-			this.removeClass(buttons[i], "fa-step-forward");
-			this.removeClass(buttons[i], "fa-play");
-			buttons[i].className += " fa-play";
-			buttons[i].parentNode.onclick = null;
-			buttons[i].parentNode.onclick = function(e) {
-				main.targetPrev(this.parentNode.parentNode.dataset.index, false);
-			}
-		}
+		this.revertMoveButtons();
 		idle = true;
 	}
-
-	//loop through drawSequence
-	// iLen = drawSequence.length;
-	// var jLen;
-	// for (var i = 0; i < iLen; i++) {
-	// 	jLen = drawSequence[i].length;
-	// 	for (var j = 0; j < jLen; j++) {
-	// 		if (drawSequence[i][j][2])
-	// 			char[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
-	// 		else
-	// 			charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(0, 2);
-	// 	}
-	// }
 }
 Main.prototype.removeClass = function(e,c) {e.className = e.className.replace( new RegExp('(?:^|\\s)'+c+'(?!\\S)') ,'');}
 Main.prototype.toggleChar = function(c_i) {
@@ -340,50 +318,48 @@ Main.prototype.toggleChar = function(c_i) {
 
 /* time stuff */
 Main.prototype.evalState = function(c_i) {
-	// var inext = document.querySelector('[data-index="'+c_i+'"] .i-next');
-	var cnext = document.querySelector('[data-index="'+c_i+'"] .next');
-	// inext.onclick = null;
-	cnext.onclick = null;
+	var next = document.querySelector('[data-index="'+c_i+'"] .next');
 	if (charDir[c_i].length > 1 && (1 > bridge[c_i].x || now < charDir[c_i][charDir[c_i].length - 1].s_i) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
-		// inext.onclick = function(e) {
-		// 	main.targetNext(inext.parentNode.parentNode.dataset.index, true);
-		// };
-		cnext.onclick = function(e) {
-			main.targetNext(cnext.parentNode.parentNode.dataset.index, false);
-		};
-		// inext.style.color = "#232323";
-		// inext.disabled = false;
-		cnext.style.color = "#232323";
-		cnext.disabled = false;
+		next.style.color = "#232323";
+		next.disabled = false;
 	} else {
-		// inext.style.color = "#787878";
-		// inext.disabled = true;
-		cnext.style.color = "#787878";
-		cnext.disabled = true;
+		next.style.color = "#787878";
+		next.disabled = true;
 	}
-	// var iprev = document.querySelector('[data-index="'+c_i+'"] .i-prev');
-	var cprev = document.querySelector('[data-index="'+c_i+'"] .prev');
-	// iprev.onclick = null
-	cprev.onclick = null
+	var prev = document.querySelector('[data-index="'+c_i+'"] .prev');
 	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && (0 < Detect.findInterval(now, false, charDir[c_i][0].s_i) || 0 < bridge[timeDir[now][0][0]].x && 0 < timeDir[now][1][1]) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
-		// iprev.onclick = function(e) {
-		// 	main.targetPrev(iprev.parentNode.parentNode.dataset.index, true);
-		// };
-		cprev.onclick = function(e) {
-			main.targetPrev(cprev.parentNode.parentNode.dataset.index, false);
-		};
-		// iprev.style.color = "#232323";
-		// iprev.disabled = false;
-		cprev.style.color = "#232323";
-		cprev.disabled = false;
+		prev.style.color = "#232323";
+		prev.disabled = false;
 	} else {
-		// iprev.style.color = "#787878";
-		// iprev.disabled = true;
-		cprev.style.color = "#787878";
-		cprev.disabled = true;
+		prev.style.color = "#787878";
+		prev.disabled = true;
 	}
 }
+Main.prototype.revertMoveButtons = function() {
+	var buttons = document.querySelectorAll('.next .fa-step-forward');
+	for (var i = 0; i < buttons.length; i++) {
+		this.removeClass(buttons[i], "fa-step-forward");
+		this.removeClass(buttons[i], "fa-play");
+		buttons[i].className += " fa-play";
+		buttons[i].parentNode.onclick = null;
+		buttons[i].parentNode.onclick = function(e) {
+			main.targetNext(this.parentNode.parentNode.dataset.index, false);
+		}
+	}
+	buttons = document.querySelectorAll('.prev .fa-step-forward');
+	for (var i = 0; i < buttons.length; i++) {
+		this.removeClass(buttons[i], "fa-step-forward");
+		this.removeClass(buttons[i], "fa-play");
+		buttons[i].className += " fa-play";
+		buttons[i].parentNode.onclick = null;
+		buttons[i].parentNode.onclick = function(e) {
+			main.targetPrev(this.parentNode.parentNode.dataset.index, false);
+		}
+	}
+}
+
 Main.prototype.pause = function() {
+	moveQueue = new Array();
 	for (var i = 0; i < bridge.length; i++)
 		bridge[i].i = 0;
 	riftBridge.i = 0;
@@ -409,44 +385,45 @@ Main.prototype.pause = function() {
 }
 Main.prototype.targetNext = function(c_i, direct) {
 	this.pause();
-	var end, i;
-	for (i = charDir[c_i].length - 1; i >= 0; i--) {
+	this.revertMoveButtons();
+	var i;
+	for (i = charDir[c_i].length - 1; i >= 0; i--)
 		if (charDir[c_i][i].s_i <= now) {
 			target = charDir[c_i][i].s_i;
-			if (bridge[c_i].x < 1) {
+			if (bridge[c_i].x < 1)
 				end = true;
-			} else {
+			else
 				if (i + 1 < charDir[c_i].length) {
 					target = charDir[c_i][i + 1].s_i;
-					end = false;}
-			}
+					end = false;
+				}
 			break;
 		}
+
+	var button = document.querySelector('[data-index="'+c_i+'"] .next');
+	button.onclick = null;
+	button.onclick = function(e) {
+		main.targetNext(this.parentNode.parentNode.dataset.index, true);
 	}
+	button = button.querySelector('span');
+	this.removeClass(button, "fa-play");
+	this.removeClass(button, "fa-step-forward");
+	button.className += " fa-step-forward";
 
 	if (direct) {
-		this.instant(c_i, target, end);
+		this.instant(c_i);
 		if (idle) this.redraw();
-		for (i = 0; i < charDir.length; i++)
-			this.evalState(i);
 	} else {
-		this.continuousNext(c_i, target, end);
+		this.continuousNext(c_i);
 	}
-	// } else {
-		// if (0 >= timeDir[now][1][2] && 0 >= timeDir[now][1][1]) {
-		// 	/*if (1 <= riftBridge.x) {
-		// 		riftBridge.x = 0;}*/
-		// 	// TweenLite.to(riftBridge, Detect.findInterval(now + 1, false)*(1 - riftBridge.x), {x:1, ease:Linear.easeNone});
-		// 	charDir[timeDir[now + 1][0][0]][timeDir[now + 1][0][1]].movementNext(true, target, end, 0, true);
-		// } else {
-		// 	continuousNext(target, end);}
-	// }
 }
 Main.prototype.targetPrev = function(c_i, direct) {
 	this.pause();
-	var end, i;
+	this.revertMoveButtons();
+
+	var i;
 	var found = false;
-	for (i = charDir[c_i].length - 1; i >= 0; i--) {
+	for (i = charDir[c_i].length - 1; i >= 0; i--)
 		if (charDir[c_i][i].s_i <= now) {
 			if (bridge[c_i].x > 0 && bridge[c_i].x < 1 || bridge[c_i].x >= 1 && Detect.isWithin(now, charDir[c_i][i].s_i, 0)) {
 				target = charDir[c_i][i].s_i;
@@ -458,7 +435,7 @@ Main.prototype.targetPrev = function(c_i, direct) {
 						break;
 					}
 				if (last) end = false;
-				else end = true;
+					else end = true;
 				found = true;
 			} else if (bridge[c_i].x >= 1) {
 				target = charDir[c_i][i].s_i;
@@ -466,30 +443,37 @@ Main.prototype.targetPrev = function(c_i, direct) {
 				found = true;
 			} else if (i > 0) {
 				target = charDir[c_i][i - 1].s_i;
-				if (Detect.isWithin(now, target))
-					end = false;
-				else end = true;
+				if (Detect.isWithin(now, target)) end = false;
+					else end = true;
 				found = true;
 			}
 			break;
 		}
+
+	var button = document.querySelector('[data-index="'+c_i+'"] .prev');
+	button.onclick = null;
+	button.onclick = function(e) {
+		main.targetPrev(this.parentNode.parentNode.dataset.index, true);
 	}
+	button = button.querySelector('span');
+	this.removeClass(button, "fa-play");
+	this.removeClass(button, "fa-step-forward");
+	button.className += " fa-step-forward";
+
 	if (found) {
 		if (direct) {
-			this.instant(c_i, target, end)
+			this.instant(c_i)
 			if (idle) this.redraw();
-			for (i = 0; i < charDir.length; i++)
-				this.evalState(i);
 		} else {
-			this.continuousPrev(c_i, target, end);
+			this.continuousPrev(c_i);
 		}
 	}
 }
+Main.prototype.instant = function(c_i) {
+	this.pause();
+	this.revertMoveButtons();
 
-Main.prototype.instant = function(c_i, target, end) {
-	var i,
-		within = 0,
-		j;
+	var i, j, within = 0;
 	if (timeDir[target][0][1] < charDir[c_i].length) {
 		var hit = new Array();
 		for (i = 0; i < charDir.length; i++) {
@@ -497,66 +481,55 @@ Main.prototype.instant = function(c_i, target, end) {
 			hit.push(0);
 		}
 		hit[c_i] = 1;
-		if (end == false) {
-			bridge[c_i].x = 0;
-		} else {
-			bridge[c_i].x = 1;
-		}
-		var toPresent = 0;
+		if (false === end) bridge[c_i].x = 0;
+			else bridge[c_i].x = 1;
 		for (i = target + 1; i < timeDir.length; i++) {
-			toPresent += Detect.findInterval(i);
-			if (end && toPresent <= timeDir[target][1][1] || end == false && toPresent == 0) {
+			var interval = Detect.findInterval(i, false, target);
+			if (end && interval <= timeDir[target][1][1] || false === end && 0 === interval) {
 				within++;
 				hit[timeDir[i][0][0]] = 1;
+				console.log(end);
+				console.log(timeDir[i][0][0], bridge[timeDir[i][0][0]].x);
 				if (end) {
-					if (toPresent + timeDir[i][1][1] > timeDir[target][1][1]) {
-						bridge[timeDir[i][0][0]].x = (timeDir[target][1][1] - toPresent) / timeDir[i][1][1];
+					if (interval + timeDir[i][1][1] > timeDir[target][1][1]) {
+						console.log("("+timeDir[target][1][1]+" - "+interval+") / "+timeDir[i][1][1]);
+						bridge[timeDir[i][0][0]].x = (timeDir[target][1][1] - interval) / timeDir[i][1][1];
 					}
 				} else {
 					bridge[timeDir[i][0][0]].x = 0;
 				}
+				console.log(timeDir[i][0][0], bridge[timeDir[i][0][0]].x);
 			} else {
 				break;
 			}
 		}
-		for (j = 0; j < hit.length; j++) {
-			if (hit[j] == 0) { break;}
-		}
-		if (j < hit.length) {
-			if (end) {
-				toPresent = timeDir[target][1][1];
-			} else {
-				toPresent = 0;
-			}
-			for (i = target - 1; i >= 0; i--) {
-				toPresent += Detect.findInterval(i + 1);
-				if (hit[timeDir[i][0][0]] == 0) {
-					hit[timeDir[i][0][0]] = 1;
-					if (toPresent < timeDir[i][1][1]) {
-						bridge[timeDir[i][0][0]].x = toPresent / timeDir[i][1][1];
+		for (j = 0; j < hit.length; j++)
+			if (0 === hit[j]) {
+				console.log(j);
+				if (end) intEnd = timeDir[target][1][1];
+					else intEnd = 0;
+				for (i = target - 1; i >= 0; i--) {
+					interval = Detect.findInterval(target, false, i) + intEnd;
+					if (0 === hit[timeDir[i][0][0]]) {
+						hit[timeDir[i][0][0]] = 1;
+						if (interval < timeDir[i][1][1])
+							bridge[timeDir[i][0][0]].x = interval / timeDir[i][1][1];
+						for (j = 0; j < hit.length; j++)
+							if (0 === hit[j]) break;
+						if (hit.length <= j) break;
 					}
-					for (j = 0; j < hit.length; j++) {
-						if (hit[j] == 0) { break;}
-					}
-					if (j >= hit.length) { break;}
 				}
+				break;
 			}
-		}
 		target += within;
 	}
 	now = target;
-	// for (var i = 0; i < charDir.length; i++)
-	// 	for (var j = charDir[i].length - 1; j >= 0; j--)
-	// 		if (now >= charDir[i][j].s_i) {
-	// 			bridge[i].x = (timeDir[now][1][1]*bridge[timeDir[now][0][0]].x + Detect.findInterval(now, false, charDir[i][j].s_i)) / timeDir[charDir[i][j].s_i][1][1];
-	// 			break;
-	// 		}
 }
-Main.prototype.continuousNext = function(c_i, target, end) {
+Main.prototype.continuousNext = function(c_i) {
 	this.pause();
 	idle = true; //sufficient?
 
-	//resume active indeces
+	//resume active indices
 	//start building moveQueue from actives in ascending order
 	//every time an item is added to moveQueue, the earliest potential next index is bumped to one past it > riftIndex
 	//moveQueue index contains rift Boolean, caller index, trigger, called index, increment, extent
@@ -645,36 +618,51 @@ Main.prototype.continuousNext = function(c_i, target, end) {
 	// for (i = 0; i < moveQueue.length; i++)
 	// 	console.log(moveQueue[i]);
 
-	var button = document.querySelector('[data-index="'+c_i+'"] .next');
-	button.onclick = null;
-	button.onclick = function(e) {
-		main.targetNext(c_i, true);
-	}
-	button = button.querySelector('span');
-	this.removeClass(button, "fa-play");
-	this.removeClass(button, "fa-step-forward");
-	button.className += " fa-step-forward";
-
 	idle = false;
 	this.redraw();
 }
-Main.prototype.continuousPrev = function(c_i, target, end) {
+Main.prototype.getExtentNext = function(s_i) {
+	//this won't work for backwards movement
+	if (0 < timeDir[s_i][1][1]) {
+		if (end) {
+			if (target === s_i) {
+				var extent = timeDir[target][1][1];
+			} else if (Detect.isWithin(s_i, target, 2)) {
+				extent = timeDir[s_i][1][1];
+			} else {
+				if (target < s_i) extent = timeDir[target][1][1] - Detect.findInterval(s_i, false, target);
+				else extent = timeDir[target][1][1] + Detect.findInterval(target, false, s_i);
+			}
+		} else {
+			if (target === s_i) {
+				extent = 0;
+			} else if (Detect.isWithin(s_i, target, 2, 0)) {
+				extent = timeDir[s_i][1][1];
+			} else {
+				if (target < s_i) extent = 0;
+				else extent = Detect.findInterval(target, false, s_i);
+			}
+		}
+		return extent/timeDir[s_i][1][1];
+	} else {
+		return 1;
+	}
+}
+Main.prototype.continuousPrev = function(c_i) {
 	this.pause();
 	idle = true;
 
 	//create active
 		//any instant durations at present, including 0 bridges, are automatically rolled back
-		//order indeces based on latest activity
+		//order indices based on latest activity
 	//create moveQueue
 		//collect every relevant index
-			//indeces not suspended from target are not included
-		//order indeces based on latest activity
+			//indices not suspended from target are not included
+		//order indices based on latest activity
 		//define callers
 			//rifts are defined similar to forwards, an index pushed as the array is traversed: encountering it prepares a rift
 			//this and the other should work the same in that they ought to be made to have characters call themselves when chaining
 			//rifts ought to be unified forwards and backwards. not sure how
-
-	// moveQueue = new Array();
 
 	var i, j;
 	var active = new Array();
@@ -701,7 +689,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	active.sort(function(a,b){return b - a});
 	now -= rollBack;
 
-	//scouting indeces for moveQueue
+	//scouting indices for moveQueue
 	moveQueue = new Array();
 	for (i = now; i >= target; i--) {
 		if (false === end && (0 < timeDir[i][1][1] || 0 < Detect.findInterval(i, false, target)) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])/* || false === Detect.isWithin(i, target, 2, 2, false)*/) {
@@ -715,17 +703,17 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	// for (i = 0; i < moveQueue.length; i++)
 	// 	// console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
 	// 	console.log(moveQueue[i][5]);
+	var targetBase = Detect.findInterval(target, false, 0);
 	for (i = 0; i < charDir.length; i++)
-		if (i !== c_i && 1 <= bridge[i].x)
+		if (i !== c_i/* && 1 <= bridge[i].x*/)
 			for (j = charDir[i].length - 1; j >= 0; j--)
-				if (target > charDir[i][j].s_i && 0 < timeDir[charDir[i][j].s_i][1][1]) {
-					//Detect.isWithin might need an update for more precise filtering
-					var indexTotal = timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0);
-					var targetBase = Detect.findInterval(target, false, 0);
-					if (end && indexTotal - (targetBase + timeDir[target][1][1]) > 0 || false === end && indexTotal - targetBase > 0) {
-						if (0 >= timeDir[charDir[i][j].s_i][1][1]) var inc = -1;
-							else inc = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
-						moveQueue.push([ false, 0, 0, charDir[i][j].s_i, inc, this.getExtentPrev(charDir[i][j].s_i, target, end) ]);
+				if (target > charDir[i][j].s_i) {
+					if (0 < timeDir[charDir[i][j].s_i][1][1]) {
+						var indexTotal = timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0);
+						if (end && indexTotal - (targetBase + timeDir[target][1][1]) > 0 || false === end && indexTotal - targetBase > 0) {
+							var inc = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
+							moveQueue.push([ false, 0, 0, charDir[i][j].s_i, inc, this.getExtentPrev(charDir[i][j].s_i, target, end) ]);
+						}
 					}
 					break;
 				}
@@ -745,7 +733,7 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 	// for (i = 0; i < moveQueue.length; i++)
 	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
 
-	//priming moveQueue indeces
+	//priming moveQueue indices
 	//active stems
 	var riftIndex = 0;
 	for (i = 0; i < active.length; i++) {
@@ -814,49 +802,12 @@ Main.prototype.continuousPrev = function(c_i, target, end) {
 
 	targetIndex = target;
 
-	var button = document.querySelector('[data-index="'+c_i+'"] .prev');
-	button.onclick = null;
-	button.onclick = function(e) {
-		main.targetPrev(c_i, true);
-	}
-	button = button.querySelector('span');
-	this.removeClass(button, "fa-play");
-	this.removeClass(button, "fa-step-forward");
-	button.className += " fa-step-forward";
-
 	idle = false;
 	this.redraw();
 
 	// moveQueue = new Array();
 }
-Main.prototype.getExtentNext = function(s_i, target, end) {
-	//this won't work for backwards movement
-	if (0 < timeDir[s_i][1][1]) {
-		if (end) {
-			if (target === s_i) {
-				var extent = timeDir[target][1][1];
-			} else if (Detect.isWithin(s_i, target, 2)) {
-				extent = timeDir[s_i][1][1];
-			} else {
-				if (target < s_i) extent = timeDir[target][1][1] - Detect.findInterval(s_i, false, target);
-				else extent = timeDir[target][1][1] + Detect.findInterval(target, false, s_i);
-			}
-		} else {
-			if (target === s_i) {
-				extent = 0;
-			} else if (Detect.isWithin(s_i, target, 2, 0)) {
-				extent = timeDir[s_i][1][1];
-			} else {
-				if (target < s_i) extent = 0;
-				else extent = Detect.findInterval(target, false, s_i);
-			}
-		}
-		return extent/timeDir[s_i][1][1];
-	} else {
-		return 1;
-	}
-}
-Main.prototype.getExtentPrev = function(s_i, target, end) {
+Main.prototype.getExtentPrev = function(s_i) {
 	//this won't work for backwards movement
 	if (0 < timeDir[s_i][1][1]) {
 		if (end) {
@@ -885,8 +836,8 @@ Main.prototype.getExtentPrev = function(s_i, target, end) {
 		return 0;
 	}
 }
-//does not yet set riftBridge
 
+/* setup */
 Main.prototype.genLocDir = function() {
 	this.genSequence(5, Math.floor(Math.random()*5) + 16);
 
@@ -1079,21 +1030,116 @@ Main.prototype.genSequence = function(paths, moves) {
 	}
 	riftBridge = {x:1, i:0, f:1, e:1};
 
-	for (var i = 0; i < paths; i++) {
-		timeDir.push(new Array());
-		timeDir[timeDir.length - 1].push([i]);
-		timeDir[timeDir.length - 1].push([0, 0]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
-	}
+	// for (var i = 0; i < paths; i++) {
+	// 	timeDir.push(new Array());
+	// 	timeDir[timeDir.length - 1].push([i]);
+	// 	timeDir[timeDir.length - 1].push([0, 0]);
+	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
+	// }
+	//
+	// var c_i;
+	// for (var i = 0; i < moves; i++) {
+	// 	c_i = Math.floor(Math.random()*paths);
+	// 	timeDir.push(new Array());
+	// 	timeDir[timeDir.length - 1].push([c_i]);
+	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
+	// 	timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
+	// }
 
-	var c_i;
-	for (var i = 0; i < moves; i++) {
-		c_i = Math.floor(Math.random()*paths);
-		timeDir.push(new Array());
-		timeDir[timeDir.length - 1].push([c_i]);
-		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
-		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
-	}
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir[timeDir.length - 1].push([0, 0]);
+	timeDir[timeDir.length - 1].push([3]);
+
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([1, 10]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([4, 15]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([8, 18]);
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([2, 16]);
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([7, 14]);
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([2, 17]);
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([10, 8]);
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([1, 13]);
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([2, 13]);
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([2, 12]);
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir[timeDir.length - 1].push([1, 13]);
+	timeDir[timeDir.length - 1].push([5]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir[timeDir.length - 1].push([7, 11]);
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([10, 15]);
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir[timeDir.length - 1].push([2, 15]);
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([3, 10]);
+	timeDir[timeDir.length - 1].push([0]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([3]);
+	timeDir[timeDir.length - 1].push([9, 17]);
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([1]);
+	timeDir[timeDir.length - 1].push([5, 8]);
+	timeDir[timeDir.length - 1].push([4]);
+	timeDir.push(new Array());
+	timeDir[timeDir.length - 1].push([2]);
+	timeDir[timeDir.length - 1].push([5, 15]);
+	timeDir[timeDir.length - 1].push([5]);
+
 
 	// timeDir.push(new Array());
 	// timeDir[timeDir.length - 1].push([0]);
