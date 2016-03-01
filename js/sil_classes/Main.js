@@ -86,8 +86,7 @@ Main.prototype.genCharObj = function() {
 	this.redraw();
 }
 
-//http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image
-//for focus stuff, see second answer on saving and restoring canvas state
+//http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image: for focus stuff, see second answer on saving and restoring canvas state
 
 Main.prototype.redraw = function() {
 	var active = false;
@@ -156,7 +155,6 @@ Main.prototype.redraw = function() {
 		}
 	}
 	//rift:Boolean, caller/riftInc:uint/float, trigger:float, called:uint, increment:float, extent:float
-	console.log(now+":"+active);
 	while (0 < moveQueue.length) {
 		if (now < moveQueue[0][3]) {
 			//forward movement
@@ -220,10 +218,7 @@ Main.prototype.redraw = function() {
 					bridge[timeDir[tsi][0][0]].x = 1;
 				// else
 				// 	bridge[timeDir[tsi][0][0]].x = (bridge[timeDir[csi][0][0]].x - moveQueue[0][2])*timeDir[csi][1][1]/timeDir[tsi][1][1];
-				if (moveQueue.length > 1) console.log(moveQueue.length+" && "+moveQueue[1][0]);
-				else console.log(moveQueue.length);
 				if (1 < moveQueue.length && moveQueue[1][0] /*&& 0 < timeDir[moveQueue[1][3]][1][0]*/) {
-					console.log("rift active")
 					active = true;
 					riftBridge.i = moveQueue[1][1];
 					riftBridge.e = 0;
@@ -320,7 +315,7 @@ Main.prototype.toggleChar = function(c_i) {
 Main.prototype.evalState = function(c_i) {
 	var next = document.querySelector('[data-index="'+c_i+'"] .next');
 	if (charDir[c_i].length > 1 && (1 > bridge[c_i].x || now < charDir[c_i][charDir[c_i].length - 1].s_i) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
-		next.style.color = "#232323";
+		next.style.color = null;
 		next.disabled = false;
 	} else {
 		next.style.color = "#787878";
@@ -328,7 +323,7 @@ Main.prototype.evalState = function(c_i) {
 	}
 	var prev = document.querySelector('[data-index="'+c_i+'"] .prev');
 	if (charDir[c_i].length > 1 && now >= charDir[c_i][0].s_i && (0 < Detect.findInterval(now, false, charDir[c_i][0].s_i) || 0 < bridge[timeDir[now][0][0]].x && 0 < timeDir[now][1][1]) && (0 < anc[c_i].i || 0 === anc[c_i].i && 1 === anc[c_i].x)) {
-		prev.style.color = "#232323";
+		prev.style.color = null;
 		prev.disabled = false;
 	} else {
 		prev.style.color = "#787878";
@@ -651,7 +646,6 @@ Main.prototype.getExtentNext = function(s_i) {
 Main.prototype.continuousPrev = function(c_i) {
 	this.pause();
 	idle = true;
-
 	//create active
 		//any instant durations at present, including 0 bridges, are automatically rolled back
 		//order indices based on latest activity
@@ -667,7 +661,19 @@ Main.prototype.continuousPrev = function(c_i) {
 	var i, j;
 	var active = new Array();
 	var rollBack = 0;
-	var nowTotal = timeDir[now][1][1]*bridge[timeDir[now][0][0]].x + Detect.findInterval(now, false, 0);
+	if (timeDir.length > now + 1 || 1 > now*bridge[timeDir[now][0][0]].x) {
+	//rifts are unaccounted for, and will be probably until rift conversion is implemented (an else if would likely suffice)
+		var nowTotal = timeDir[now][1][1]*bridge[timeDir[now][0][0]].x + Detect.findInterval(now, false, 0);
+	} else { //provisional stuff for when now*bridge is not actually 'now'
+		nowTotal = 0;
+		var char;
+		for (i = 0; i < charDir.length; i++) {
+			var indexEnd = timeDir[charDir[i][charDir[i].length - 1].s_i][1][1] + Detect.findInterval(charDir[i][charDir[i].length - 1].s_i, false, 0);;
+			if (nowTotal < indexEnd)
+				nowTotal = indexEnd, char = i;
+		}
+		nowTotal *= bridge[char].x;
+	}
 	for (i = 0; i < charDir.length; i++)
 		for (j = charDir[i].length - 1; j >= 0; j--)
 			if (now >= charDir[i][j].s_i) {
@@ -679,7 +685,7 @@ Main.prototype.continuousPrev = function(c_i) {
 							else break;
 					}
 				}
-				if (1 > bridge[i].x || j >= 0 && nowTotal <= timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0)) {
+				if (1 > bridge[i].x || 0 <= j && nowTotal <= timeDir[charDir[i][j].s_i][1][1] + Detect.findInterval(charDir[i][j].s_i, false, 0)) {
 					active.push(charDir[i][j].s_i);
 					bridge[i].i = -(60/1000)*movSpeed / timeDir[charDir[i][j].s_i][1][1];
 					bridge[i].e = this.getExtentPrev(charDir[i][j].s_i, target, end);
@@ -692,7 +698,7 @@ Main.prototype.continuousPrev = function(c_i) {
 	//scouting indices for moveQueue
 	moveQueue = new Array();
 	for (i = now; i >= target; i--) {
-		if (false === end && (0 < timeDir[i][1][1] || 0 < Detect.findInterval(i, false, target)) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])/* || false === Detect.isWithin(i, target, 2, 2, false)*/) {
+		if (false === end && (0 < timeDir[i][1][1] || 0 < Detect.findInterval(i, false, target)) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])) {
 			if (0 >= timeDir[i][1][1]) var inc = -1;
 				else inc = -(60/1000)*movSpeed / timeDir[i][1][1];
 			moveQueue.push([ false, 0, 0, i, inc, this.getExtentPrev(i, target, end) ]);
@@ -700,9 +706,6 @@ Main.prototype.continuousPrev = function(c_i) {
 			break;
 		}
 	}
-	// for (i = 0; i < moveQueue.length; i++)
-	// 	// console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-	// 	console.log(moveQueue[i][5]);
 	var targetBase = Detect.findInterval(target, false, 0);
 	for (i = 0; i < charDir.length; i++)
 		if (i !== c_i/* && 1 <= bridge[i].x*/)
@@ -723,15 +726,7 @@ Main.prototype.continuousPrev = function(c_i) {
 		if (0 === result) return b[3] - a[3];//deferring to the later index
 			else return result;
 	});
-	// for (i = 0; i < active.length; i++)
-	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
-	// console.log("---");
-	// for (i = 0; i < moveQueue.length; i++)
-	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
 	moveQueue.splice(0, active.length);//ideally they wouldn't be added in the first place
-	// console.log("---");
-	// for (i = 0; i < moveQueue.length; i++)
-	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
 
 	//priming moveQueue indices
 	//active stems
@@ -789,23 +784,15 @@ Main.prototype.continuousPrev = function(c_i) {
 		}
 	}
 
-	for (i = 0; i < active.length; i++) {
+	for (i = 0; i < active.length; i++)
 		console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
-	}
-	for (i = 0; i < moveQueue.length; i++) {
+	for (i = 0; i < moveQueue.length; i++)
 		console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-	// 	console.log(moveQueue[i]);
-	}
-	for (i = 0; i < moveQueue.length; i++) {
+	for (i = 0; i < moveQueue.length; i++)
 		console.log(moveQueue[i]);
-	}
-
-	targetIndex = target;
 
 	idle = false;
 	this.redraw();
-
-	// moveQueue = new Array();
 }
 Main.prototype.getExtentPrev = function(s_i) {
 	//this won't work for backwards movement
@@ -1030,116 +1017,115 @@ Main.prototype.genSequence = function(paths, moves) {
 	}
 	riftBridge = {x:1, i:0, f:1, e:1};
 
-	// for (var i = 0; i < paths; i++) {
-	// 	timeDir.push(new Array());
-	// 	timeDir[timeDir.length - 1].push([i]);
-	// 	timeDir[timeDir.length - 1].push([0, 0]);
-	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
-	// }
+	for (var i = 0; i < paths; i++) {
+		timeDir.push(new Array());
+		timeDir[timeDir.length - 1].push([i]);
+		timeDir[timeDir.length - 1].push([0, 0]);
+		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*loc.length)]);
+	}
+
+	var c_i;
+	for (var i = 0; i < moves; i++) {
+		c_i = Math.floor(Math.random()*paths);
+		timeDir.push(new Array());
+		timeDir[timeDir.length - 1].push([c_i]);
+		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
+		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
+	}
+
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([3]);
 	//
-	// var c_i;
-	// for (var i = 0; i < moves; i++) {
-	// 	c_i = Math.floor(Math.random()*paths);
-	// 	timeDir.push(new Array());
-	// 	timeDir[timeDir.length - 1].push([c_i]);
-	// 	timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
-	// 	timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
-	// }
-
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir[timeDir.length - 1].push([0, 0]);
-	timeDir[timeDir.length - 1].push([3]);
-
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir[timeDir.length - 1].push([1, 10]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([4, 15]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([8, 18]);
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([2, 16]);
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([7, 14]);
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([2, 17]);
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([10, 8]);
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([1, 13]);
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([2, 13]);
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir[timeDir.length - 1].push([2, 12]);
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir[timeDir.length - 1].push([1, 13]);
-	timeDir[timeDir.length - 1].push([5]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir[timeDir.length - 1].push([7, 11]);
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([10, 15]);
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir[timeDir.length - 1].push([2, 15]);
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([3, 10]);
-	timeDir[timeDir.length - 1].push([0]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([3]);
-	timeDir[timeDir.length - 1].push([9, 17]);
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([1]);
-	timeDir[timeDir.length - 1].push([5, 8]);
-	timeDir[timeDir.length - 1].push([4]);
-	timeDir.push(new Array());
-	timeDir[timeDir.length - 1].push([2]);
-	timeDir[timeDir.length - 1].push([5, 15]);
-	timeDir[timeDir.length - 1].push([5]);
-
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([1, 10]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([4, 15]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([8, 18]);
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([2, 16]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([7, 14]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([2, 17]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([10, 8]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([1, 13]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([2, 13]);
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([2, 12]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([1, 13]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([7, 11]);
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([10, 15]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([2, 15]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([3, 10]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([9, 17]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([5, 8]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([5, 15]);
+	// timeDir[timeDir.length - 1].push([5]);
 
 	// timeDir.push(new Array());
 	// timeDir[timeDir.length - 1].push([0]);

@@ -240,6 +240,9 @@ body, .sidebar {
                   height: 2em;
                   width: 1.5em;
                 }
+                .char .controls > *:enabled:hover {
+                  color: green;
+                }
                   /*.char .controls > :nth-child(1), .char .controls > :nth-child(5) {
                     width: 1em;
                   }*/
