@@ -8,6 +8,16 @@ function Main() {
 
 	this.genLocDir();
 
+	var i, j;
+	locData = new Array();
+	for (i = 0; i < locDir.length; i++) {
+		locData.push([new Array(), new Array()]);
+		for (j = 0; j < locDir[i].length; j++)
+			locData[i][0].push([1, j + 1, false]);
+		locData[i][1].push([j + 1, false]);
+	}
+
+	console.log(locData);
 	console.log(timeDir);
 	console.log(charDir);
 	console.log(locDir);
@@ -19,20 +29,13 @@ function Main() {
 	now = timeDir.length - 1;
 	iLen = charDir.length;
 	var jLen;
-	for (var i = 0; i < iLen; i++) {
+	for (i = 0; i < iLen; i++) {
 		jLen = charDir[i].length;
 		charDir[i][0].generate(0, 2);
-		for (var j = 1; j < jLen; j++) {
+		for (j = 1; j < jLen; j++)
 			charDir[i][j].generate(3, 2);
-		}
 	}
 	now = charDir.length - 1;
-
-	// var fs = require('fs');
-	// var file = fs.createWriteStream('timeDir.txt');
-	// file.on('error', function(err) { /* error handling */ });
-	// timeDir.forEach(function(v) { file.write(v.join(', ') + '\n'); });
-	// file.end();
 }
 Main.prototype.genCharObj = function() {
 	charConsole = document.querySelector('.charConsole .main');
@@ -89,12 +92,13 @@ Main.prototype.genCharObj = function() {
 //http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image: for focus stuff, see second answer on saving and restoring canvas state
 
 Main.prototype.redraw = function() {
+	var i, j;
 	var active = false;
 	var iLen = anc.length;
-	for (var i = 0; i < iLen; i++) {
+	//anchors
+	for (i = 0; i < iLen; i++) {
 		if (0 !== anc[i].i) {
 			anc[i].x += anc[i].i;
-			// anc[i].i *= anc[i].f;
 			active = true;
 		}
 		if (1 <= anc[i].x) {
@@ -105,30 +109,25 @@ Main.prototype.redraw = function() {
 			anc[i].i = 0;
 		}
 	}
-	//len for bridge is same as for anc
-	for (var i = 0; i < iLen; i++) {
+	//bridges
+	for (i = 0; i < iLen; i++) {
 		if (0 !== bridge[i].i) {
 			bridge[i].x += bridge[i].i;
-			// bridge[i].i *= bridge[i].f;
 			active = true;
-			// if (0 === i) console.log(bridge[i].x);
 			if (0 < bridge[i].i) {
 				if (1 <= bridge[i].x || bridge[i].x >= bridge[i].e) {
-					// if (0 === i) console.log(bridge[0].e);
-					// if (0 === i) console.log(bridge[0].x);
 					bridge[i].x = bridge[i].e;
 					bridge[i].i = 0;
-					// this.evalState(i);
 				}
 			} else {
 				if (0 >= bridge[i].x && 0 >= bridge[i].e) {
 					if (target < now && (end && timeDir[target][1][1] < Detect.findInterval(now, false, target) || false === end && 0 < Detect.findInterval(now, false, target))) {
 						now--;
 						bridge[i].x = 1;
-					} else
+					} else {
 						bridge[i].x = 0;
+					}
 					bridge[i].i = 0;
-					// this.evalState(i);
 				} else if (bridge[i].x <= bridge[i].e) {
 					bridge[i].x = bridge[i].e;
 					bridge[i].i = 0;
@@ -136,22 +135,46 @@ Main.prototype.redraw = function() {
 			}
 		}
 	}
-
+	//riftBridge
 	if (0 !== riftBridge.i) {
 		riftBridge.x += riftBridge.i;
-		// bridge[i].i *= bridge[i].f;
 		active = true;
 		if (0 < riftBridge.i) {
 			if (1 <= riftBridge.x || riftBridge.x >= riftBridge.e) {
 				riftBridge.x = 1;
 				riftBridge.i = 0;
-				// this.evalState(timeDir[now + 1][0][0]);
 			}
 		} else {
 			if (0 >= riftBridge.x || riftBridge.x <= riftBridge.e) {
 				riftBridge.x = 0;
 				riftBridge.i = 0;
 			}
+		}
+	}
+	//location data
+	for (i = 0; i < locData.length; i++) {
+		if (Detect.isPresent(locDir[i][0][0], locDir[i][0][1])) {
+			locData[i][0][0][0] = anc[locDir[i][0][0]].x;
+			locData[i][0][0][1] = locData[i][0][0][0];
+			if (0 !== anc[locDir[i][0][0]].i)
+				locData[i][0][0][2] = true;
+				else locData[i][0][0][2] = false;
+			for (j = 1; j < locData[i][0].length; j++) {
+				if (Detect.isPresent(locDir[i][j][0], locDir[i][j][1])) {
+					locData[i][0][j][0] = anc[locDir[i][j][0]].x;
+					locData[i][0][j][1] = locData[i][0][j - 1][1] + locData[i][0][j][0];
+					if (locData[i][0][j - 1][2] || 0 !== anc[locDir[i][j][0]].i)
+						locData[i][0][j][2] = true;
+						else locData[i][0][j][2] = false;
+				} else {
+					break;
+				}
+			}
+			locData[i][1][0] = locData[i][0][j - 1][1];
+			locData[i][1][1] = locData[i][0][j - 1][2];
+		} else {
+			locData[i][1][0] = 0;
+			locData[i][1][1] = false;
 		}
 	}
 	//rift:Boolean, caller/riftInc:uint/float, trigger:float, called:uint, increment:float, extent:float
@@ -182,12 +205,12 @@ Main.prototype.redraw = function() {
 						// riftBridge.x = bridge[timeDir[tsi][0][0]].x*timeDir[tsi][1][1]/Detect.findInterval(tsi + 1, false, tsi);
 				}
 				now++;
-				// this.evalState(timeDir[tsi][0][0]);
 				moveQueue.splice(0,1);
 			} else {
 				break;
 			}
-		} else {
+		}
+		else {
 			//backwards movement
 			var rift = moveQueue[0][0];
 			if (false === rift) {
@@ -195,21 +218,20 @@ Main.prototype.redraw = function() {
 				var cci = timeDir[csi][0][0];
 				var cni = timeDir[csi][0][1];
 			}
-			// if (rift) {
-			// 	console.log(rift);
-			// 	console.log(riftBridge.x);
-			// } else {
-			// 	console.log(rift);
-			// 	console.log(now+" <= "+csi);
-			// 	console.log(bridge[cci].x+" <= "+moveQueue[0][2]);
-			// 	console.log(bridge[cci].x+" <= "+bridge[cci].e);
-			// 	console.log("0 < "+cni);
-			// 	if (0 < cni) {
-			// 		console.log(now+" <= "+charDir[cci][cni - 1].s_i);
-			// 	}
-			// }
-			// console.log("---");
 			if (rift && 0 >= riftBridge.x || false === rift && (now < csi || (now <= csi || charDir[cci].length <= cni + 1 || now < charDir[cci][cni + 1].s_i) && (bridge[cci].x <= moveQueue[0][2] || bridge[cci].x <= bridge[cci].e))) {
+				// if (rift) {
+				// 	console.log(rift);
+				// 	console.log(riftBridge.x);
+				// } else {
+				// 	console.log(rift);
+				// 	console.log(now+" <= "+csi);
+				// 	console.log(bridge[cci].x+" <= "+moveQueue[0][2]);
+				// 	console.log(bridge[cci].x+" <= "+bridge[cci].e);
+				// 	console.log("0 < "+cni);
+				// 	if (0 < cni) {
+				// 		console.log(now+" <= "+charDir[cci][cni - 1].s_i);
+				// 	}
+				// }
 				console.log(moveQueue[0]);
 				var tsi = moveQueue[0][3];
 				bridge[timeDir[tsi][0][0]].i = moveQueue[0][4];
@@ -234,8 +256,7 @@ Main.prototype.redraw = function() {
 		}
 	}
 
-	//here define bridge.i and update 'now'
-
+	//clearing intermediate canvases
 	var paths = document.getElementById('paths');
 	var pathctx = paths.getContext('2d');
 	pathctx.clearRect(0,0,paths.width,paths.height);
@@ -249,26 +270,29 @@ Main.prototype.redraw = function() {
 	var testctx = test.getContext('2d');
 	testctx.clearRect(0,0,test.width,test.height);
 
+	//updating
 	// //testSequence
 	// iLen = testSequence.length;
-	// for (var i = 0; i < iLen; i++) {
+	// for (i = 0; i < iLen; i++) {
 	// 	charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
 	// }
-
-	for (var i = 0; i <= now; i++) {
+	for (i = 0; i <= now; i++) {
 		if (0 < timeDir[i][0][1])
 			charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
 		else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
 	}
 	iLen = drawSequence.length;
 	var jLen;
-	for (var i = 0; i < iLen; i++) {
+	for (i = 0; i < iLen; i++) {
 		jLen = drawSequence[i].length;
-		for (var j = 0; j < jLen; j++) {
-			charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
+		for (j = 0; j < jLen; j++) {
+			if (now >= charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].s_i)
+				charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
+			else break;
 		}
 	}
 
+	//drawing
 	var can = document.getElementById('canvas');
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
@@ -280,9 +304,9 @@ Main.prototype.redraw = function() {
 	ctx.globalAlpha = 1;
 	ctx.drawImage(test, 0, 0);
 
-	for (var i = 0; i < charDir.length; i++) {
+	//updating movement buttons (indelicate, but inexpensive)
+	for (i = 0; i < charDir.length; i++)
 		this.evalState(i);
-	}
 
 	if (active && false === idle)
 		requestAnimFrame(this.redraw.bind(this));
@@ -483,24 +507,19 @@ Main.prototype.instant = function(c_i) {
 			if (end && interval <= timeDir[target][1][1] || false === end && 0 === interval) {
 				within++;
 				hit[timeDir[i][0][0]] = 1;
-				console.log(end);
-				console.log(timeDir[i][0][0], bridge[timeDir[i][0][0]].x);
 				if (end) {
 					if (interval + timeDir[i][1][1] > timeDir[target][1][1]) {
-						console.log("("+timeDir[target][1][1]+" - "+interval+") / "+timeDir[i][1][1]);
 						bridge[timeDir[i][0][0]].x = (timeDir[target][1][1] - interval) / timeDir[i][1][1];
 					}
 				} else {
 					bridge[timeDir[i][0][0]].x = 0;
 				}
-				console.log(timeDir[i][0][0], bridge[timeDir[i][0][0]].x);
 			} else {
 				break;
 			}
 		}
 		for (j = 0; j < hit.length; j++)
 			if (0 === hit[j]) {
-				console.log(j);
 				if (end) intEnd = timeDir[target][1][1];
 					else intEnd = 0;
 				for (i = target - 1; i >= 0; i--) {
@@ -644,8 +663,8 @@ Main.prototype.getExtentNext = function(s_i) {
 	}
 }
 Main.prototype.continuousPrev = function(c_i) {
-	this.pause();
-	idle = true;
+	// this.pause();
+	// idle = true;
 	//create active
 		//any instant durations at present, including 0 bridges, are automatically rolled back
 		//order indices based on latest activity
@@ -665,14 +684,15 @@ Main.prototype.continuousPrev = function(c_i) {
 	//rifts are unaccounted for, and will be probably until rift conversion is implemented (an else if would likely suffice)
 		var nowTotal = timeDir[now][1][1]*bridge[timeDir[now][0][0]].x + Detect.findInterval(now, false, 0);
 	} else { //provisional stuff for when now*bridge is not actually 'now'
-		nowTotal = 0;
-		var char;
+		nowTotal = timeDir[now][1][1] + Detect.findInterval(now, false, 0);
+		var last = now;
 		for (i = 0; i < charDir.length; i++) {
-			var indexEnd = timeDir[charDir[i][charDir[i].length - 1].s_i][1][1] + Detect.findInterval(charDir[i][charDir[i].length - 1].s_i, false, 0);;
+			var index = charDir[i][charDir[i].length - 1].s_i;
+			var indexEnd = timeDir[index][1][1] + Detect.findInterval(index, false, 0);;
 			if (nowTotal < indexEnd)
-				nowTotal = indexEnd, char = i;
+				nowTotal = indexEnd, last = index;
 		}
-		nowTotal *= bridge[char].x;
+		nowTotal = timeDir[last][1][1]*bridge[timeDir[last][0][0]].x + Detect.findInterval(last, false, 0);
 	}
 	for (i = 0; i < charDir.length; i++)
 		for (j = charDir[i].length - 1; j >= 0; j--)
@@ -698,7 +718,8 @@ Main.prototype.continuousPrev = function(c_i) {
 	//scouting indices for moveQueue
 	moveQueue = new Array();
 	for (i = now; i >= target; i--) {
-		if (false === end && (0 < timeDir[i][1][1] || 0 < Detect.findInterval(i, false, target)) || end && (Detect.findInterval(i, false, target) > timeDir[target][1][1] || 0 < timeDir[i][1][1])) {
+		var indexTotal = timeDir[i][1][1] + Detect.findInterval(i, false, target);
+		if (false === end && 0 < indexTotal || end && indexTotal > timeDir[target][1][1]) {
 			if (0 >= timeDir[i][1][1]) var inc = -1;
 				else inc = -(60/1000)*movSpeed / timeDir[i][1][1];
 			moveQueue.push([ false, 0, 0, i, inc, this.getExtentPrev(i, target, end) ]);
@@ -894,9 +915,6 @@ Main.prototype.genLocDir = function() {
 			drawSequence[key].push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0 ]);
 			testSequence.push([ timeDir[term[j][0]][0][0], timeDir[term[j][0]][0][1], 0 ]);
 
-			console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
-			console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
-
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_x = key;
 			charDir[timeDir[term[j][0]][0][0]][timeDir[term[j][0]][0][1]].l_y = locDir[key].length - 1;
 		}
@@ -925,16 +943,12 @@ Main.prototype.genLocDir = function() {
 			drawSequence[charDir[c_i][n_i - 1].l_x].push([c_i, n_i, 1]);
 			drawSequence[key].push([c_i, n_i, 2]);
 			testSequence.push([c_i, n_i, 3]);
-			console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
-			console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
 		}
 
 		if (0 === timeDir[i][1][1]) {
 			locDir[key].push([c_i, n_i, i]);
 			drawSequence[key].push([c_i, n_i, 0]);
 			testSequence.push([c_i, n_i, 0]);
-			console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
-			console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
 
 			charDir[c_i][n_i].l_x = key;
 			charDir[c_i][n_i].l_y = locDir[key].length - 1;
@@ -988,8 +1002,6 @@ Main.prototype.genLocDir = function() {
 		locDir[key].push([timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], term[i][0]]);
 		drawSequence[key].push([ timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], 0 ]);
 		testSequence.push([ timeDir[term[i][0]][0][0], timeDir[term[i][0]][0][1], 0 ]);
-		console.log(drawSequence[key][drawSequence[key].length - 1][0], drawSequence[key][drawSequence[key].length - 1][1]);
-		console.log(testSequence[testSequence.length - 1][0], testSequence[testSequence.length - 1][1]);
 
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_x = key;
 		charDir[timeDir[term[i][0]][0][0]][timeDir[term[i][0]][0][1]].l_y = locDir[key].length - 1;
@@ -1032,6 +1044,100 @@ Main.prototype.genSequence = function(paths, moves) {
 		timeDir[timeDir.length - 1].push([Math.floor(Math.random()*11), Math.floor(Math.random()*11) + Math.floor(Math.random()*6) + 5]);
 		timeDir[timeDir.length - 1].push([this.randHex(c_i)]);
 	}
+
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([0, 0]);
+	// timeDir[timeDir.length - 1].push([4]);
+	//
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([10, 11]);
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([10, 10]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir[timeDir.length - 1].push([3, 10]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([1, 6]);
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([6, 16]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([1, 18]);
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([0, 13]);
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([8, 6]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([5, 6]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([4, 7]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([2, 17]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([5, 8]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir[timeDir.length - 1].push([3, 10]);
+	// timeDir[timeDir.length - 1].push([3]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([7, 18]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([0, 14]);
+	// timeDir[timeDir.length - 1].push([1]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([2]);
+	// timeDir[timeDir.length - 1].push([6, 15]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([4]);
+	// timeDir[timeDir.length - 1].push([3, 19]);
+	// timeDir[timeDir.length - 1].push([5]);
+	// timeDir.push(new Array());
+	// timeDir[timeDir.length - 1].push([0]);
+	// timeDir[timeDir.length - 1].push([4, 9]);
+	// timeDir[timeDir.length - 1].push([5]);
 
 	// timeDir.push(new Array());
 	// timeDir[timeDir.length - 1].push([0]);

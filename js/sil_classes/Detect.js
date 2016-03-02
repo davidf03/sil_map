@@ -30,6 +30,13 @@ Detect.prototype.isWithin = function(index, lastIndex, indexEnd, lastEnd, incl) 
 		return false;}
 	return true;
 };
+Detect.prototype.isPresent = function(c_i, n_i, indexEnd) {
+	if (typeof(c_i)==='undefined' || typeof(n_i)==='undefined') return false;
+	if (typeof(indexEnd)==='undefined') indexEnd = 2;
+	if (n_i < charDir[c_i].length && now >= charDir[c_i][n_i].s_i && (1 <= bridge[c_i].x || 2 > indexEnd && (0 < bridge[c_i].x || 1 > indexEnd && 0 >= bridge[c_i].x)) || n_i + 1 < charDir[c_i].length && now >= charDir[c_i][n_i + 1].s_i)
+		return true;
+	return false;
+}
 
 Detect.prototype.findInterval = function(index, last, lastIndex) {
 	if (typeof(last)==='undefined') last = true;

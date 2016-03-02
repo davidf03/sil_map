@@ -223,7 +223,7 @@ Node.prototype.genPath = function(channel, active) {
 
 		var locActive = true;
 		for (var i = this.lastNode.l_y + 1; i < locDir[this.lastNode.l_x].length; i++) {
-			if (this.isPresent(locDir[this.lastNode.l_x][i][0], locDir[this.lastNode.l_x][i][1]))
+			if (Detect.isPresent(locDir[this.lastNode.l_x][i][0], locDir[this.lastNode.l_x][i][1]))
 				this.n0t += anc[locDir[this.lastNode.l_x][i][0]].x;
 			else break;
 		}
@@ -235,7 +235,7 @@ Node.prototype.genPath = function(channel, active) {
 			// this.n0t += this.lastNode.getRadius();
 		} else locActive = false;
 		for (var i = this.l_y + 1; i < locDir[this.l_x].length; i++)
-			if (this.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1]))
+			if (Detect.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1]))
 				this.n1t += anc[locDir[this.l_x][i][0]].x;
 			else break;
 		if (1 < this.n1t) {
@@ -523,7 +523,7 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 		outermost = false;
 	} else {
 		for (i = hold_l_y + 1; i < locDir[hold_l_x].length; i++) {
-			if (this.isPresent(locDir[hold_l_x][i][0], locDir[hold_l_x][i][1], true))
+			if (Detect.isPresent(locDir[hold_l_x][i][0], locDir[hold_l_x][i][1]))
 				if (anc[locDir[hold_l_x][i][0]].x > 0)
 					outermost = false;
 			else break;
@@ -623,22 +623,6 @@ Node.prototype.drawPathCap = function(cen, rad, oth_c, oth_n, breaking, outbound
 	upctx.stroke();
 }
 
-Node.prototype.isPresent = function(hold_c, hold_n, held, indexEnd) {
-	if (typeof(held)==='undefined') held = false;
-	if (typeof(indexEnd)==='undefined') indexEnd = 2;
-	if (held) {
-		var hold_now = this.lastNow;
-		if (hold_c == this.c_i) { var hold_bridge = this.lastBridge;}
-					  else { hold_bridge = bridge[hold_c].x;}
-	} else {
-		hold_now = now;
-		hold_bridge = bridge[hold_c].x;
-	}
-	if (hold_n < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n].s_i && (1 <= hold_bridge || 2 > indexEnd && (0 < hold_bridge || 1 > indexEnd && 0 >= hold_bridge)) || hold_n + 1 < charDir[hold_c].length && hold_now >= charDir[hold_c][hold_n + 1].s_i) {
-		return true;
-	}
-	return false;
-}
 Node.prototype.genNode = function(active) {
 	var update = document.getElementById('update');
 	var upctx = update.getContext('2d');
@@ -657,8 +641,8 @@ Node.prototype.genNode = function(active) {
 	upctx.stroke();
 
 	//drawing arc
-	if (this.n_i > 0) {
-		if (false == this.isPresent(this.c_i, this.n_i + 1, true, 1)) {
+	if (0 < this.n_i) {
+		if (false === Detect.isPresent(this.c_i, this.n_i + 1, 1)) {
 			var n1t1Rel = new Point(0, 0);
 			this.n1t1Rel = this.n1t1.translate(-loc[this.l_i].x, -loc[this.l_i].y);
 			var n1t2eRel = new Point(0, 0);
@@ -694,66 +678,24 @@ Node.prototype.generate = function(channel, recalculate) {
 		this.lastAnc = anc[this.c_i].x;
 		this.lastBridge = bridge[this.c_i].x;
 
-		if (2 <= recalculate)
-			var active = true;
-		else if (1 <= recalculate) {
-			active = false;
-			for (var i = this.l_y; i >= 0; i--)
-				if (0 !== anc[locDir[this.l_x][i][0]].i) {
-					active = true;
-					break;
-				}
-		}
-		if (active) {
-			//getting oth data
-			this.oth = 0;
-			for (var i = 0; i < this.l_y; i++) {
-				if (this.isPresent(locDir[this.l_x][i][0], locDir[this.l_x][i][1], true))
-					this.oth += anc[locDir[this.l_x][i][0]].x;
-					// this.arc_ce -= this.arc_ce*anc[locDir[this.l_x][i][0]].x;
-				else break;
-			}
-			this.oth += anc[this.c_i].x;
-		}
+		var active;
+		if (2 <= recalculate) active = true;
+		else if (1 <= recalculate && locData[this.l_x][0][this.l_y][2]) active = true;
+		else active = false;
 
-		if (0 < this.n_i) {
-			if (2 <= recalculate)
-				var locActive = true;
-			else if (1 <= recalculate) {
-				locActive = false;
-				for (var i = this.lastNode.l_y; i >= 0; i--)
-					if (0 !== anc[locDir[this.lastNode.l_x][i][0]].i) {
-						locActive = true;
-						break;
-					}
-			}
-			if (locActive) {
-				this.lastOth = 0;
-				for (var i = 0; i < this.lastNode.l_y; i++) {
-					if (this.isPresent(locDir[this.lastNode.l_x][i][0], locDir[this.lastNode.l_x][i][1], true))
-						this.lastOth += anc[locDir[this.lastNode.l_x][i][0]].x;
-						// this.arc_ce -= this.arc_ce*anc[locDir[this.l_x][i][0]].x;
-					else break;
-				}
-				this.lastOth += anc[this.c_i].x;
-			}
-		}
+		this.oth = locData[this.l_x][0][this.l_y][1];
+		if (0 < this.n_i)
+			this.lastOth = locData[this.lastNode.l_x][0][this.lastNode.l_y][1];
 
 		//this could be refactored with a trinary return from isPresent
-		if (this.isPresent(this.c_i, this.n_i, true, 1)) {
-			if (this.isPresent(this.c_i, this.n_i, true))
-				this.present = true;
-			else
-				this.present = false;
+		if (Detect.isPresent(this.c_i, this.n_i, 1)) {
+			if (Detect.isPresent(this.c_i, this.n_i)) this.present = true;
+			else this.present = false;
 
 			if (channel) {
-				if (this.n_i > 0) {
-					if (1 === recalculate && false === active && false === channel)
-						for (var i = this.lastNode.l_y - 1; i >= 0; i--)
-							if (0 !== anc[locDir[this.lastNode.l_x][i][0]].i) {
-								active = true;
-								break;
-							}
+				if (0 < this.n_i) {
+					if (1 <= recalculate && false === active && locData[this.lastNode.l_x][0][this.lastNode.l_y][2])
+						active = true; //worthwhile conditional?
 					this.genPath(channel, active);
 				}
 			} else if (this.present) {
