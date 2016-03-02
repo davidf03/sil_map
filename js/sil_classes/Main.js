@@ -266,6 +266,9 @@ Main.prototype.redraw = function() {
 	var lines = document.getElementById('lines');
 	var linectx = lines.getContext('2d');
 	linectx.clearRect(0,0,lines.width,lines.height);
+	var location = document.getElementById('location');
+	var locctx = location.getContext('2d');
+	locctx.clearRect(0,0,location.width,location.height);
 	var test = document.getElementById('test');
 	var testctx = test.getContext('2d');
 	testctx.clearRect(0,0,test.width,test.height);
@@ -290,6 +293,20 @@ Main.prototype.redraw = function() {
 				charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
 			else break;
 		}
+		if (0 < locData[i][1][0]) {
+			// var locPos = loc[charDir[locDir[i][0][0]][locDir[i][0][1]].l_i];
+			// var fadeStyle = upctx.createRadialGradient(locPos.x,locPos.y,locData[i][1][0]*radius, locPos.x,locPos.y,(locData[i][1][0] + fadeRange)*radius);
+			// fadeStyle.addColorStop(0,'rgba(0,0,0,1)');
+			// fadeStyle.addColorStop(1,'rgba(0,0,0,0)');
+			//
+			// // locctx.globalCompositeOperation = "destination";
+			// upctx.fillStyle = fadeStyle;
+			// upctx.arc(locPos.x,locPos.y, (locData[i][1][0] + fadeRange)*radius, 0,Math.PI*2);
+			// upctx.fill();
+
+			upctx.drawImage(location, 0, 0);
+			locctx.clearRect(0,0,location.width,location.height);
+		}
 	}
 
 	//drawing
@@ -297,11 +314,11 @@ Main.prototype.redraw = function() {
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
-	ctx.drawImage(paths, 0, 0);
+	// ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
-	ctx.globalAlpha = 0.35;
-	ctx.drawImage(lines, 0, 0);
-	ctx.globalAlpha = 1;
+	// ctx.globalAlpha = 0.35;
+	// ctx.drawImage(lines, 0, 0);
+	// ctx.globalAlpha = 1;
 	ctx.drawImage(test, 0, 0);
 
 	//updating movement buttons (indelicate, but inexpensive)

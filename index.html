@@ -14,11 +14,15 @@
         <script src="js/vendor/modernizr-2.8.3.min.js"></script>
 
         <script type="text/javascript">
+            var radius = 6;
+            var stroke = 0.3*radius;
+
             var timeDir;
             var charDir;
             var loc;
             var locDir;
             var locData;
+            var fadeRange = 3;
 
             var anc;
             var bridge;
@@ -108,7 +112,7 @@
         <canvas id="paths" class="paths" width="700" height="700" style="visibility: hidden;"></canvas>
         <canvas id="update" class="update" width="700" height="700" style="visibility: hidden;"></canvas>
         <canvas id="lines" class="lines" width="700" height="700" style="visibility: hidden;"></canvas>
-        <canvas id="inter" class="inter" width="700" height="700" style="visibility: hidden;"></canvas>
+        <canvas id="location" class="location" width="700" height="700" style="visibility: hidden;"></canvas>
         <canvas id="test" class="test" width="700" height="700" style="visibility: hidden;"></canvas>
 
         <!--script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script-->
