@@ -269,6 +269,9 @@ Main.prototype.redraw = function() {
 	var location = document.getElementById('location');
 	var locctx = location.getContext('2d');
 	locctx.clearRect(0,0,location.width,location.height);
+	var inter = document.getElementById('inter');
+	var interctx = inter.getContext('2d');
+	interctx.clearRect(0,0,inter.width,inter.height);
 	var test = document.getElementById('test');
 	var testctx = test.getContext('2d');
 	testctx.clearRect(0,0,test.width,test.height);
@@ -294,19 +297,24 @@ Main.prototype.redraw = function() {
 			else break;
 		}
 		if (0 < locData[i][1][0]) {
-			// var locPos = loc[charDir[locDir[i][0][0]][locDir[i][0][1]].l_i];
-			// var fadeStyle = upctx.createRadialGradient(locPos.x,locPos.y,locData[i][1][0]*radius, locPos.x,locPos.y,(locData[i][1][0] + fadeRange)*radius);
-			// fadeStyle.addColorStop(0,'rgba(0,0,0,1)');
-			// fadeStyle.addColorStop(1,'rgba(0,0,0,0)');
-			//
-			// // locctx.globalCompositeOperation = "destination";
-			// upctx.fillStyle = fadeStyle;
-			// upctx.arc(locPos.x,locPos.y, (locData[i][1][0] + fadeRange)*radius, 0,Math.PI*2);
-			// upctx.fill();
-
-			upctx.drawImage(location, 0, 0);
+			interctx.save();
+			interctx.drawImage(location,0,0);
 			locctx.clearRect(0,0,location.width,location.height);
-		}
+
+			var locPos = loc[charDir[locDir[i][0][0]][locDir[i][0][1]].l_i];
+			var fadeStyle = interctx.createRadialGradient(locPos.x,locPos.y,(locData[i][1][0]+1)*radius, locPos.x,locPos.y,(locData[i][1][0]+1 + fadeRange)*radius);
+			fadeStyle.addColorStop(0,'rgba(0,0,0,1)');
+			fadeStyle.addColorStop(1,'rgba(0,0,0,0)');
+
+			interctx.globalCompositeOperation = "destination-in";
+			interctx.beginPath();
+			interctx.arc(locPos.x,locPos.y, (locData[i][1][0]+1 + fadeRange)*radius, 0,Math.PI*2);
+			interctx.fillStyle = fadeStyle;
+			interctx.fill();
+
+			upctx.drawImage(inter,0,0);
+			interctx.restore();
+ 		}
 	}
 
 	//drawing
@@ -314,11 +322,11 @@ Main.prototype.redraw = function() {
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
-	// ctx.drawImage(paths, 0, 0);
+	ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
-	// ctx.globalAlpha = 0.35;
-	// ctx.drawImage(lines, 0, 0);
-	// ctx.globalAlpha = 1;
+	ctx.globalAlpha = 0.35;
+	ctx.drawImage(lines, 0, 0);
+	ctx.globalAlpha = 1;
 	ctx.drawImage(test, 0, 0);
 
 	//updating movement buttons (indelicate, but inexpensive)

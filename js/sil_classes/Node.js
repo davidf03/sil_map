@@ -260,7 +260,7 @@ Node.prototype.genPath = function(channel, active) {
 		ctx.beginPath();
 
 		ctx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
-		if (this.present) {
+		if (this.present && 2 === channel) {
 			ctx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y)
 			angle = Math.atan2(this.n1t2e.y, this.n1t2e.x);
 			offset = new Point(0,0);
@@ -272,13 +272,17 @@ Node.prototype.genPath = function(channel, active) {
 			ctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
 		}
 
-		ctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
-		angle = Math.atan2(this.n0t2e.y - n0l.y, this.n0t2e.x - n0l.x);
-		offset = new Point(0,0);
-		offset = offset.polar(n0r - (stroke/2 + 0.35), angle);
-		ctx.lineTo(loc[this.lastNode.l_i].x + offset.x, loc[this.lastNode.l_i].y + offset.y);
-		angle2 = Math.atan2(this.n0t1.y - n0l.y, this.n0t1.x - n0l.x);
-		ctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r - (stroke/2 + 0.35), angle2, angle);
+		if (1 === channel) {
+			ctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
+			angle = Math.atan2(this.n0t2e.y - n0l.y, this.n0t2e.x - n0l.x);
+			offset = new Point(0,0);
+			offset = offset.polar(n0r - (stroke/2 + 0.35), angle);
+			ctx.lineTo(loc[this.lastNode.l_i].x + offset.x, loc[this.lastNode.l_i].y + offset.y);
+			angle2 = Math.atan2(this.n0t1.y - n0l.y, this.n0t1.x - n0l.x);
+			ctx.arc(loc[this.lastNode.l_i].x, loc[this.lastNode.l_i].y, n0r - (stroke/2 + 0.35), angle2, angle);
+		} else {
+			ctx.lineTo(loc[this.l_i].x + this.n0t2.x, loc[this.l_i].y + this.n0t2.y);
+		}
 
 		ctx.closePath();
 		ctx.fill();
@@ -289,7 +293,7 @@ Node.prototype.genPath = function(channel, active) {
 		ctx.lineWidth = stroke;
 		ctx.beginPath();
 		ctx.moveTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
-		if (this.present)
+		if (this.present && 2 === channel)
 			ctx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
 		else {
 			ctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y)
