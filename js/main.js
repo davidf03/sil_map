@@ -3,7 +3,7 @@ var main = new Main();
 function init() {
 	main.genCharObj();
 
-	// var mapObj = document.querySelector('.map');
+	var mapObj = document.querySelector('.map');
 	var sbarObj = document.querySelector('.sidebar');
 
 	// toggle sidebar visibility
@@ -39,10 +39,10 @@ function init() {
 	    }
 	};
 	var fixSidebar = function() {
-		sbarObj.style.left = window.innerWidth/window.getComputedStyle(document.querySelector('html'), null).getPropertyValue('font-size').match(/^[^A-Za-z]*/) - 20 +"em";
+		sbarObj.style.right = window.innerWidth/window.getComputedStyle(document.querySelector('html'), null).getPropertyValue('font-size').match(/^[^A-Za-z]*/) - 20 +"em";
 	};
-	addEvent(window, "resize", fixSidebar);
 	fixSidebar();
+	addEvent(window, "resize", fixSidebar);
 
 	var removeClass = function(e,c) {e.className = e.className.replace( new RegExp('(?:^|\\s)'+c+'(?!\\S)') ,'');};
 

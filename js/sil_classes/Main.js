@@ -5,6 +5,7 @@ function Main() {
 	targetIndex = 0;
 	Detect = new Detect();
 	moveQueue = new Array();
+	alpha = {x:1, i:0};
 
 	this.genLocDir();
 
@@ -13,7 +14,7 @@ function Main() {
 	for (i = 0; i < locDir.length; i++) {
 		locData.push([new Array(), new Array()]);
 		for (j = 0; j < locDir[i].length; j++)
-			locData[i][0].push([1, j + 1, false]);
+			locData[i][0].push([j + 1, false]);
 		locData[i][1].push([j + 1, false]);
 	}
 
@@ -35,7 +36,7 @@ function Main() {
 		for (j = 1; j < jLen; j++)
 			charDir[i][j].generate(3, 2);
 	}
-	now = charDir.length - 1;
+	// now = charDir.length - 1;
 }
 Main.prototype.genCharObj = function() {
 	charConsole = document.querySelector('.charConsole .main');
@@ -89,7 +90,8 @@ Main.prototype.genCharObj = function() {
 	this.redraw();
 }
 
-//http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image: for focus stuff, see second answer on saving and restoring canvas state
+//http://stackoverflow.com/questions/18949122/javascript-canvas-change-the-opacity-of-image
+//for focus stuff, see second answer on saving and restoring canvas state
 
 Main.prototype.redraw = function() {
 	var i, j;
@@ -155,28 +157,27 @@ Main.prototype.redraw = function() {
 	for (i = 0; i < locData.length; i++) {
 		if (Detect.isPresent(locDir[i][0][0], locDir[i][0][1])) {
 			locData[i][0][0][0] = anc[locDir[i][0][0]].x;
-			locData[i][0][0][1] = locData[i][0][0][0];
 			if (0 !== anc[locDir[i][0][0]].i)
-				locData[i][0][0][2] = true;
-				else locData[i][0][0][2] = false;
+				locData[i][0][0][1] = true;
+				else locData[i][0][0][1] = false;
 			for (j = 1; j < locData[i][0].length; j++) {
 				if (Detect.isPresent(locDir[i][j][0], locDir[i][j][1])) {
-					locData[i][0][j][0] = anc[locDir[i][j][0]].x;
-					locData[i][0][j][1] = locData[i][0][j - 1][1] + locData[i][0][j][0];
-					if (locData[i][0][j - 1][2] || 0 !== anc[locDir[i][j][0]].i)
-						locData[i][0][j][2] = true;
-						else locData[i][0][j][2] = false;
+					locData[i][0][j][0] = locData[i][0][j - 1][0] + anc[locDir[i][j][0]].x;
+					if (locData[i][0][j - 1][1] || 0 !== anc[locDir[i][j][0]].i)
+						locData[i][0][j][1] = true;
+						else locData[i][0][j][1] = false;
 				} else {
 					break;
 				}
 			}
-			locData[i][1][0] = locData[i][0][j - 1][1];
-			locData[i][1][1] = locData[i][0][j - 1][2];
+			locData[i][1][0] = locData[i][0][j - 1][0];
+			locData[i][1][1] = locData[i][0][j - 1][1];
 		} else {
 			locData[i][1][0] = 0;
 			locData[i][1][1] = false;
 		}
 	}
+	//activating movement
 	//rift:Boolean, caller/riftInc:uint/float, trigger:float, called:uint, increment:float, extent:float
 	while (0 < moveQueue.length) {
 		if (now < moveQueue[0][3]) {
@@ -257,64 +258,76 @@ Main.prototype.redraw = function() {
 	}
 
 	//clearing intermediate canvases
-	var paths = document.getElementById('paths');
-	var pathctx = paths.getContext('2d');
-	pathctx.clearRect(0,0,paths.width,paths.height);
 	var update = document.getElementById('update');
 	var upctx = update.getContext('2d');
 	upctx.clearRect(0,0,update.width,update.height);
 	var lines = document.getElementById('lines');
 	var linectx = lines.getContext('2d');
 	linectx.clearRect(0,0,lines.width,lines.height);
-	var location = document.getElementById('location');
-	var locctx = location.getContext('2d');
-	locctx.clearRect(0,0,location.width,location.height);
-	var inter = document.getElementById('inter');
-	var interctx = inter.getContext('2d');
-	interctx.clearRect(0,0,inter.width,inter.height);
-	var test = document.getElementById('test');
-	var testctx = test.getContext('2d');
-	testctx.clearRect(0,0,test.width,test.height);
 
 	//updating
-	// //testSequence
-	// iLen = testSequence.length;
-	// for (i = 0; i < iLen; i++) {
-	// 	charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
-	// }
-	for (i = 0; i <= now; i++) {
-		if (0 < timeDir[i][0][1])
-			charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
-		else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
-	}
-	iLen = drawSequence.length;
-	var jLen;
-	for (i = 0; i < iLen; i++) {
-		jLen = drawSequence[i].length;
-		for (j = 0; j < jLen; j++) {
-			if (now >= charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].s_i)
-				charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
-			else break;
+	if (advRender) {
+		var paths = document.getElementById('paths');
+		var pathctx = paths.getContext('2d');
+		pathctx.clearRect(0,0,paths.width,paths.height);
+		var location = document.getElementById('location');
+		var locctx = location.getContext('2d');
+		locctx.clearRect(0,0,location.width,location.height);
+		var inter = document.getElementById('inter');
+		var interctx = inter.getContext('2d');
+		interctx.clearRect(0,0,inter.width,inter.height);
+
+		if (active) {
+			for (i = 0; i <= now; i++) {
+				if (0 < timeDir[i][0][1])
+					charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 1);
+				else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 1);
+			}
+		} else { //forces recalculation in the last frame for lack of subtlty
+			for (i = 0; i <= now; i++) {
+				if (0 < timeDir[i][0][1])
+					charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
+				else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
+			}
 		}
-		if (0 < locData[i][1][0]) {
-			interctx.save();
-			interctx.drawImage(location,0,0);
-			locctx.clearRect(0,0,location.width,location.height);
 
-			var locPos = loc[charDir[locDir[i][0][0]][locDir[i][0][1]].l_i];
-			var fadeStyle = interctx.createRadialGradient(locPos.x,locPos.y,(locData[i][1][0]+1)*radius, locPos.x,locPos.y,(locData[i][1][0]+1 + fadeRange)*radius);
-			fadeStyle.addColorStop(0,'rgba(0,0,0,1)');
-			fadeStyle.addColorStop(1,'rgba(0,0,0,0)');
+		iLen = drawSequence.length;
+		var jLen;
+		for (i = 0; i < iLen; i++) {
+			jLen = drawSequence[i].length;
+			for (j = 0; j < jLen; j++) {
+				if (now >= charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].s_i)
+					charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
+				else break;
+			}
+			if (0 < locData[i][1][0]) {
+				interctx.save();
+				interctx.drawImage(location,0,0);
+				locctx.clearRect(0,0,location.width,location.height);
 
-			interctx.globalCompositeOperation = "destination-in";
-			interctx.beginPath();
-			interctx.arc(locPos.x,locPos.y, (locData[i][1][0]+1 + fadeRange)*radius, 0,Math.PI*2);
-			interctx.fillStyle = fadeStyle;
-			interctx.fill();
+				var locPos = loc[charDir[locDir[i][0][0]][locDir[i][0][1]].l_i];
+				var fadeStyle = interctx.createRadialGradient(locPos.x,locPos.y,(locData[i][1][0]+1)*radius, locPos.x,locPos.y,(locData[i][1][0]+1 + fadeRange)*radius);
+				fadeStyle.addColorStop(0,'rgba(0,0,0,1)');
+				fadeStyle.addColorStop(1,'rgba(0,0,0,0)');
 
-			upctx.drawImage(inter,0,0);
-			interctx.restore();
- 		}
+				interctx.globalCompositeOperation = 'destination-in';
+				interctx.beginPath();
+				interctx.arc(locPos.x,locPos.y, (locData[i][1][0]+1 + fadeRange)*radius, 0,Math.PI*2);
+				// interctx.closePath();
+				interctx.fillStyle = fadeStyle;
+				interctx.fill();
+
+				upctx.globalAlpha = alpha.x;
+				upctx.drawImage(inter,0,0);
+				upctx.globalAlpha = 1;
+				interctx.restore();
+	 		}
+		}
+	} else {
+		iLen = testSequence.length;
+		for (i = 0; i < iLen; i++) {
+			charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
+		}
 	}
 
 	//drawing
@@ -322,12 +335,11 @@ Main.prototype.redraw = function() {
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
-	ctx.drawImage(paths, 0, 0);
+	if (advRender) ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
-	ctx.globalAlpha = 0.35;
-	ctx.drawImage(lines, 0, 0);
-	ctx.globalAlpha = 1;
-	ctx.drawImage(test, 0, 0);
+	// ctx.globalAlpha = 0.35;
+	// ctx.drawImage(lines, 0, 0);
+	// ctx.globalAlpha = 1;
 
 	//updating movement buttons (indelicate, but inexpensive)
 	for (i = 0; i < charDir.length; i++)
@@ -688,8 +700,8 @@ Main.prototype.getExtentNext = function(s_i) {
 	}
 }
 Main.prototype.continuousPrev = function(c_i) {
-	// this.pause();
-	// idle = true;
+	this.pause();
+	idle = true;
 	//create active
 		//any instant durations at present, including 0 bridges, are automatically rolled back
 		//order indices based on latest activity
@@ -719,6 +731,7 @@ Main.prototype.continuousPrev = function(c_i) {
 		}
 		nowTotal = timeDir[last][1][1]*bridge[timeDir[last][0][0]].x + Detect.findInterval(last, false, 0);
 	}
+	//collecting active indices
 	for (i = 0; i < charDir.length; i++)
 		for (j = charDir[i].length - 1; j >= 0; j--)
 			if (now >= charDir[i][j].s_i) {
@@ -740,7 +753,7 @@ Main.prototype.continuousPrev = function(c_i) {
 	active.sort(function(a,b){return b - a});
 	now -= rollBack;
 
-	//scouting indices for moveQueue
+	//collecting indices for moveQueue
 	moveQueue = new Array();
 	for (i = now; i >= target; i--) {
 		var indexTotal = timeDir[i][1][1] + Detect.findInterval(i, false, target);
@@ -1434,10 +1447,10 @@ Main.prototype.randHex = function(charIndex) {
 Main.prototype.genHex = function() {
 	loc = new Array();
 	loc.push(new Point(100, 300));
-	loc.push(new Point(200, 114));
-	loc.push(new Point(400, 114));
+	loc.push(new Point(125, 250));
+	loc.push(new Point(75, 250));
 	loc.push(new Point(500, 300));
-	loc.push(new Point(400, 486));
+	loc.push(new Point(400, 300));
 	loc.push(new Point(200, 486));
 }
 Main.prototype.visLoc = function() {

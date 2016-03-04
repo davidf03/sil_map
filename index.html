@@ -16,13 +16,13 @@
         <script type="text/javascript">
             var radius = 6;
             var stroke = 0.3*radius;
+            var alpha;
 
             var timeDir;
             var charDir;
             var loc;
             var locDir;
             var locData;
-            var fadeRange = 3;
 
             var anc;
             var bridge;
@@ -30,35 +30,24 @@
             var moveQueue;
 
             var Detect;
-
             var now = 0;
             var movSpeed = 2;
             var visSpeed = 5;
-            var visEase = 2;
+            // var visEase = 2;
             var fps = 30;
             var idle = true;
 
+            var advRender = false;
+            var fadeRange = 3;
             var drawSequence;
             var testSequence;
 
-            var startColour = 0;
-            var cols = [["#6C6E58","#3E423A","#417378","#A4CFBE","#F4F7D9"]
-                /*[{hex:0x726F2D},{hex:0xBBBBBB},{hex:0x16bbe6},{hex:0x0B3D4C},{hex:0xd3ffce}],
-                ,[{hex:0x212226},{hex:0x45433F},{hex:0x687067},{hex:0xBDBB99},{hex:0xF0EAC3}]
-                [{hex:0x49404F},{hex:0x596166},{hex:0xD1FFCD},{hex:0xA9BD8B},{hex:0x948A54}],
-                [{hex:0x302D26},{hex:0x849396},{hex:0xD9D7C2},{hex:0x4E433D},{hex:0x979595}],
-                ,[{hex:0x615E56},{hex:0x5E3341},{hex:0x2F6D7B},{hex:0xAFAAAD},{hex:0xD5CAA2}]
-                ,[{hex:0x3F4B59},{hex:0x42594C},{hex:0x708C74},{hex:0xF2EAD0},{hex:0xBDBB99}]
-                [{hex:0x2E242F},{hex:0xDBC49E},{hex:0x75705A},{hex:0x353B37},{hex:0x2A2735}],
-                [{hex:0x00FF7F},{hex:0x007FFF},{hex:0x7F00FF},{hex:0xFF0000},{hex:0xFF7F00},{hex:0xFFFF00}];
-                ,[{hex:0x703030},{hex:0x2F343B},{hex:0x7E827A},{hex:0xE3CDA4},{hex:0xC77966}]
-                ,[{hex:0xF0C27B},{hex:0xD38157},{hex:0x7F2B51},{hex:0x4B1248},{hex:0x1D0B38}]
-                ,[{hex:0x17263B},{hex:0xF9D2BD},{hex:0x8D2A14},{hex:0xC45234},{hex:0x35332F}]
-                ,[{hex:0x14DB14},{hex:0xF71B14},{hex:0xB61BE0},{hex:0x1DEEF5},{hex:0xDED014}]];
-                [{hex:0x00FF7F},{hex:0x007FFF},{hex:0x7F00FF},{hex:0xFF0000},{hex:0xFF7F00},{hex:0xFFFF00}*/];
-
-            var can;
-            var ctx;
+            var startColour = 1;
+            var cols = [
+              ["#6C6E58","#3E423A","#417378","#A4CFBE","#F4F7D9"],
+              ["#3F4B59","#42594C","#708C74","#F2EAD0","#BDBB99"],
+              ["#17263B","#F9D2BD","#8D2A14","#C45234","#35332F"]
+            ];
         </script>
         <script type="text/javascript" src="js/sil_classes/Main.js"></script>
         <script type="text/javascript" src="js/sil_classes/Detect.js"></script>

@@ -5,13 +5,13 @@ var col;
 
 var lastNode;
 var n0t1, n0t2, n0t2e, n1t1, n1t2, n1t2e; //tangent points
-
-var gradientDist;
-var n0e, n1e; //edge points
-var n0g1, n0g2, n1g1, n1g2; //gradient points
-var n0t, n1t;
-var underComp, overComp, compDiff;
 var outDrawLimit, inDrawLimit;
+
+// var gradientDist;
+// var n0e, n1e; //edge points
+// var n0g1, n0g2, n1g1, n1g2; //gradient points
+// var n0t, n1t;
+// var underComp, overComp, compDiff;
 
 var pathCaps;
 var arcSpan;
@@ -20,9 +20,6 @@ var animating;
 var lastAnc, lastBridge, present, moving, waiting;
 var waitNextFunction;
 var moveNextFunction;
-
-//var aniNode0,
-//	aniNode1;
 
 /*public static function get c_i() { return this.c_i;}
 public static function get n_i() { return this.n_i;}
@@ -178,9 +175,12 @@ Node.prototype.genPath = function(channel, active) {
 	var offset = new Point(0, 0);
 
 	var canvas;
-	if (3 <= channel) canvas = document.getElementById('paths');
-	else canvas = document.getElementById('location');
+	if (advRender) {
+		if (3 <= channel) { canvas = document.getElementById('paths');}
+		else { canvas = document.getElementById('location');}
+	} else { canvas = document.getElementById('update');}
 	var ctx = canvas.getContext('2d');
+	if (3 <= channel) { ctx.globalAlpha = alpha.x;}
 
 	//path guides
 	if (active) {
@@ -206,7 +206,7 @@ Node.prototype.genPath = function(channel, active) {
 		this.n1t2e = this.findIntercepts(this.n0t2, this.n1t2, new Point(0, 0), n1r, n0l);
 	}
 	//path break
-	if (1 === channel) {
+	if (1 === channel || false === advRender) {
 		/* Anchoring path to previous node */
 		ctx.fillStyle = this.col;
 		ctx.beginPath();
@@ -225,7 +225,6 @@ Node.prototype.genPath = function(channel, active) {
 		this.outDrawLimit = new Point(this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge));;
 		this.inDrawLimit = new Point(this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge));
 	}
-	//path and line overlays
 	/* the path itself */
 	// var test = document.getElementById('test');
 	// var testctx = test.getContext('2d');
@@ -260,7 +259,7 @@ Node.prototype.genPath = function(channel, active) {
 		ctx.beginPath();
 
 		ctx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
-		if (this.present && 2 === channel) {
+		if (this.present && (2 === channel || false === advRender)) {
 			ctx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y)
 			angle = Math.atan2(this.n1t2e.y, this.n1t2e.x);
 			offset = new Point(0,0);
@@ -272,7 +271,7 @@ Node.prototype.genPath = function(channel, active) {
 			ctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
 		}
 
-		if (1 === channel) {
+		if (1 === channel || false === advRender) {
 			ctx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
 			angle = Math.atan2(this.n0t2e.y - n0l.y, this.n0t2e.x - n0l.x);
 			offset = new Point(0,0);
@@ -293,7 +292,7 @@ Node.prototype.genPath = function(channel, active) {
 		ctx.lineWidth = stroke;
 		ctx.beginPath();
 		ctx.moveTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
-		if (this.present && 2 === channel)
+		if (this.present && (2 === channel || false === advRender))
 			ctx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
 		else {
 			ctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y)
@@ -310,9 +309,9 @@ Node.prototype.genPath = function(channel, active) {
 		ctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
 	ctx.stroke();
 
-
 	/* line overlay */
 	if (3 <= channel) {
+		ctx.globalAlpha = 1;
 		var lines = document.getElementById('lines');
 		var linectx = lines.getContext('2d');
 
@@ -348,7 +347,6 @@ Node.prototype.hexToRGB = function(h, alpha) {
 // Node.prototype.hexToG = function(h) {return parseInt((cutHex(h)).substring(2,4),16)}
 // Node.prototype.hexToB = function(h) {return parseInt((cutHex(h)).substring(4,6),16)}
 // Node.prototype.cutHex = function(h) {return (h.charAt(0)=="#") ? h.substring(1,7):h}
-
 Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 	if (breaking) {
 		var hold_l_x = this.lastNode.l_x;
@@ -360,27 +358,20 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 		hold_s_i = this.s_i;
 	}
 
-	var outermost = true;
-	if (0 === this.n_i || 1 === this.n_i && breaking) {
-		outermost = false;
-	} else {
-		for (i = hold_l_y + 1; i < locDir[hold_l_x].length; i++) {
-			if (Detect.isPresent(locDir[hold_l_x][i][0], locDir[hold_l_x][i][1]))
-				if (anc[locDir[hold_l_x][i][0]].x > 0)
-					outermost = false;
-			else break;
-		}
+	var outermost = false;
+	if (0 < this.n_i && (1 < this.n_i || false === breaking) && locData[hold_l_x][0][hold_l_y][0] >= locData[hold_l_x][1][0]) {
+		outermost = true;
 	}
 
 	if (breaking || outermost) {
-		//somewhat out of place here, but both run on every regen and have significant overlap in requirements
-		var canvas = document.getElementById('location');
+		if (advRender) var canvas = document.getElementById('location');
+		else canvas = document.getElementById('update');
 		var ctx = canvas.getContext('2d');
 		ctx.beginPath();
 		ctx.strokeStyle = '#000000'
 		ctx.lineWidth = stroke;
 
-		if (outermost && (1 <= this.n_i || breaking && 2 <= this.n_i)) {
+		if (outermost) {
 			//broken ring draws here
 			if (breaking) var hold_n_i = this.n_i - 1;
 			else hold_n_i = this.n_i;
@@ -452,7 +443,8 @@ Node.prototype.drawPathCap = function(cen, rad, oth_c, oth_n, breaking, outbound
 	if (0 === yTerm) { yTerm = 0.1;}
 	var angle2 = Math.atan2(yTerm, xTerm);
 
-	var canvas = document.getElementById('location');
+	if (advRender) var canvas = document.getElementById('location');
+	else canvas = document.getElementById('update');
 	var ctx = canvas.getContext('2d');
 	ctx.strokeStyle = '#000000';
 	ctx.lineWidth = stroke;
@@ -466,7 +458,8 @@ Node.prototype.drawPathCap = function(cen, rad, oth_c, oth_n, breaking, outbound
 }
 
 Node.prototype.genNode = function(active) {
-	var canvas = document.getElementById('location');
+	if (advRender) var canvas = document.getElementById('location');
+	else canvas = document.getElementById('update');
 	var ctx = canvas.getContext('2d');
 
 	ctx.fillStyle = this.col;
@@ -519,15 +512,25 @@ Node.prototype.generate = function(channel, recalculate) {
 		this.lastNow = now;
 		this.lastAnc = anc[this.c_i].x;
 		this.lastBridge = bridge[this.c_i].x;
+		// this.col = this.hexToRGB(this.baseCol, alpha.x);
 
 		var active;
 		if (2 <= recalculate) active = true;
-		else if (1 <= recalculate && locData[this.l_x][0][this.l_y][2]) active = true;
+		else if (1 <= recalculate && locData[this.l_x][0][this.l_y][1]) active = true;
 		else active = false;
 
-		this.oth = locData[this.l_x][0][this.l_y][1];
-		if (0 < this.n_i)
-			this.lastOth = locData[this.lastNode.l_x][0][this.lastNode.l_y][1];
+		if (locData[this.l_x][0][this.l_y][0] > locData[this.l_x][1][0]) {
+			this.oth = locData[this.l_x][1][0] + anc[this.c_i].x;
+		} else {
+			this.oth = locData[this.l_x][0][this.l_y][0];
+		}
+		if (0 < this.n_i) {
+			if (locData[this.lastNode.l_x][0][this.lastNode.l_y][0] > locData[this.lastNode.l_x][1][0]) {
+				this.lastOth = locData[this.lastNode.l_x][1][0] + anc[this.c_i].x;
+			} else {
+				this.lastOth = locData[this.lastNode.l_x][0][this.lastNode.l_y][0];
+			}
+		}
 
 		//this could be refactored with a trinary return from isPresent
 		if (Detect.isPresent(this.c_i, this.n_i, 1)) {
@@ -536,7 +539,7 @@ Node.prototype.generate = function(channel, recalculate) {
 
 			if (channel) {
 				if (0 < this.n_i) {
-					if (1 <= recalculate && false === active && locData[this.lastNode.l_x][0][this.lastNode.l_y][2]) {
+					if (1 <= recalculate && false === active && locData[this.lastNode.l_x][0][this.lastNode.l_y][1]) {
 						active = true; //worthwhile conditional?
 					}
 					this.genPath(channel, active);
@@ -552,7 +555,8 @@ function Node(charIndex, nodeIndex, colour, location, timeIndex) {
 	this.c_i = charIndex;
 	this.n_i = nodeIndex;
 	this.s_i = timeIndex;
-	this.col = colour;
+	this.baseCol = colour;
+	this.col = this.hexToRGB(colour, alpha.x);
 	this.l_i = location;
 
 	if (1 <= this.n_i) {

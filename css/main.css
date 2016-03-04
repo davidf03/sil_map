@@ -72,7 +72,7 @@ body, .sidebar {
         z-index: 2;
         position: fixed;
 
-        right: 0;
+        left: 0;
         margin: 0.75em;
         width: 1.5em;
         height: 1.5em;
@@ -115,7 +115,7 @@ body, .sidebar {
             }
     .sidebar {
         z-index: 1;
-        left: 100vw;
+        right: 100vw;
 
         background-color: #232323;
         color: #DCDCDC;
@@ -276,6 +276,7 @@ body, .sidebar {
         background-size: cover;*/
         /*visibility: visible;*/
         position: absolute;
+        left: 20em;
     }
     .map#lines {
       /*opacity: 0.35;*/
