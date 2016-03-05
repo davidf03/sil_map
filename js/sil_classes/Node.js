@@ -442,8 +442,8 @@ Node.prototype.genPath = function(channel, active) {
 					pathctx.moveTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
 					if (pastHalf) {
 						pathctx.lineTo(loc[this.l_i].x + this.nt2m.x, loc[this.l_i].y + this.nt2m.y);
-						pathctx.closePath();
 						pathctx.stroke();
+
 						pathctx.strokeStyle = pathInGrdStroke;
 						pathctx.lineWidth = stroke;
 						pathctx.moveTo(loc[this.l_i].x + this.nt2m.x, loc[this.l_i].y + this.nt2m.y);
