@@ -264,70 +264,40 @@ Main.prototype.redraw = function() {
 	var lines = document.getElementById('lines');
 	var linectx = lines.getContext('2d');
 	linectx.clearRect(0,0,lines.width,lines.height);
+	var paths = document.getElementById('paths');
+	var pathctx = paths.getContext('2d');
+	pathctx.clearRect(0,0,paths.width,paths.height);
+	var location = document.getElementById('location');
+	var locctx = location.getContext('2d');
+	locctx.clearRect(0,0,location.width,location.height);
 
 	//updating
-	if (advRender) {
-		var paths = document.getElementById('paths');
-		var pathctx = paths.getContext('2d');
-		pathctx.clearRect(0,0,paths.width,paths.height);
-		var location = document.getElementById('location');
-		var locctx = location.getContext('2d');
+	if (active) {
+		for (i = 0; i <= now; i++) {
+			if (0 < timeDir[i][0][1])
+				charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
+			else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
+		}
+	} else { //forces recalculation in the last frame for lack of subtlty
+		for (i = 0; i <= now; i++) {
+			if (0 < timeDir[i][0][1])
+				charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
+			else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
+		}
+	}
+	iLen = drawSequence.length;
+	var jLen;
+	for (i = 0; i < iLen; i++) {
+		jLen = drawSequence[i].length;
+		for (j = 0; j < jLen; j++) {
+			if (now >= charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].s_i)
+				charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
+			else break;
+		}
+		upctx.globalAlpha = alpha.x;
+		upctx.drawImage(location,0,0);
+		upctx.globalAlpha = 1;
 		locctx.clearRect(0,0,location.width,location.height);
-		var inter = document.getElementById('inter');
-		var interctx = inter.getContext('2d');
-		interctx.clearRect(0,0,inter.width,inter.height);
-
-		if (active) {
-			for (i = 0; i <= now; i++) {
-				if (0 < timeDir[i][0][1])
-					charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 1);
-				else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 1);
-			}
-		} else { //forces recalculation in the last frame for lack of subtlty
-			for (i = 0; i <= now; i++) {
-				if (0 < timeDir[i][0][1])
-					charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
-				else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
-			}
-		}
-
-		iLen = drawSequence.length;
-		var jLen;
-		for (i = 0; i < iLen; i++) {
-			jLen = drawSequence[i].length;
-			for (j = 0; j < jLen; j++) {
-				if (now >= charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].s_i)
-					charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
-				else break;
-			}
-			if (0 < locData[i][1][0]) {
-				interctx.save();
-				interctx.drawImage(location,0,0);
-				locctx.clearRect(0,0,location.width,location.height);
-
-				var locPos = loc[charDir[locDir[i][0][0]][locDir[i][0][1]].l_i];
-				var fadeStyle = interctx.createRadialGradient(locPos.x,locPos.y,(locData[i][1][0]+1)*radius, locPos.x,locPos.y,(locData[i][1][0]+1 + fadeRange)*radius);
-				fadeStyle.addColorStop(0,'rgba(0,0,0,1)');
-				fadeStyle.addColorStop(1,'rgba(0,0,0,0)');
-
-				interctx.globalCompositeOperation = 'destination-in';
-				interctx.beginPath();
-				interctx.arc(locPos.x,locPos.y, (locData[i][1][0]+1 + fadeRange)*radius, 0,Math.PI*2);
-				// interctx.closePath();
-				interctx.fillStyle = fadeStyle;
-				interctx.fill();
-
-				upctx.globalAlpha = alpha.x;
-				upctx.drawImage(inter,0,0);
-				upctx.globalAlpha = 1;
-				interctx.restore();
-	 		}
-		}
-	} else {
-		iLen = testSequence.length;
-		for (i = 0; i < iLen; i++) {
-			charDir[testSequence[i][0]][testSequence[i][1]].generate(testSequence[i][2], 2);
-		}
 	}
 
 	//drawing
@@ -335,8 +305,8 @@ Main.prototype.redraw = function() {
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
-	if (advRender) ctx.drawImage(paths, 0, 0);
-	ctx.drawImage(update, 0, 0);
+	ctx.drawImage(paths, 0, 0);
+	// ctx.drawImage(update, 0, 0);
 	// ctx.globalAlpha = 0.35;
 	// ctx.drawImage(lines, 0, 0);
 	// ctx.globalAlpha = 1;
