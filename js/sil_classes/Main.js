@@ -272,19 +272,25 @@ Main.prototype.redraw = function() {
 	locctx.clearRect(0,0,location.width,location.height);
 
 	//updating
-	if (active) {
+	// if (active) {
+	// 	for (i = 0; i <= now; i++) {
+	// 		if (0 < timeDir[i][0][1]) {
+	// 			charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
+	// 		}
+	// 		// else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
+	// 	}
+	// } else { //forces recalculation in the last frame for lack of subtlty
+		upctx.globalAlpha = alpha.x;
 		for (i = 0; i <= now; i++) {
-			if (0 < timeDir[i][0][1])
+			if (0 < timeDir[i][0][1]) {
 				charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
-			else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
+				upctx.drawImage(paths,0,0);
+				pathctx.clearRect(0,0,paths.width,paths.height);
+			}
+			// else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
 		}
-	} else { //forces recalculation in the last frame for lack of subtlty
-		for (i = 0; i <= now; i++) {
-			if (0 < timeDir[i][0][1])
-				charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(3, 2);
-			else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
-		}
-	}
+		upctx.globalAlpha = 1;
+	// }
 	iLen = drawSequence.length;
 	var jLen;
 	for (i = 0; i < iLen; i++) {
@@ -305,7 +311,7 @@ Main.prototype.redraw = function() {
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
 	this.visLoc();
-	ctx.drawImage(paths, 0, 0);
+	// ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
 	// ctx.globalAlpha = 0.35;
 	// ctx.drawImage(lines, 0, 0);
@@ -763,12 +769,19 @@ Main.prototype.continuousPrev = function(c_i) {
 	for (i = 0; i < active.length; i++) {
 		var callerBase = Detect.findInterval(active[i], false, 0);
 		for (j = riftIndex; j < moveQueue.length; j++) {
-			var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
-			if (indexTotal >= callerBase) {
-				moveQueue[j][1] = active[i];
-				moveQueue[j][2] = (indexTotal - callerBase)/timeDir[active[i]][1][1];
+			var ici = timeDir[moveQueue[j][3]][0][0];
+			var ini = timeDir[moveQueue[j][3]][0][1];
+			if (charDir[ici].length > ini + 1 && timeDir[moveQueue[j][3]][1][1] >= Detect.findInterval(charDir[ici][ini + 1].s_i, false, charDir[ici][ini].s_i)) {
+				moveQueue[j][1] = charDir[ici][ini + 1].s_i;
+				moveQueue[j][2] = 0;
 			} else {
-				break;
+				var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
+				if (indexTotal >= callerBase) {
+					moveQueue[j][1] = active[i];
+					moveQueue[j][2] = (indexTotal - callerBase)/timeDir[active[i]][1][1];
+				} else {
+					break;
+				}
 			}
 		}
 		riftIndex = j;
@@ -792,13 +805,13 @@ Main.prototype.continuousPrev = function(c_i) {
 			}
 			var callerBase = Detect.findInterval(moveQueue[i][3], false, 0);
 			for (j = riftIndex; j < moveQueue.length; j++) {
-				var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
 				var ici = timeDir[moveQueue[j][3]][0][0];
 				var ini = timeDir[moveQueue[j][3]][0][1];
 				if (charDir[ici].length > ini + 1 && timeDir[moveQueue[j][3]][1][1] >= Detect.findInterval(charDir[ici][ini + 1].s_i, false, charDir[ici][ini].s_i)) {
 					moveQueue[j][1] = charDir[ici][ini + 1].s_i;
 					moveQueue[j][2] = 0;
 				} else {
+					var indexTotal = timeDir[moveQueue[j][3]][1][1] + Detect.findInterval(moveQueue[j][3], false, 0);
 					if (indexTotal >= callerBase) {
 						moveQueue[j][1] = moveQueue[i][3];
 						moveQueue[j][2] = (indexTotal - callerBase)/timeDir[moveQueue[i][3]][1][1];

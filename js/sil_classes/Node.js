@@ -383,7 +383,7 @@ Node.prototype.genPath = function(channel, active) {
 				var gp2 = new Point(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
 				if (gp1.x === gp2.x) gp2.x += 0.01;
 				var pathOutGrdStroke = pathctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
-				pathOutGrdStroke.addColorStop(0, this.hexToRGB('#000000', 0));
+				pathOutGrdStroke.addColorStop(0, this.hexToRGB('#000000', 0));//inverted alphas compared to node[In/Out]Grd
 				pathOutGrdStroke.addColorStop(1, this.hexToRGB('#000000', 1));
 
 				gp1 = new Point(loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
@@ -422,7 +422,7 @@ Node.prototype.genPath = function(channel, active) {
 						var gp2 = new Point(loc[this.l_i].x + this.n1g1.x,loc[this.l_i].y + this.n1g1.y);
 						if (gp1.x === gp2.x) gp2.x += 0.01;
 						var pathInGrd = pathctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
-						pathInGrd.addColorStop(0, this.hexToRGB(this.baseCol, 0));//inverted alphas compared to node[In/Out]Grd
+						pathInGrd.addColorStop(0, this.hexToRGB(this.baseCol, 0));
 						pathInGrd.addColorStop(1, this.hexToRGB(this.baseCol, 1));
 
 						pathctx.fillStyle = pathInGrd;
