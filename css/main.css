@@ -272,8 +272,8 @@ body, .sidebar {
                     }*/
     .map {
         z-index: 0;
-        /*background: url(../img/silmarillion_map.png) no-repeat;
-        background-size: cover;*/
+        background: url(../img/silmarillion_map.png) no-repeat;
+        background-size: cover;
         /*visibility: visible;*/
         position: absolute;
         left: 20em;

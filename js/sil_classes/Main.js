@@ -335,7 +335,7 @@ Main.prototype.redraw = function() {
 	var can = document.getElementById('canvas');
 	var ctx = can.getContext('2d');
 	ctx.clearRect(0,0,can.width,can.height);
-	this.visLoc();
+	// this.visLoc();
 	// ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
 	// ctx.globalAlpha = 0.35;
@@ -1454,11 +1454,17 @@ Main.prototype.randHex = function(charIndex) {
 }
 Main.prototype.genHex = function() {
 	loc = new Array();
+// 	loc.push(new Point(100, 300));
+// 	loc.push(new Point(125, 250));
+// 	loc.push(new Point(75, 250));
+// 	loc.push(new Point(500, 300));
+// 	loc.push(new Point(400, 300));
+// 	loc.push(new Point(200, 486));
 	loc.push(new Point(100, 300));
-	loc.push(new Point(125, 250));
-	loc.push(new Point(75, 250));
+	loc.push(new Point(200, 114));
+	loc.push(new Point(400, 114));
 	loc.push(new Point(500, 300));
-	loc.push(new Point(400, 300));
+	loc.push(new Point(400, 486));
 	loc.push(new Point(200, 486));
 }
 Main.prototype.visLoc = function() {
