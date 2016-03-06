@@ -27,16 +27,41 @@ function Main() {
 	console.log(anc);
 	console.log(bridge);
 
+	// testArray = new Array();
+	// for (i = 0; i < charDir.length; i++) {
+	// 	testArray.push(new Array());
+	// 	for (j = 0; j < charDir[i].length; j++) {
+	// 		testArray[i].push([-1, -1]);
+	// 	}
+	// }
+
 	now = timeDir.length - 1;
-	iLen = charDir.length;
-	var jLen;
-	for (i = 0; i < iLen; i++) {
-		jLen = charDir[i].length;
-		charDir[i][0].generate(0, 2);
-		for (j = 1; j < jLen; j++)
+	for (i = 0; i < charDir.length; i++) {
+		// charDir[i][0].generate(0, 2);
+		for (j = 1; j < charDir[i].length; j++)
 			charDir[i][j].generate(3, 2);
 	}
-	// now = charDir.length - 1;
+
+	// var canvas = document.getElementById('canvas');
+	// var ctx = canvas.getContext('2d');
+	// ctx.drawImage(document.getElementById('location'),0,0);
+
+	// for (i = 0; i < charDir.length; i++) {
+	// 	for (j = 1; j < charDir[i].length; j++) {
+	// 		console.log(
+	// 			charDir[i][j].n0t1, charDir[i][j].n1t1,
+	// 			charDir[i][j].n0t2, charDir[i][j].n1t2,
+	// 			charDir[i][j].n0t2e, charDir[i][j].n1t2e
+	// 		);
+	// 		console.log(
+	// 			charDir[i][j].n0g1, charDir[i][j].n1g1,
+	// 			charDir[i][j].n0g2, charDir[i][j].n1g2,
+	// 			charDir[i][j].n0e1, charDir[i][j].n1e1,
+	// 			charDir[i][j].n0e2, charDir[i][j].n1e2
+	// 		);
+	// 	}
+	// }
+	now = charDir.length - 1;
 }
 Main.prototype.genCharObj = function() {
 	charConsole = document.querySelector('.charConsole .main');
@@ -287,7 +312,7 @@ Main.prototype.redraw = function() {
 				upctx.drawImage(paths,0,0);
 				pathctx.clearRect(0,0,paths.width,paths.height);
 			}
-			// else charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);
+			// else { charDir[timeDir[i][0][0]][timeDir[i][0][1]].generate(0, 2);}
 		}
 		upctx.globalAlpha = 1;
 	// }
@@ -296,9 +321,9 @@ Main.prototype.redraw = function() {
 	for (i = 0; i < iLen; i++) {
 		jLen = drawSequence[i].length;
 		for (j = 0; j < jLen; j++) {
-			if (now >= charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].s_i)
+			if (now >= charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].s_i) {
 				charDir[drawSequence[i][j][0]][drawSequence[i][j][1]].generate(drawSequence[i][j][2], 0);
-			else break;
+			} else { break;}
 		}
 		upctx.globalAlpha = alpha.x;
 		upctx.drawImage(location,0,0);
