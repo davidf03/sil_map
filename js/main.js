@@ -54,8 +54,8 @@ function init() {
 	})();
 
 	// toggleSidebar();
-	//
-	// console.log('hi');
+	// //
+	// // console.log('hi');
 	// var hexToRGB = function(h, alpha) {
 	// 	if (typeof(alpha) === 'undefined') alpha = 1;
 	// 	h = (h.charAt(0)=="#") ? h.substring(1,7):h;
@@ -67,30 +67,42 @@ function init() {
 	//
 	// var canvas = document.getElementById('canvas');
 	// var ctx = canvas.getContext('2d');
-
-	// ctx.fillStyle = '#000000';
-	// ctx.beginPath();
-	// ctx.arc(0,0,200,0,Math.PI*2);
-	// ctx.closePath();
-	// ctx.fill();
-
+	//
+	// // ctx.fillStyle = '#000000';
+	// // ctx.beginPath();
+	// // ctx.arc(0,0,200,0,Math.PI*2);
+	// // ctx.closePath();
+	// // ctx.fill();
+	//
 	// var p1 = new Point(50, 80);
 	// var p2 = new Point(150, 80);
 	//
 	// var grd1 = ctx.createLinearGradient(p1.x,p1.y, p2.x,p2.y);
 	// grd1.addColorStop(0, hexToRGB('#000000', 1));
+	// // grd1.addColorStop(0.5, hexToRGB('#000000', 0.5));
 	// grd1.addColorStop(1, hexToRGB('#000000', 0));
 	//
 	// var grd2 = ctx.createLinearGradient(p1.x,p1.y,p2.x,p2.y);
 	// grd2.addColorStop(0, hexToRGB('#000000', 0));
+	// // grd2.addColorStop(0.5, hexToRGB('#000000', 0.5));
 	// grd2.addColorStop(1, hexToRGB('#000000', 1));
 	//
 	// ctx.fillStyle = grd1;
 	// ctx.fillRect(p1.x, p1.y,100,50);
+	// ctx.fillRect(p1.x, p1.y,100,50);
 	// ctx.fillStyle = grd2;
 	// ctx.fillRect(p1.x,p1.y+55, 100,50);
+	//
+	// ctx.fillStyle = grd1;
+	// ctx.fillRect(p1.x,p1.y+120,100,50);
 	// ctx.fillStyle = grd1;
 	// ctx.fillRect(p1.x,p1.y+120,100,50);
 	// ctx.fillStyle = grd2;
+	// ctx.fillRect(p1.x,p1.y+120,100,50);
+	// ctx.fillStyle = grd2;
+	// ctx.fillRect(p1.x,p1.y+120,100,50);
+	//
+	// ctx.fillStyle = hexToRGB('#000000', 0.5);
+	// ctx.fillRect(p1.x,p1.y+120,100,50);
 	// ctx.fillRect(p1.x,p1.y+120,100,50);
 }

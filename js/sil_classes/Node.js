@@ -436,123 +436,151 @@ Node.prototype.genPath = function(channel, active) {
 				this.nt1m = new Point((this.n1t1.x - this.n0t1.x)/2 + this.n0t1.x, (this.n1t1.y - this.n0t1.y)/2 + this.n0t1.y);
 				this.nt2m = new Point((this.n1t2.x - this.n0t2.x)/2 + this.n0t2.x, (this.n1t2.y - this.n0t2.y)/2 + this.n0t2.y);
 			// }
-			var pastEdge = false, pastHalf = false;
+			var pastEdge = false, pastFirstStop = false, pastSecondStop = false;
 			if (this.present) {
-				pastEdge = true, pastHalf = true;
+				pastEdge = true, pastFirstStop = true, pastSecondStop = true;
 			} else {
 				var trueXDiff = this.outDrawLimit.x - this.n0t1.x, trueYDiff = this.outDrawLimit.y - this.n0t1.y;
 				var trueDiff = Math.sqrt(trueXDiff*trueXDiff + trueYDiff*trueYDiff);
 				var edgeXDiff = this.n0e2.x - this.n0t2.x, edgeYDiff = this.n0e2.y - this.n0t2.y;
 				if (trueDiff > Math.sqrt(edgeXDiff*edgeXDiff + edgeYDiff*edgeYDiff)) {
 					pastEdge = true;
-					var halfXDiff = this.nt1m.x - this.n0t1.x, halfYDiff = this.nt1m.y - this.n0t1.y;
-					if (trueDiff > Math.sqrt(halfXDiff*halfXDiff + halfYDiff*halfYDiff)) {
-						pastHalf = true;
+					var firstStopXDiff = this.n0g2.x - this.n0t2.x, firstStopYDiff = this.n0g2.y - this.n0t2.y;
+					if (trueDiff > Math.sqrt(firstStopXDiff*firstStopXDiff + firstStopYDiff*firstStopYDiff)) {
+						pastFirstStop = true;
+						var secondStopXDiff = this.n1g2.x - this.n0t2.x, secondStopYDiff = this.n1g2.y - this.n0t2.y;
+						if (trueDiff > Math.sqrt(secondStopXDiff*secondStopXDiff + secondStopYDiff*secondStopYDiff)) {
+							pastSecondStop = true;
+						}
 					}
 				}
 			}
 			if (pastEdge) {
-				var gp1 = new Point(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
-				var gp2 = new Point(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
-				if (gp1.x === gp2.x) gp2.x += 0.01;
-				var pathOutGrdStroke = pathctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
-				pathOutGrdStroke.addColorStop(0, this.hexToRGB('#000000', 0));//inverted alphas compared to node[In/Out]Grd
-				pathOutGrdStroke.addColorStop(1, this.hexToRGB('#000000', 1));
+				var pathXLen = this.n1e2.x - this.n0e2.x, pathYLen = this.n1e2.y - this.n0e2.y;
+				var stopProportion = fadeRange*radius/Math.sqrt(pathXLen*pathXLen + pathYLen*pathYLen);
 
-				gp1 = new Point(loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
-				gp2 = new Point(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
-				if (gp1.x === gp2.x) gp2.x += 0.01;
-				var pathInGrdStroke = pathctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
-				pathInGrdStroke.addColorStop(0, this.hexToRGB('#000000', 0));
-				pathInGrdStroke.addColorStop(1, this.hexToRGB('#000000', 1));
+				var pathGrdStroke = pathctx.createLinearGradient(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y, loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
+				pathGrdStroke.addColorStop(0, this.hexToRGB('#000000', 0));//inverted alphas compared to node[In/Out]Grd
+				pathGrdStroke.addColorStop(stopProportion, this.hexToRGB('#000000', 1));
+				pathGrdStroke.addColorStop(1 - stopProportion, this.hexToRGB('#000000', 1));
+				pathGrdStroke.addColorStop(1, this.hexToRGB('#000000', 0));
 
 				if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) === false) {
 					//path fill
-					var gp1 = new Point(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
-					var gp2 = new Point(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
-					if (gp1.x === gp2.x) gp2.x += 0.01;
-					var pathOutGrd = pathctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
-					pathOutGrd.addColorStop(0, this.hexToRGB(this.baseCol, 0));
-					pathOutGrd.addColorStop(1, this.hexToRGB(this.baseCol, 1));
+					var pathGrdFill = pathctx.createLinearGradient(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y, loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
+					pathGrdFill.addColorStop(0, this.hexToRGB(this.baseCol, 0));
+					pathGrdFill.addColorStop(stopProportion, this.hexToRGB(this.baseCol, 1));
+					pathGrdFill.addColorStop(1 - stopProportion, this.hexToRGB(this.baseCol, 1));
+					pathGrdFill.addColorStop(1, this.hexToRGB(this.baseCol, 0));
 
-					pathctx.fillStyle = pathOutGrd;
+					//fill gradient reinforcement
+					pathctx.fillStyle = pathGrdFill;
 					pathctx.beginPath();
 					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
-					if (pastHalf) {
-						pathctx.lineTo(loc[this.l_i].x + this.nt1m.x, loc[this.l_i].y + this.nt1m.y)
-						pathctx.lineTo(loc[this.l_i].x + this.nt2m.x, loc[this.l_i].y + this.nt2m.y);
+					if (pastFirstStop) {
+						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
 					} else {
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
 						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
 					}
 					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
-					pathctx.closePath();
 					pathctx.fill();
+					pathctx.closePath();
 
-
-					if (pastHalf) {
-						var gp1 = new Point(loc[this.l_i].x + this.n1e2.x,loc[this.l_i].y + this.n1e2.y);
-						var gp2 = new Point(loc[this.l_i].x + this.n1g1.x,loc[this.l_i].y + this.n1g1.y);
-						if (gp1.x === gp2.x) gp2.x += 0.01;
-						var pathInGrd = pathctx.createLinearGradient(gp1.x, gp1.y, gp2.x, gp2.y);
-						pathInGrd.addColorStop(0, this.hexToRGB(this.baseCol, 0));
-						pathInGrd.addColorStop(1, this.hexToRGB(this.baseCol, 1));
-
-						var xTerm = this.n1t1.x - this.n0t1.x, yTerm = this.n1t1.y - this.n0t1.y;
-						if (0 === xTerm) xTerm = 0.1;
-						if (0 === yTerm) yTerm = 0.1;
-						angle = Math.atan2(yTerm, xTerm);
-						offset = new Point(0,0);
-						offset = offset.polar(0.5, angle);
-
-						pathctx.fillStyle = pathInGrd;
+					if (pastSecondStop) {
 						pathctx.beginPath();
-						pathctx.moveTo(loc[this.l_i].x + this.nt1m.x - offset.x, loc[this.l_i].y + this.nt1m.y - offset.y);
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
+						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
 						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.nt2m.x - offset.x, loc[this.l_i].y + this.nt2m.y - offset.y);
-						pathctx.closePath();
+						pathctx.lineTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
 						pathctx.fill();
+						pathctx.closePath();
 					}
-					//inside line
-					pathctx.fillStyle = null;
-					pathctx.strokeStyle = pathOutGrdStroke;
+
+					//main path
+					pathctx.strokeStyle = pathGrdStroke;
 					pathctx.lineWidth = stroke;
 					pathctx.beginPath();
-					pathctx.moveTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
-					if (pastHalf) {
-						pathctx.lineTo(loc[this.l_i].x + this.nt2m.x, loc[this.l_i].y + this.nt2m.y);
-						pathctx.stroke();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
+					pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
+					pathctx.fill();
+					pathctx.stroke();
+					pathctx.closePath();
 
-						pathctx.strokeStyle = pathInGrdStroke;
-						pathctx.lineWidth = stroke;
-						pathctx.moveTo(loc[this.l_i].x + this.nt2m.x, loc[this.l_i].y + this.nt2m.y);
+					//stroke gradient reinforcement
+					pathctx.fillStyle = null;
+					pathctx.lineWidth = 0.8;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					if (pastFirstStop) {
+						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
+						pathctx.stroke();
+						pathctx.closePath();
+						pathctx.beginPath();
+						pathctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
+					} else {
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
 						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+					}
+					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
+					pathctx.stroke();
+					pathctx.closePath();
+
+					if (pastSecondStop) {
+						pathctx.beginPath();
+						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
+						pathctx.stroke();
+						pathctx.closePath();
+					}
+
+					//inside line
+					// pathctx.fillStyle = null;
+					// pathctx.strokeStyle = pathGrdStroke;
+					// pathctx.lineWidth = stroke;
+					// pathctx.beginPath();
+					// pathctx.moveTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
+					// pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+					// pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+					// pathctx.closePath();
+					// pathctx.stroke();
+				} else {
+					//outside line
+					pathctx.strokeStyle = pathGrdStroke;
+					pathctx.lineWidth = stroke;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+					pathctx.stroke();
+					pathctx.closePath();
+
+					//gradient reinforcement (prevents fading, 0.5 + 0.5 opacity is not 1, but apparently 0.5*4 is)
+					//stroke gradient reinforcement
+					pathctx.fillStyle = null;
+					pathctx.lineWidth = 0.8;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					if (pastFirstStop) {
 						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
 					} else {
-						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
 					}
 					pathctx.stroke();
-				}
-				//outside line
-				pathctx.strokeStyle = pathOutGrdStroke;
-				pathctx.lineWidth = stroke;
-				pathctx.beginPath();
-				pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
-				if (pastHalf) {
-					pathctx.lineTo(loc[this.l_i].x + this.nt1m.x, loc[this.l_i].y + this.nt1m.y);
 					pathctx.closePath();
-					pathctx.stroke();
-					pathctx.strokeStyle = pathInGrdStroke;
-					pathctx.lineWidth = stroke;
-					pathctx.moveTo(loc[this.l_i].x + this.nt1m.x, loc[this.l_i].y + this.nt1m.y);
-					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-				} else {
-					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+
+					if (pastSecondStop) {
+						pathctx.beginPath();
+						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.stroke();
+						pathctx.closePath();
+					}
 				}
-				pathctx.closePath();
-				pathctx.stroke();
 			}
 		}
 
@@ -627,6 +655,21 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 
 			offset = new Point(0, 0);
 			offset = offset.polar(n0r*this.arcSpan, angle - Math.PI/2);
+			// if (false === breaking) {
+			// 	ctx.stroke();
+			// 	ctx.closePath();
+			//
+			// 	ctx.strokeStyle = null;
+			// 	ctx.fillStyle = '#FF0000';
+			// 	ctx.beginPath();
+			// 	ctx.arc(charDir[this.c_i][hold_n_i].n1t1.x + n0l.x,charDir[this.c_i][hold_n_i].n1t1.y + n0l.y,1,0,Math.PI*2);
+			// 	ctx.closePath();
+			// 	ctx.fill();
+			//
+			// 	ctx.strokeStyle = '#000000'
+			// 	ctx.lineWidth = stroke;
+			// 	ctx.beginPath();
+			// }
 			ctx.moveTo(charDir[this.c_i][hold_n_i].n1t1.x + n0l.x, charDir[this.c_i][hold_n_i].n1t1.y + n0l.y);
 			ctx.lineTo(charDir[this.c_i][hold_n_i].n1t1.x + n0l.x + offset.x, charDir[this.c_i][hold_n_i].n1t1.y + n0l.y + offset.y);
 		} else {
