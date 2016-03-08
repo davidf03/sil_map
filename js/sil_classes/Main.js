@@ -61,7 +61,7 @@ function Main() {
 	// 		);
 	// 	}
 	// }
-	now = charDir.length - 1;
+	// now = charDir.length - 1;
 }
 Main.prototype.genCharObj = function() {
 	charConsole = document.querySelector('.charConsole .main');
@@ -214,7 +214,7 @@ Main.prototype.redraw = function() {
 				var cni = timeDir[csi][0][1];
 			}
 			if (rift && 1 <= riftBridge.x || false === rift && now >= csi && ((bridge[cci].x >= moveQueue[0][2] || bridge[cci].x >= bridge[cci].e) || cni + 1 < charDir[cci].length && now >= charDir[cci][cni + 1].s_i)) {
-				console.log(moveQueue[0]);
+				// console.log(moveQueue[0]);
 				var tsi = moveQueue[0][3];
 				bridge[timeDir[tsi][0][0]].i = moveQueue[0][4];
 				bridge[timeDir[tsi][0][0]].e = moveQueue[0][5];
@@ -258,7 +258,7 @@ Main.prototype.redraw = function() {
 				// 		console.log(now+" <= "+charDir[cci][cni - 1].s_i);
 				// 	}
 				// }
-				console.log(moveQueue[0]);
+				// console.log(moveQueue[0]);
 				var tsi = moveQueue[0][3];
 				bridge[timeDir[tsi][0][0]].i = moveQueue[0][4];
 				bridge[timeDir[tsi][0][0]].e = moveQueue[0][5];
@@ -283,6 +283,9 @@ Main.prototype.redraw = function() {
 	}
 
 	//clearing intermediate canvases
+	var test = document.getElementById('test');
+	var testctx = test.getContext('2d');
+	testctx.clearRect(0,0,test.width,test.height);
 	var update = document.getElementById('update');
 	var upctx = update.getContext('2d');
 	upctx.clearRect(0,0,update.width,update.height);
@@ -338,6 +341,7 @@ Main.prototype.redraw = function() {
 	// this.visLoc();
 	// ctx.drawImage(paths, 0, 0);
 	ctx.drawImage(update, 0, 0);
+	ctx.drawImage(test, 0, 0);
 	// ctx.globalAlpha = 0.35;
 	// ctx.drawImage(lines, 0, 0);
 	// ctx.globalAlpha = 1;
@@ -851,12 +855,12 @@ Main.prototype.continuousPrev = function(c_i) {
 		}
 	}
 
-	for (i = 0; i < active.length; i++)
-		console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
-	for (i = 0; i < moveQueue.length; i++)
-		console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
-	for (i = 0; i < moveQueue.length; i++)
-		console.log(moveQueue[i]);
+	// for (i = 0; i < active.length; i++)
+	// 	console.log(active[i]+":"+(timeDir[active[i]][1][1] + Detect.findInterval(active[i], false, 0)));
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	console.log(moveQueue[i][3]+":"+(timeDir[moveQueue[i][3]][1][1] + Detect.findInterval(moveQueue[i][3], false, 0)));
+	// for (i = 0; i < moveQueue.length; i++)
+	// 	console.log(moveQueue[i]);
 
 	idle = false;
 	this.redraw();
