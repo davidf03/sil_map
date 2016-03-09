@@ -105,4 +105,43 @@ function init() {
 	// ctx.fillStyle = hexToRGB('#000000', 0.5);
 	// ctx.fillRect(p1.x,p1.y+120,100,50);
 	// ctx.fillRect(p1.x,p1.y+120,100,50);
+
+	var findIntercept = function(height, exRad, wayRad, loc, wayLoc, inbound) {
+		// var canvas = document.getElementById('canvas');
+		// var ctx = canvas.getContext('2d');
+		//
+		// ctx.strokeStyle = '#00FF00';
+		// ctx.beginPath();
+		// ctx.arc(loc.x, loc.y, height, 0, 2*Math.PI);
+		// ctx.stroke();
+		// ctx.closePath();
+		// ctx.strokeStyle = '#FF0000';
+		// ctx.beginPath();
+		// ctx.arc(loc.x, loc.y, exRad, 0, 2*Math.PI);
+		// ctx.stroke();
+		// ctx.closePath();
+		// ctx.strokeStyle = '#0000FF';
+		// ctx.beginPath();
+		// ctx.arc(wayLoc.x, wayLoc.y, wayRad, 0, 2*Math.PI);
+		// ctx.stroke();
+		// ctx.closePath();
+		//
+		// ctx.strokeStyle = null;
+		// ctx.fillStyle = '#FF0000';
+
+		var xDiff = wayLoc.x - loc.x, yDiff = wayLoc.y - loc.y;
+		var dist = Math.sqrt(xDiff*xDiff + yDiff*yDiff);
+		var compound = Math.atan2(wayRad - height, dist) + Math.asin(height/exRad);
+		if (inbound) compound = -compound;
+		var angle = -(compound - Math.atan2(yDiff, xDiff))%(Math.PI*2);
+		if (0 > angle) angle += Math.PI*2;
+
+		var intercept = new Point(0,0);
+		intercept = offset.polar(exRad, angle);
+
+		intercept.x += loc.x, intercept.y += loc.y;
+		return intercept;
+	}
+
+	// findIntercept(20, 60, 40, new Point(60, 60), new Point(300, 60), true);
 }

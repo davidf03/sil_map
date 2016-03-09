@@ -39,40 +39,19 @@ Node.prototype.getloc = function() { return loc[this.l_i];}
 Node.prototype.recolour = function(newCol) { this.col = newCol; this.genNode();}
 
 // 0.1 works for denominators as far as tests conduncted were concerned; however 0.0001 does not, 0.01 did not work once
-Node.prototype.findIntercepts = function(p1, p2, c_loc, c_rad, ref_loc) {
-	// console.log("p1     "+p1.x+":"+p1.y);
-	// console.log("p2     "+p2.x+":"+p2.y);
-	// console.log("cl     "+c_loc.x+":"+c_loc.y);
-	// console.log("cr     "+c_rad);
-	// console.log("rl     "+ref_loc.x+":"+ref_loc.y);
-	var denTerm = p2.x - p1.x;
-	if (denTerm == 0) { denTerm = 0.1;}
-	var slope = (p2.y - p1.y)/denTerm;
-	var int_lb = p2.y - slope*p2.x;
-	var int_a = slope*slope + 1;
-	var int_b = 2*(slope*(int_lb - c_loc.y) - c_loc.x);
-	var int_c = c_loc.x*c_loc.x + (int_lb - c_loc.y)*(int_lb - c_loc.y) - c_rad*c_rad;
-	var int_sqrt = Math.sqrt(int_b*int_b - 4*int_a*int_c);
+Node.prototype.findIntercepts = function(height, exRad, wayRad, loc, wayLoc, inbound) {
+	var xDiff = wayLoc.x - loc.x, yDiff = wayLoc.y - loc.y;
+	var dist = Math.sqrt(xDiff*xDiff + yDiff*yDiff);
+	var compound = Math.atan2(wayRad - height, dist) + Math.asin(height/exRad);
+	if (inbound) compound = -compound;
+	var angle = -(compound - Math.atan2(yDiff, xDiff))%(Math.PI*2);
+	if (0 > angle) angle += Math.PI*2;
 
-	denTerm = 2*int_a;
-	if (denTerm == 0) { denTerm = 0.1;}
-	var int_x1 = (-int_b + int_sqrt)/denTerm;
-	var int_x2 = (-int_b - int_sqrt)/denTerm;
-	var int_y1 = Math.sqrt(c_rad*c_rad - (int_x1 - c_loc.x)*(int_x1 - c_loc.x)) + c_loc.y;
-	var int_y2 = Math.sqrt(c_rad*c_rad - (int_x2 - c_loc.x)*(int_x2 - c_loc.x)) + c_loc.y;
+	var intercept = new Point(0,0);
+	intercept = intercept.polar(exRad, angle);
 
-	if (Math.floor(int_y1) != Math.floor(slope*int_x1 + int_lb)) {
-		int_y1 -= 2*(int_y1 - c_loc.y);}
-	if (Math.floor(int_y2) != Math.floor(slope*int_x2 + int_lb)) {
-		int_y2 -= 2*(int_y2 - c_loc.y);}
-	var d1 = Math.sqrt((ref_loc.x - int_x1)*(ref_loc.x - int_x1) + (ref_loc.y - int_y1)*(ref_loc.y - int_y1));
-	var d2 = Math.sqrt((ref_loc.x - int_x2)*(ref_loc.x - int_x2) + (ref_loc.y - int_y2)*(ref_loc.y - int_y2));
-	if (d2 > d1) {
-		// console.log("return "+int_x1+":"+int_y1);
-		return new Point(int_x1, int_y1);
-	} else {
-		// console.log("return "+int_x2+":"+int_y2);
-		return new Point(int_x2, int_y2);}
+	intercept.x += loc.x, intercept.y += loc.y;
+	return intercept;
 }
 Node.prototype.findTangentPoints = function(n0l, n0r, n1r) {
 	var p, px, py;
@@ -163,8 +142,6 @@ Node.prototype.findTangentPoints = function(n0l, n0r, n1r) {
 		this.n1t1 = t3;}
 }
 Node.prototype.genPath = function(channel, active) {
-	// console.log('---');
-	// console.log(channel, active, this.n_i+":"+parseInt(charDir[this.c_i].length - 1), this.l_y+":"+parseInt(locDir[this.l_x].length - 1));
 	this.lastBridge = bridge[this.c_i].x;
 	var n0l = new Point(loc[this.lastNode.l_i].x - loc[this.l_i].x, loc[this.lastNode.l_i].y - loc[this.l_i].y);
 	var n0r = this.getLastRadius();
@@ -177,32 +154,220 @@ Node.prototype.genPath = function(channel, active) {
 	var canvas = document.getElementById('location');
 	var ctx = canvas.getContext('2d');
 
-	if (3 === channel && active) {
-		if (n0r == n1r) {
-			var xTerm = n0l.x, yTerm = n0l.y;
-			if (xTerm == 0) xTerm = 0.1;
-			if (yTerm == 0) yTerm = 0.1;
+	//working variables and main path
+	if (3 === channel) {
+	 	if (active) {
+			//path guides activity
+			if (n0r == n1r) {
+				var xTerm = n0l.x, yTerm = n0l.y;
+				if (xTerm == 0) xTerm = 0.1;
+				if (yTerm == 0) yTerm = 0.1;
 
-			angle = -Math.atan2(-xTerm, -yTerm);
-			offset = offset.polar(n1r, angle);
-			this.n0t1 = new Point(n0l.x + offset.x, n0l.y + offset.y);
-			this.n1t1 = new Point(offset.x, offset.y);
+				angle = -Math.atan2(-xTerm, -yTerm);
+				offset = offset.polar(n1r, angle);
+				this.n0t1 = new Point(n0l.x + offset.x, n0l.y + offset.y);
+				this.n1t1 = new Point(offset.x, offset.y);
+			} else {
+				this.findTangentPoints(n0l, n0r, n1r);
+			}
+
+			xTerm = this.n1t1.x, yTerm = this.n1t1.y;
+			if (0 === xTerm) xTerm = 0.1;
+			if (0 === yTerm) yTerm = 0.1;
+			angle = Math.atan2(yTerm, xTerm);
+			var lastRadius = this.lastAnc*radius;
+			offset = offset.polar(-lastRadius, angle);
+			this.n0t2 = new Point(this.n0t1.x + offset.x, this.n0t1.y + offset.y);
+			this.n1t2 = new Point(this.n1t1.x + offset.x, this.n1t1.y + offset.y);
+
+			this.n0t2e = this.findIntercepts(n0r - lastRadius, n0r, n1r - lastRadius, n0l, new Point(0,0), false);
+			this.n1t2e = this.findIntercepts(n1r - lastRadius, n1r, n0r - lastRadius, new Point(0,0), n0l, true);
+
+			//fragment guides activity
+			if (locData[this.lastNode.l_x][0][this.lastNode.l_y][0] < locData[this.lastNode.l_x][1][0]) {
+				this.n0e2 = this.findIntercepts(n0r - lastRadius, (locData[this.lastNode.l_x][1][0] + 1)*radius, n1r - lastRadius, n0l, new Point(0, 0), false);
+			} else {
+				this.n0e2 = new Point(this.n0t2e.x, this.n0t2e.y);
+			}
+			this.n0e1 = new Point(this.n0e2.x - offset.x, this.n0e2.y - offset.y);
+
+			var gradOffset = new Point(0, 0);
+			gradOffset = offset.polar(fadeRange*radius, Math.atan2(this.n1t1.y - this.n0t1.y, this.n1t1.x - this.n0t1.x));
+			this.n0g1 = new Point(this.n0e2.x - offset.x + gradOffset.x, this.n0e2.y - offset.y + gradOffset.y);
+			this.n0g2 = new Point(this.n0e2.x + gradOffset.x, this.n0e2.y + gradOffset.y);
+
+			if (locData[this.l_x][0][this.l_y][0] < locData[this.l_x][1][0]) {
+				this.n1e2 = this.findIntercepts(n1r - lastRadius, (locData[this.l_x][1][0] + 1)*radius, n0r - lastRadius, new Point(0, 0), n0l, true);
+			} else {
+				this.n1e2 = new Point(this.n1t2e.x, this.n1t2e.y);
+			}
+			this.n1e1 = new Point(this.n1e2.x - offset.x, this.n1e2.y - offset.y);
+
+			this.n1g1 = new Point(this.n1e2.x - offset.x - gradOffset.x, this.n1e2.y - offset.y - gradOffset.y);
+			this.n1g2 = new Point(this.n1e2.x - gradOffset.x, this.n1e2.y - gradOffset.y);
+		}
+		//determining path draw limit
+		if (this.present) {
+			this.outDrawLimit = this.n1t1;
+			this.inDrawLimit = this.n1t2;
 		} else {
-			this.findTangentPoints(n0l, n0r, n1r);
+			this.outDrawLimit = new Point(this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge));;
+			this.inDrawLimit = new Point(this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge));
 		}
 
-		xTerm = this.n1t1.x, yTerm = this.n1t1.y;
-		if (0 === xTerm) xTerm = 0.1;
-		if (0 === yTerm) yTerm = 0.1;
-		angle = Math.atan2(yTerm, xTerm);
-		offset = offset.polar(-this.lastAnc*radius, angle);
-		this.n0t2 = new Point(this.n0t1.x + offset.x, this.n0t1.y + offset.y);
-		this.n1t2 = new Point(this.n1t1.x + offset.x, this.n1t1.y + offset.y);
+		//fragment-connecting main path
+		var xDiff = this.n1e2.x - this.n0e2.x, yDiff = this.n1e2.y - this.n0e2.y;
+		if (Math.sqrt(xDiff*xDiff + yDiff*yDiff) > fadeRange*radius) {
 
-		this.n0t2e = this.findIntercepts(this.n0t2, this.n1t2, n0l, n0r, new Point(0, 0));
-		this.n1t2e = this.findIntercepts(this.n0t2, this.n1t2, new Point(0, 0), n1r, n0l);
+			var paths = document.querySelector('.paths');
+			var pathctx = paths.getContext('2d');
+
+			//marking path extent
+			this.pastRadius = false, this.pastEdge = false, this.pastFirstStop = false, this.pastSecondStop = false;
+			if (this.present) {
+				this.pastRadius = true, this.pastEdge = true, this.pastFirstStop = true, this.pastSecondStop = true;
+			} else {
+				var trueXDiff = this.inDrawLimit.x - this.n0t2.x, trueYDiff = this.inDrawLimit.y - this.n0t2.y;
+				var trueDiff = Math.sqrt(trueXDiff*trueXDiff + trueYDiff*trueYDiff);
+				var testXDiff = this.n0g2.x - this.n0t2.x, testYDiff = this.n0g2.y - this.n0t2.y;
+				if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
+					this.pastFirstStop = true;
+					this.pastEdge = true;
+					this.pastRadius = true;
+					testXDiff = this.n1g2.x - this.n0t2.x, testYDiff = this.n1g2.y - this.n0t2.y;
+					if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
+						this.pastSecondStop = true;
+					}
+				} else {
+					testXDiff = this.n0e2.x - this.n0t2.x, testYDiff = this.n0e2.y - this.n0t2.y;
+					if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
+						this.pastEdge = true;
+						this.pastRadius = true;
+					} else {
+						testXDiff = this.n0t2e.x - this.n0t2.x, testYDiff = this.n0t2e.y - this.n0t2.y;
+						if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
+							this.pastRadius = true;
+						}
+					}
+				}
+			}
+			//path
+			if (this.pastEdge) {
+				var pathXLen = this.n1e2.x - this.n0e2.x, pathYLen = this.n1e2.y - this.n0e2.y;
+				var stopProportion = fadeRange*radius/Math.sqrt(pathXLen*pathXLen + pathYLen*pathYLen);
+
+				var pathGrdStroke = pathctx.createLinearGradient(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y, loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
+				pathGrdStroke.addColorStop(0, this.hexToRGB('#000000', 0));//inverted alphas compared to node[In/Out]Grd
+				pathGrdStroke.addColorStop(stopProportion, this.hexToRGB('#000000', 1));
+				pathGrdStroke.addColorStop(1 - stopProportion, this.hexToRGB('#000000', 1));
+				pathGrdStroke.addColorStop(1, this.hexToRGB('#000000', 0));
+
+				if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) === false) {
+					//path fill
+					var pathGrdFill = pathctx.createLinearGradient(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y, loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
+					pathGrdFill.addColorStop(0, this.hexToRGB(this.baseCol, 0));
+					pathGrdFill.addColorStop(stopProportion, this.hexToRGB(this.baseCol, 1));
+					pathGrdFill.addColorStop(1 - stopProportion, this.hexToRGB(this.baseCol, 1));
+					pathGrdFill.addColorStop(1, this.hexToRGB(this.baseCol, 0));
+
+					//fill gradient reinforcement
+					pathctx.fillStyle = pathGrdFill;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					if (this.pastFirstStop) {
+						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
+					} else {
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+					}
+					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
+					pathctx.fill();
+					pathctx.closePath();
+					if (this.pastSecondStop) {
+						pathctx.beginPath();
+						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
+						pathctx.fill();
+						pathctx.closePath();
+					}
+
+					//main path
+					pathctx.strokeStyle = pathGrdStroke;
+					pathctx.lineWidth = stroke;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
+					pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
+					pathctx.fill();
+					pathctx.stroke();
+					pathctx.closePath();
+
+					//stroke gradient reinforcement
+					pathctx.fillStyle = null;
+					pathctx.lineWidth = stroke*0.8;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					if (this.pastFirstStop) {
+						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
+						pathctx.stroke();
+						pathctx.closePath();
+						pathctx.beginPath();
+						pathctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
+					} else {
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+					}
+					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
+					pathctx.stroke();
+					pathctx.closePath();
+					if (this.pastSecondStop) {
+						pathctx.beginPath();
+						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+						pathctx.lineTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
+						pathctx.stroke();
+						pathctx.closePath();
+					}
+				} else {
+					//outside line
+					pathctx.strokeStyle = pathGrdStroke;
+					pathctx.lineWidth = stroke;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+					pathctx.stroke();
+					pathctx.closePath();
+
+					//stroke gradient reinforcement
+					pathctx.fillStyle = null;
+					pathctx.lineWidth = stroke*0.8;
+					pathctx.beginPath();
+					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
+					if (this.pastFirstStop) {
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+					} else {
+						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
+					}
+					pathctx.stroke();
+					pathctx.closePath();
+					if (this.pastSecondStop) {
+						pathctx.beginPath();
+						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
+						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+						pathctx.stroke();
+						pathctx.closePath();
+					}
+				}
+			}
+		}
 	}
-	// path break
+
+	// path break and outbound fragment
 	if (1 === channel) {
 		/* Anchoring path to previous node */
 		ctx.fillStyle = this.baseCol;
@@ -214,107 +379,7 @@ Node.prototype.genPath = function(channel, active) {
 		/* Capping to anchor paths of nodes interior */
 		//activity could be monitored here to reduce calls to findIntercepts within
 		this.genPathCaps(true, loc[this.lastNode.l_i], n0r);
-	}
-	//fragment guides
-	if (3 === channel) {
-		if (active) {
-			if (locData[this.lastNode.l_x][0][this.lastNode.l_y][0] < locData[this.lastNode.l_x][1][0]) {
-				this.n0e2 = this.findIntercepts(this.n0t2, this.n1t2, n0l, (locData[this.lastNode.l_x][1][0] + 1)*radius, this.n1t2);
-			} else {
-				this.n0e2 = new Point(this.n0t2e.x, this.n0t2e.y);
-			}
-			this.n0e1 = new Point(this.n0e2.x - offset.x, this.n0e2.y - offset.y);
 
-			var gradOffset = new Point(0, 0);
-			gradOffset = offset.polar(fadeRange*radius, Math.atan2(this.n1t1.y - this.n0t1.y, this.n1t1.x - this.n0t1.x));
-			this.n0g1 = new Point(this.n0e2.x - offset.x + gradOffset.x, this.n0e2.y - offset.y + gradOffset.y);
-			this.n0g2 = new Point(this.n0e2.x + gradOffset.x, this.n0e2.y + gradOffset.y);
-
-			if (locData[this.l_x][0][this.l_y][0] < locData[this.l_x][1][0]) { this.n1e2 = this.findIntercepts(this.n0t2, this.n1t2, new Point(0,0), (locData[this.l_x][1][0] + 1)*radius, this.n0t2);}
-			else { this.n1e2 = new Point(this.n1t2e.x, this.n1t2e.y);}
-			this.n1e1 = new Point(this.n1e2.x - offset.x, this.n1e2.y - offset.y);
-
-			this.n1g1 = new Point(this.n1e2.x - offset.x - gradOffset.x, this.n1e2.y - offset.y - gradOffset.y);
-			this.n1g2 = new Point(this.n1e2.x - gradOffset.x, this.n1e2.y - gradOffset.y);
-		}
-
-		//checking status
-		if (this.present) {
-			this.outDrawLimit = this.n1t1;
-			this.inDrawLimit = this.n1t2;
-		} else {
-			this.outDrawLimit = new Point(this.n1t1.x - (this.n1t1.x - this.n0t1.x)*(1 - this.lastBridge), this.n1t1.y - (this.n1t1.y - this.n0t1.y)*(1 - this.lastBridge));;
-			this.inDrawLimit = new Point(this.n1t2.x - (this.n1t2.x - this.n0t2.x)*(1 - this.lastBridge), this.n1t2.y - (this.n1t2.y - this.n0t2.y)*(1 - this.lastBridge));
-		}
-		if (false === this.present) {
-			var xdif = this.n1t1.x - this.n0t1.x, ydif = this.n1t1.y - this.n0t1.y;
-			this.underComp = Math.sqrt(xdif*xdif + ydif*ydif);
-			xdif = this.n0g1.x - this.n0t1.x, ydif = this.n0g1.y - this.n0t1.y;
-			this.overComp = Math.sqrt(xdif*xdif + ydif*ydif);
-			this.compDiff = this.overComp - this.underComp*this.lastBridge;
-		}
-	}
-	// if (isNaN(this.n0e2.x) || isNaN(this.n0e2.y) || isNaN(this.n1e2.x) || isNaN(this.n1e2.y)) {
-	// 	var canvas2 = document.getElementById('canvas');
-	// 	var mainctx = canvas2.getContext('2d');
-	//
-	// 	console.log(this.c_i+":"+this.n_i+","+parseInt(this.n_i - 1));
-	// 	console.log(this.l_x+":"+this.l_y);
-	// 	console.log(this.lastNode.l_x+":"+this.lastNode.l_y);
-	// 	// console.log(this.n0t2, this.n1t2, n0l, n0r, n1r);
-	// 	mainctx.strokeStyle = "#0000FF";
-	// 	mainctx.lineWidth = stroke;
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x, loc[this.l_i].y, (locData[this.l_x][1][0] + 1)*radius, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.stroke();
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x + n0l.x, loc[this.l_i].y + n0l.y, (locData[this.lastNode.l_x][1][0] + 1)*radius, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.stroke();
-	// 	mainctx.strokeStyle = "#000000";
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x, loc[this.l_i].y, (locData[this.l_x][0][this.l_y][0] + 1)*radius, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.stroke();
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x + n0l.x, loc[this.l_i].y + n0l.y, (locData[this.lastNode.l_x][0][this.lastNode.l_y][0] + 1)*radius, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.stroke();
-	// 	mainctx.strokeStyle = "#676767";
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x, loc[this.l_i].y, n1r, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.stroke();
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x + n0l.x, loc[this.l_i].y + n0l.y, n0r, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.stroke();
-	//
-	// 	mainctx.strokeStyle = null;
-	// 	mainctx.fillStyle = '#FF0000'
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y, 2, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.fill();
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x + this.n0t2.x, loc[this.l_i].y + this.n0t2.y, 1, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.fill();
-	//
-	// 	mainctx.fillStyle = '#00FF00';
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y, 2, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.fill();
-	// 	mainctx.beginPath();
-	// 	mainctx.arc(loc[this.l_i].x + this.n1t2.x, loc[this.l_i].y + this.n1t2.y, 1, 0, Math.PI*2);
-	// 	mainctx.closePath();
-	// 	mainctx.fill();
-	// }
-
-	//outbound fragment
-	if (1 === channel) {
 		var gp1 = new Point(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
 		var gp2 = new Point(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
 		if (gp1.x === gp2.x) gp2.x += 0.01;
@@ -427,6 +492,7 @@ Node.prototype.genPath = function(channel, active) {
 			ctx.closePath();
 		}
 	}
+
 	//inbound fragment
 	if (2 === channel) {
 		if (this.pastSecondStop) {
@@ -500,181 +566,32 @@ Node.prototype.genPath = function(channel, active) {
 			}
 		}
 	}
-	//path and line overlays
-	if (3 === channel) {
-		var xDiff = this.n1e2.x - this.n0e2.x, yDiff = this.n1e2.y - this.n0e2.y;
-		if (Math.sqrt(xDiff*xDiff + yDiff*yDiff) > fadeRange*radius) {
 
-			var paths = document.querySelector('.paths');
-			var pathctx = paths.getContext('2d');
-
-			this.pastRadius = false, this.pastEdge = false, this.pastFirstStop = false, this.pastSecondStop = false;
-			if (this.present) {
-				this.pastRadius = true, this.pastEdge = true, this.pastFirstStop = true, this.pastSecondStop = true;
-			} else {
-				var trueXDiff = this.inDrawLimit.x - this.n0t2.x, trueYDiff = this.inDrawLimit.y - this.n0t2.y;
-				var trueDiff = Math.sqrt(trueXDiff*trueXDiff + trueYDiff*trueYDiff);
-				var testXDiff = this.n0g2.x - this.n0t2.x, testYDiff = this.n0g2.y - this.n0t2.y;
-				if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
-					this.pastFirstStop = true;
-					this.pastEdge = true;
-					this.pastRadius = true;
-					testXDiff = this.n1g2.x - this.n0t2.x, testYDiff = this.n1g2.y - this.n0t2.y;
-					if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
-						this.pastSecondStop = true;
-					}
-				} else {
-					testXDiff = this.n0e2.x - this.n0t2.x, testYDiff = this.n0e2.y - this.n0t2.y;
-					if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
-						this.pastEdge = true;
-						this.pastRadius = true;
-					} else {
-						testXDiff = this.n0t2e.x - this.n0t2.x, testYDiff = this.n0t2e.y - this.n0t2.y;
-						if (trueDiff > Math.sqrt(testXDiff*testXDiff + testYDiff*testYDiff)) {
-							this.pastRadius = true;
-						}
-					}
-				}
-			}
-			if (this.pastEdge) {
-				var pathXLen = this.n1e2.x - this.n0e2.x, pathYLen = this.n1e2.y - this.n0e2.y;
-				var stopProportion = fadeRange*radius/Math.sqrt(pathXLen*pathXLen + pathYLen*pathYLen);
-
-				var pathGrdStroke = pathctx.createLinearGradient(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y, loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
-				pathGrdStroke.addColorStop(0, this.hexToRGB('#000000', 0));//inverted alphas compared to node[In/Out]Grd
-				pathGrdStroke.addColorStop(stopProportion, this.hexToRGB('#000000', 1));
-				pathGrdStroke.addColorStop(1 - stopProportion, this.hexToRGB('#000000', 1));
-				pathGrdStroke.addColorStop(1, this.hexToRGB('#000000', 0));
-
-				if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) === false) {
-					//path fill
-					var pathGrdFill = pathctx.createLinearGradient(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y, loc[this.l_i].x + this.n1e2.x, loc[this.l_i].y + this.n1e2.y);
-					pathGrdFill.addColorStop(0, this.hexToRGB(this.baseCol, 0));
-					pathGrdFill.addColorStop(stopProportion, this.hexToRGB(this.baseCol, 1));
-					pathGrdFill.addColorStop(1 - stopProportion, this.hexToRGB(this.baseCol, 1));
-					pathGrdFill.addColorStop(1, this.hexToRGB(this.baseCol, 0));
-
-					//fill gradient reinforcement
-					pathctx.fillStyle = pathGrdFill;
-					pathctx.beginPath();
-					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
-					if (this.pastFirstStop) {
-						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
-						pathctx.lineTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
-					} else {
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-					}
-					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
-					pathctx.fill();
-					pathctx.closePath();
-					if (this.pastSecondStop) {
-						pathctx.beginPath();
-						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
-						pathctx.fill();
-						pathctx.closePath();
-					}
-
-					//main path
-					pathctx.strokeStyle = pathGrdStroke;
-					pathctx.lineWidth = stroke;
-					pathctx.beginPath();
-					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
-					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y)
-					pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
-					pathctx.fill();
-					pathctx.stroke();
-					pathctx.closePath();
-
-					//stroke gradient reinforcement
-					pathctx.fillStyle = null;
-					pathctx.lineWidth = stroke*0.8;
-					pathctx.beginPath();
-					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
-					if (this.pastFirstStop) {
-						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
-						pathctx.stroke();
-						pathctx.closePath();
-						pathctx.beginPath();
-						pathctx.moveTo(loc[this.l_i].x + this.n0g2.x, loc[this.l_i].y + this.n0g2.y);
-					} else {
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-					}
-					pathctx.lineTo(loc[this.l_i].x + this.n0e2.x, loc[this.l_i].y + this.n0e2.y);
-					pathctx.stroke();
-					pathctx.closePath();
-					if (this.pastSecondStop) {
-						pathctx.beginPath();
-						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-						pathctx.lineTo(loc[this.l_i].x + this.n1g2.x, loc[this.l_i].y + this.n1g2.y);
-						pathctx.stroke();
-						pathctx.closePath();
-					}
-				} else {
-					//outside line
-					pathctx.strokeStyle = pathGrdStroke;
-					pathctx.lineWidth = stroke;
-					pathctx.beginPath();
-					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
-					pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-					pathctx.stroke();
-					pathctx.closePath();
-
-					//gradient reinforcement (prevents fading, 0.5 + 0.5 opacity is not 1, but apparently 0.5*4 is)
-					//stroke gradient reinforcement
-					pathctx.fillStyle = null;
-					pathctx.lineWidth = stroke*0.8;
-					pathctx.beginPath();
-					pathctx.moveTo(loc[this.l_i].x + this.n0e1.x, loc[this.l_i].y + this.n0e1.y);
-					if (this.pastFirstStop) {
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-					} else {
-						pathctx.lineTo(loc[this.l_i].x + this.n0g1.x, loc[this.l_i].y + this.n0g1.y);
-					}
-					pathctx.stroke();
-					pathctx.closePath();
-					if (this.pastSecondStop) {
-						pathctx.beginPath();
-						pathctx.moveTo(loc[this.l_i].x + this.n1g1.x, loc[this.l_i].y + this.n1g1.y);
-						pathctx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-						pathctx.stroke();
-						pathctx.closePath();
-					}
-				}
-			}
-		}
-
-
-		/* line overlay */
-		var lines = document.getElementById('lines');
-		var linectx = lines.getContext('2d');
-
-		linectx.strokeStyle = '#000000';
-		linectx.lineWidth = stroke*0.9;
-		linectx.beginPath();
-		linectx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
-		if (this.present)
-			linectx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y);
-		else
-			linectx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
-		if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) === false) {
-			if (this.present) {
-				linectx.moveTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
-				linectx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
-			} else {
-				linectx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
-				linectx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
-			}
-		}
-		linectx.stroke();
-	}
+	//line overlays
+	// if (3 === channel) {
+	// 	/* line overlay */
+	// 	var lines = document.getElementById('lines');
+	// 	var linectx = lines.getContext('2d');
+	//
+	// 	linectx.strokeStyle = '#000000';
+	// 	linectx.lineWidth = stroke*0.9;
+	// 	linectx.beginPath();
+	// 	linectx.moveTo(loc[this.l_i].x + this.n0t1.x, loc[this.l_i].y + this.n0t1.y);
+	// 	if (this.present)
+	// 		linectx.lineTo(loc[this.l_i].x + this.n1t1.x, loc[this.l_i].y + this.n1t1.y);
+	// 	else
+	// 		linectx.lineTo(loc[this.l_i].x + this.outDrawLimit.x, loc[this.l_i].y + this.outDrawLimit.y);
+	// 	if ((isNaN(this.n1t2e.y) || isNaN(this.n1t2e.x) || isNaN(this.n0t2e.y) || isNaN(this.n0t2e.x)) === false) {
+	// 		if (this.present) {
+	// 			linectx.moveTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
+	// 			linectx.lineTo(loc[this.l_i].x + this.n1t2e.x, loc[this.l_i].y + this.n1t2e.y);
+	// 		} else {
+	// 			linectx.lineTo(loc[this.l_i].x + this.inDrawLimit.x, loc[this.l_i].y + this.inDrawLimit.y);
+	// 			linectx.lineTo(loc[this.l_i].x + this.n0t2e.x, loc[this.l_i].y + this.n0t2e.y);
+	// 		}
+	// 	}
+	// 	linectx.stroke();
+	// }
 }
 Node.prototype.hexToRGB = function(h, alpha) {
 	if (typeof(alpha) === 'undefined') alpha = 1;
@@ -753,13 +670,17 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 				//outbound breaks; outbound paths; inbound paths
 				if (charDir[oth_c].length > oth_n) {
 					if (breaking && this.s_i > charDir[oth_c][oth_n].s_i && false === Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false))
-						this.drawPathCap(n0l, n0r - this.lastAnc*radius/2, oth_c, oth_n, breaking, true);
+						true;
+						// this.drawPathCap(n0l, n0r - this.lastAnc*radius/2, oth_c, oth_n, breaking, true);
 					if (outermost && hold_s_i < charDir[oth_c][oth_n].s_i && (breaking && this.s_i > charDir[oth_c][oth_n].s_i || false === breaking && Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false)))
-						this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, true);
+						true;
+						// this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, true);
 				}
 				oth_n = locDir[hold_l_x][i][1];
 				if (outermost && 0 < oth_n && hold_s_i < charDir[oth_c][oth_n].s_i) {
-					this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, false);}
+					true;
+					// this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, false);
+				}
 			}
 		}
 	}
@@ -920,8 +841,6 @@ function Node(charIndex, nodeIndex, colour, location, timeIndex) {
 		this.n1t1 = new Point(0, 0);
 		this.n1t2 = new Point(0, 0);
 		this.n1t2e = new Point(0, 0);
-		this.nt1m = new Point(0, 0);
-		this.nt2m = new Point(0, 0);
 		// this.pathCaps = new Array();
 		this.n0e1 = new Point(0, 0);
 		this.n0e2 = new Point(0, 0);
