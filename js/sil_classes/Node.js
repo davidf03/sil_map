@@ -20,126 +20,22 @@ var lastAnc, lastBridge, present, moving, waiting;
 var waitNextFunction;
 var moveNextFunction;
 
-/*public static function get c_i() { return this.c_i;}
-public static function get n_i() { return this.n_i;}
-public static function get s_i() { return this.s_i;}
-public static function get l_x() { return this.l_x;}
-public static function get l_y() { return this.l_y;}*/
-
-/*function n0t1() { return this.n0t1;}
-function n1t1() { return this.n1t1;}
-function n0t2() { return this.n0t2;}
-function n0t2e() { return this.n0t2e;}
-function n1t2() { return this.n1t2;}
-function n1t2e() { return this.n1t2e;}*/
-
 Node.prototype.getRadius = function() { return (this.oth + 1)*radius;}
 Node.prototype.getLastRadius = function() { return (this.lastOth + 1)*radius;}
 Node.prototype.getloc = function() { return loc[this.l_i];}
 Node.prototype.recolour = function(newCol) { this.col = newCol; this.genNode();}
 
-// 0.1 works for denominators as far as tests conduncted were concerned; however 0.0001 does not, 0.01 did not work once
-Node.prototype.findIntercepts = function(height, exRad, wayRad, loc, wayLoc, inbound) {
-	var xDiff = wayLoc.x - loc.x, yDiff = wayLoc.y - loc.y;
-	var dist = Math.sqrt(xDiff*xDiff + yDiff*yDiff);
-	var compound = Math.atan2(wayRad - height, dist) + Math.asin(height/exRad);
+Node.prototype.findIntercepts = function(rad, exRad, wayRad, loc, wayLoc, inbound) {
+	var diff = new Point(wayLoc.x - loc.x, wayLoc.y - loc.y);
+	var dist = Math.sqrt(diff.x*diff.x + diff.y*diff.y);
+	var compound = Math.atan2(wayRad - rad, dist) + Math.asin(rad/exRad);
 	if (inbound) compound = -compound;
-	var angle = -(compound - Math.atan2(yDiff, xDiff))%(Math.PI*2);
-	if (0 > angle) angle += Math.PI*2;
+	var angle = (Math.atan2(diff.y, diff.x) - compound)%(Math.PI*2);
 
 	var intercept = new Point(0,0);
 	intercept = intercept.polar(exRad, angle);
-
 	intercept.x += loc.x, intercept.y += loc.y;
 	return intercept;
-}
-Node.prototype.findTangentPoints = function(n0l, n0r, n1r) {
-	var p, px, py;
-	if (n1r > n0r) {
-		px = n0l.x * n1r;
-		px /= n1r - n0r;
-		py = n0l.y * n1r;
-		py /= n1r - n0r;
-		p = new Point(px, py);
-	} else if (n0r > n1r) {
-		px = -(n0l.x * n1r);
-		px /= n0r - n1r;
-		py = -(n0l.y * n1r);
-		py /= n0r - n1r;
-		p = new Point(px, py);
-	}
-	// console.log(p, px, py);
-
-	var t1, t2, t3, t4;
-
-	var denTerm = (p.x - n0l.x) * (p.x - n0l.x);
-	denTerm += (p.y - n0l.y) * (p.y - n0l.y);
-	if (denTerm == 0) { denTerm = 0.1;}
-	var numRight = (p.x - n0l.x) * (p.x - n0l.x);
-	numRight = numRight + (p.y - n0l.y) * (p.y - n0l.y);
-	numRight = numRight - n0r * n0r;
-	numRight = Math.sqrt(numRight);
-
-	var xNumRight = n0r * (p.y - n0l.y);
-	xNumRight = xNumRight * numRight;
-	var x0 = n0r * n0r * (p.x - n0l.x);
-	var x1 = x0 + xNumRight;
-	x1 = x1 / denTerm;
-	x1 = x1 + n0l.x;
-	var x2 = x0 - xNumRight;
-	x2 = x2 / denTerm;
-	x2 = x2 + n0l.x;
-
-	var yNumRight = n0r * (p.x - n0l.x);
-	yNumRight = yNumRight * numRight;
-	var y0 = n0r * n0r * (p.y - n0l.y);
-	var y1 = y0 + yNumRight;
-	y1 = y1 / denTerm;
-	y1 = y1 + n0l.y;
-	var y2 = y0 - yNumRight;
-	y2 = y2 / denTerm;
-	y2 = y2 + n0l.y;
-
-	t1 = new Point(x1, y2);
-	t2 = new Point(x2, y1);
-
-	denTerm = p.x * p.x;
-	denTerm += p.y * p.y;
-	if (denTerm == 0) { denTerm = 0.1;}
-	numRight = p.x * p.x;
-	numRight = numRight + p.y * p.y;
-	numRight = numRight - n1r * n1r;
-	numRight = Math.sqrt(numRight);
-
-	xNumRight = n1r * p.y;
-	xNumRight = xNumRight * numRight;
-	x0 = n1r * n1r * p.x;
-	x1 = x0 + xNumRight;
-	x1 = x1 / denTerm;
-	x2 = x0 - xNumRight;
-	x2 = x2 / denTerm;
-
-	yNumRight = n1r * p.x;
-	yNumRight = yNumRight * numRight;
-	y0 = n1r * n1r * p.y;
-	y1 = y0 + yNumRight;
-	y1 = y1 / denTerm;
-	y2 = y0 - yNumRight;
-	y2 = y2 / denTerm;
-
-	t3 = new Point(x1, y2);
-	t4 = new Point(x2, y1);
-
-	// console.log(t1, t2, t3, t4);
-
-	if (n1r > n0r) {
-		// console.log('n1r > n0r');
-		this.n0t1 = t2;
-		this.n1t1 = t4;
-	} else {
-		// console.log('n1r <= n0r');
-		this.n0t1 = t1;
-		this.n1t1 = t3;}
 }
 Node.prototype.genPath = function(channel, active) {
 	this.lastBridge = bridge[this.c_i].x;
@@ -168,7 +64,8 @@ Node.prototype.genPath = function(channel, active) {
 				this.n0t1 = new Point(n0l.x + offset.x, n0l.y + offset.y);
 				this.n1t1 = new Point(offset.x, offset.y);
 			} else {
-				this.findTangentPoints(n0l, n0r, n1r);
+				this.n0t1 = this.findIntercepts(n0r, n0r, n1r, n0l, new Point(0,0), false);
+				this.n1t1 = this.findIntercepts(n1r, n1r, n0r, new Point(0,0), n0l, true);
 			}
 
 			xTerm = this.n1t1.x, yTerm = this.n1t1.y;
@@ -669,65 +566,40 @@ Node.prototype.genPathCaps = function(breaking, n0l, n0r) {
 				var oth_n = locDir[hold_l_x][i][1] + 1;
 				//outbound breaks; outbound paths; inbound paths
 				if (charDir[oth_c].length > oth_n) {
-					if (breaking && this.s_i > charDir[oth_c][oth_n].s_i && false === Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false))
-						true;
-						// this.drawPathCap(n0l, n0r - this.lastAnc*radius/2, oth_c, oth_n, breaking, true);
-					if (outermost && hold_s_i < charDir[oth_c][oth_n].s_i && (breaking && this.s_i > charDir[oth_c][oth_n].s_i || false === breaking && Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false)))
-						true;
-						// this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, true);
+					if (breaking && this.s_i > charDir[oth_c][oth_n].s_i && false === Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false)) {
+						this.drawPathCap(charDir[oth_c][oth_n - 1].getRadius(), anc[oth_c].x*radius, n0r - this.lastAnc*radius/2, charDir[oth_c][oth_n].getRadius(), n0l, loc[charDir[oth_c][oth_n].l_i], false);
+					}
+					if (outermost && hold_s_i < charDir[oth_c][oth_n].s_i && (breaking && this.s_i > charDir[oth_c][oth_n].s_i || false === breaking && Detect.isWithin(charDir[oth_c][oth_n].s_i, hold_s_i, 0, 2, false))) {
+						this.drawPathCap(charDir[oth_c][oth_n - 1].getRadius(), anc[oth_c].x*radius, n0r, charDir[oth_c][oth_n].getRadius(), n0l, loc[charDir[oth_c][oth_n].l_i], false);
+					}
 				}
 				oth_n = locDir[hold_l_x][i][1];
 				if (outermost && 0 < oth_n && hold_s_i < charDir[oth_c][oth_n].s_i) {
-					true;
-					// this.drawPathCap(n0l, n0r, oth_c, oth_n, breaking, false);
+					this.drawPathCap(charDir[oth_c][oth_n].getRadius(), anc[oth_c].x*radius, n0r, charDir[oth_c][oth_n - 1].getRadius(), n0l, loc[charDir[oth_c][oth_n - 1].l_i], true);
 				}
 			}
 		}
 	}
 }
-Node.prototype.drawPathCap = function(cen, rad, oth_c, oth_n, breaking, outbound) {
-	var xPos, yPos, xOffset, yOffset;
-	if (outbound) {
-		xPos = cen.x + (loc[charDir[oth_c][oth_n].l_i].x - loc[charDir[oth_c][oth_n - 1].l_i].x);
-		yPos = cen.y + (loc[charDir[oth_c][oth_n].l_i].y - loc[charDir[oth_c][oth_n - 1].l_i].y);
-		xOffset = xPos;
-		yOffset = yPos;
-	} else {
-		xPos = cen.x + (loc[charDir[oth_c][oth_n - 1].l_i].x - loc[charDir[oth_c][oth_n].l_i].x);
-		yPos = cen.y + (loc[charDir[oth_c][oth_n - 1].l_i].y - loc[charDir[oth_c][oth_n].l_i].y);
-		xOffset = cen.x;
-		yOffset = cen.y;
-	}
+Node.prototype.drawPathCap = function(rad, othLastRad, exRad, wayRad, loc, wayLoc, inbound) {
+	var capEnd = this.findIntercepts(rad, exRad, wayRad, loc, wayLoc, inbound);
+	capEnd.x -= loc.x, capEnd.y -= loc.y;
+	var angle = Math.atan2(capEnd.y, capEnd.x);
 
-	var p1 = new Point(charDir[oth_c][oth_n].n1t1.x + xOffset, charDir[oth_c][oth_n].n1t1.y + yOffset),
-		p2 = new Point(charDir[oth_c][oth_n].n0t1.x + xOffset, charDir[oth_c][oth_n].n0t1.y + yOffset);
-	var t_int = this.findIntercepts(p1, p2, cen, rad, new Point(xPos, yPos));
-
-	var xTerm = t_int.x - cen.x,
-		yTerm = t_int.y - cen.y;
-	if (0 === xTerm) { xTerm = 0.1;}
-	if (0 === yTerm) { yTerm = 0.1;}
-	var angle = Math.atan2(yTerm, xTerm);
-
-	p1 = new Point(charDir[oth_c][oth_n].n1t2.x + xOffset, charDir[oth_c][oth_n].n1t2.y + yOffset);
-	p2 = new Point(charDir[oth_c][oth_n].n0t2.x + xOffset, charDir[oth_c][oth_n].n0t2.y + yOffset);
-	t_int = this.findIntercepts(p1, p2, cen, rad, new Point(xPos, yPos));
-
-	xTerm = t_int.x - cen.x;
-	yTerm = t_int.y - cen.y;
-	if (0 === xTerm) { xTerm = 0.1;}
-	if (0 === yTerm) { yTerm = 0.1;}
-	var angle2 = Math.atan2(yTerm, xTerm);
+	capEnd = this.findIntercepts(rad - othLastRad, exRad, wayRad - othLastRad, loc, wayLoc, inbound);
+	capEnd.x -= loc.x, capEnd.y -= loc.y;
+	var angle2 = Math.atan2(capEnd.y, capEnd.x);
 
 	var canvas = document.getElementById('location');
 	var ctx = canvas.getContext('2d');
 	ctx.strokeStyle = '#000000';
 	ctx.lineWidth = stroke;
 	ctx.beginPath();
-	if (outbound)
-		ctx.arc(cen.x, cen.y, rad, angle, angle2);
-	else
-		ctx.arc(cen.x, cen.y, rad, angle, angle2, true);
+	if (inbound) {
+		ctx.arc(loc.x, loc.y, exRad, angle, angle2, true);
+	} else {
+		ctx.arc(loc.x, loc.y, exRad, angle, angle2);
+	}
 	ctx.closePath();
 	ctx.stroke();
 }

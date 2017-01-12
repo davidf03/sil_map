@@ -220,7 +220,7 @@ body, .sidebar {
                 color: #232323;
                 border-style: solid;
                 border-width: 0.05em 0;
-                border-color: #898989;
+                border-color: transparent;
             }
               .char > * {
                 float: left;
@@ -241,11 +241,8 @@ body, .sidebar {
                   width: 1.5em;
                 }
                 .char .controls > *:enabled:hover {
-                  color: green;
+                  color: #fff;
                 }
-                  /*.char .controls > :nth-child(1), .char .controls > :nth-child(5) {
-                    width: 1em;
-                  }*/
                   .char .controls > :nth-child(1), .char .controls > :nth-child(3) {
                     width: 1.2em;
                   }
@@ -255,21 +252,6 @@ body, .sidebar {
                   .char .controls > * > span {
                     font-size: 1.3em;
                   }
-              .char .controls {
-
-              }
-                /*.character .colour, .character .name, .character .controls {
-                    height: 10%;
-                }
-                    .character .colour {
-                        width: 30%;
-                    }
-                    .character .name {
-                        width: 60%;
-                    }
-                    .character .controls {
-
-                    }*/
     .map {
         z-index: 0;
         background: url(../img/silmarillion_map.png) no-repeat;

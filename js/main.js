@@ -134,7 +134,6 @@ function init() {
 		var compound = Math.atan2(wayRad - height, dist) + Math.asin(height/exRad);
 		if (inbound) compound = -compound;
 		var angle = -(compound - Math.atan2(yDiff, xDiff))%(Math.PI*2);
-		if (0 > angle) angle += Math.PI*2;
 
 		var intercept = new Point(0,0);
 		intercept = offset.polar(exRad, angle);

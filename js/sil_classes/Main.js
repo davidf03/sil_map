@@ -5,7 +5,7 @@ function Main() {
 	targetIndex = 0;
 	Detect = new Detect();
 	moveQueue = new Array();
-	alpha = {x:1, i:0};
+	alpha = {x:1, i:0, e:1};
 
 	this.genLocDir();
 
@@ -35,12 +35,13 @@ function Main() {
 	// 	}
 	// }
 
-	now = timeDir.length - 1;
-	for (i = 0; i < charDir.length; i++) {
-		// charDir[i][0].generate(0, 2);
-		for (j = 1; j < charDir[i].length; j++)
-			charDir[i][j].generate(3, 2);
-	}
+	// now = timeDir.length - 1;
+	// for (i = 0; i < charDir.length; i++) {
+	// 	// charDir[i][0].generate(0, 2);
+	// 	for (j = 1; j < charDir[i].length; j++)
+	// 		charDir[i][j].generate(3, 2);
+	// }
+	now = charDir.length - 1;
 
 	// var canvas = document.getElementById('canvas');
 	// var ctx = canvas.getContext('2d');
@@ -61,7 +62,6 @@ function Main() {
 	// 		);
 	// 	}
 	// }
-	// now = charDir.length - 1;
 }
 Main.prototype.genCharObj = function() {
 	charConsole = document.querySelector('.charConsole .main');
@@ -110,6 +110,8 @@ Main.prototype.genCharObj = function() {
 			main.targetNext(this.parentNode.parentNode.dataset.index, false);
 		};
 		this.evalState(i);
+
+		char.style.backgroundColor = cols[startColour][i];
 	}
 
 	this.redraw();
@@ -346,7 +348,7 @@ Main.prototype.redraw = function() {
 	// ctx.drawImage(lines, 0, 0);
 	// ctx.globalAlpha = 1;
 
-	//updating movement buttons (indelicate, but inexpensive)
+	//updating movement buttons
 	for (i = 0; i < charDir.length; i++)
 		this.evalState(i);
 
@@ -357,7 +359,7 @@ Main.prototype.redraw = function() {
 		idle = true;
 	}
 }
-Main.prototype.removeClass = function(e,c) {e.className = e.className.replace( new RegExp('(?:^|\\s)'+c+'(?!\\S)') ,'');}
+Main.prototype.removeClass = function(e,c) { e.className = e.className.replace(new RegExp('(?:^|\\s)'+c+'(?!\\S)'), '');}
 Main.prototype.toggleChar = function(c_i) {
 	var toggle = document.querySelector('[data-index="'+c_i+'"] .toggle span');
 	if (1 <= anc[c_i].x || 0 < anc[c_i].i) {
@@ -716,8 +718,6 @@ Main.prototype.continuousPrev = function(c_i) {
 		//order indices based on latest activity
 		//define callers
 			//rifts are defined similar to forwards, an index pushed as the array is traversed: encountering it prepares a rift
-			//this and the other should work the same in that they ought to be made to have characters call themselves when chaining
-			//rifts ought to be unified forwards and backwards. not sure how
 
 	var i, j;
 	var active = new Array();
@@ -755,7 +755,7 @@ Main.prototype.continuousPrev = function(c_i) {
 				}
 				break;
 			}
-	active.sort(function(a,b){return b - a});
+	active.sort(function(a,b){ return b - a});
 	now -= rollBack;
 
 	//collecting indices for moveQueue
@@ -772,7 +772,7 @@ Main.prototype.continuousPrev = function(c_i) {
 	}
 	var targetBase = Detect.findInterval(target, false, 0);
 	for (i = 0; i < charDir.length; i++)
-		if (i !== c_i/* && 1 <= bridge[i].x*/)
+		if (i !== c_i)
 			for (j = charDir[i].length - 1; j >= 0; j--)
 				if (target > charDir[i][j].s_i) {
 					if (0 < timeDir[charDir[i][j].s_i][1][1]) {
@@ -866,14 +866,12 @@ Main.prototype.continuousPrev = function(c_i) {
 	this.redraw();
 }
 Main.prototype.getExtentPrev = function(s_i) {
-	//this won't work for backwards movement
 	if (0 < timeDir[s_i][1][1]) {
 		if (end) {
 			if (target === s_i) {
 				extent = timeDir[s_i][1][1];
 			} else if (target < s_i && false === Detect.isWithin(s_i, target, 0, 2, false)) {
 				extent = 0;
-			//isWithin really needs an update!
 		} else if (timeDir[target][1][1] + Detect.findInterval(target, false, 0) < timeDir[s_i][1][1] + Detect.findInterval(s_i, false, 0)) {
 				if (target < s_i) extent = timeDir[target][1][1] - Detect.findInterval(s_i, false, target);
 					else extent = timeDir[target][1][1] + Detect.findInterval(target, false, s_i);
@@ -1445,11 +1443,10 @@ Main.prototype.genSequence = function(paths, moves) {
 }
 Main.prototype.randHex = function(charIndex) {
 	var i;
-	for (i = timeDir.length - 2; i >= 0; i--) {
-		if (charIndex == timeDir[i][0][0])
-		{ break;}
-	}
-	var viable = false, ni;
+	for (i = timeDir.length - 2; i >= 0; i--)
+		if (charIndex == timeDir[i][0][0]) break;
+
+	var ni;
 	while (true) {
 		ni = Math.floor(Math.random()*loc.length);
 		if (ni !== timeDir[i][2][0]) break;
@@ -1470,6 +1467,7 @@ Main.prototype.genHex = function() {
 	loc.push(new Point(500, 300));
 	loc.push(new Point(400, 486));
 	loc.push(new Point(200, 486));
+	// loc.push(new Point(300, 300));
 }
 Main.prototype.visLoc = function() {
 	for (var i = 0; i < loc.length; i++) {
