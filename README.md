@@ -10,4 +10,6 @@ The display of characters on a given locations is constructed out of these inter
 
 While the design would not work at scale without modification, it is still I think a thought-provoking piece.
 This project was incredibly challenging and one of the most rewarding programming endeavours I have ever made to undertake.
+
+Visit the demo here: https://dfriesen1183.github.io/sil_map/
 ```
